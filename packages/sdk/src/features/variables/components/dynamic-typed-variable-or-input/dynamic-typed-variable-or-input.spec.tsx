@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import '../../../i18n/index';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
@@ -18,22 +18,21 @@ const numberVariables: VariableSuggestionGroup[] = [
 type HarnessProps = {
   type: VariableTypePrimitive;
   initialValue?: string;
-  compatibleTypes?: VariableType[];
+  suggestionGroupsForType?: VariableSuggestionGroup[];
   onSave: (value: string) => void;
 };
 
 /** Mirrors VariableDynamicControl: `onChange` feeds `value` back, `onBlur` is the save. */
-function Harness({ type, initialValue = '', compatibleTypes, onSave }: HarnessProps) {
+function Harness({ type, initialValue = '', suggestionGroupsForType = numberVariables, onSave }: HarnessProps) {
   const [value, setValue] = useState(initialValue);
 
   return (
     <DynamicTypedVariableOrInput
       type={type}
       value={value}
-      compatibleTypes={compatibleTypes}
       onChange={setValue}
       onBlur={onSave}
-      suggestionGroups={numberVariables}
+      suggestionGroupsForType={suggestionGroupsForType}
     />
   );
 }
@@ -54,13 +53,13 @@ describe('DynamicTypedVariableOrInput', () => {
     expect((screen.getByPlaceholderText('Type a numeric value') as HTMLInputElement).value).toBe('7');
   });
 
-  it('offers the variable picker only for the compatible types', () => {
-    const { unmount } = render(<Harness type="string" onSave={vi.fn()} />);
+  it('offers the variable picker only when the caller passes suggestions for the type', () => {
+    const { unmount } = render(<Harness type="string" suggestionGroupsForType={[]} onSave={vi.fn()} />);
 
     expect(screen.queryByRole('button', { name: 'Pick variable' })).toBeNull();
     unmount();
 
-    render(<Harness type="string" compatibleTypes={['string', 'number']} onSave={vi.fn()} />);
+    render(<Harness type="string" onSave={vi.fn()} />);
 
     expect(screen.getByRole('button', { name: 'Pick variable' })).not.toBeNull();
   });

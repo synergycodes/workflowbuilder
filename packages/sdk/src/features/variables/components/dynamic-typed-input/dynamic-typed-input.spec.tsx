@@ -28,7 +28,7 @@ function Harness({ type, initialValue = '', timeForRawDates, onSave }: HarnessPr
       onChange={setValue}
       onBlur={onSave}
       timeForRawDates={timeForRawDates}
-      suggestionGroups={[]}
+      suggestionGroupsForType={[]}
     />
   );
 }
@@ -92,11 +92,11 @@ describe('DynamicTypedInput time', () => {
   it('shows a value changed from outside in the same element', () => {
     const onChange = vi.fn();
     const { getByPlaceholderText, rerender } = render(
-      <DynamicTypedInput type="time" value="12:30:00+00:00" onChange={onChange} suggestionGroups={[]} />,
+      <DynamicTypedInput type="time" value="12:30:00+00:00" onChange={onChange} suggestionGroupsForType={[]} />,
     );
     const input = getByPlaceholderText('HH:mm') as HTMLInputElement;
 
-    rerender(<DynamicTypedInput type="time" value="08:00:00+00:00" onChange={onChange} suggestionGroups={[]} />);
+    rerender(<DynamicTypedInput type="time" value="08:00:00+00:00" onChange={onChange} suggestionGroupsForType={[]} />);
 
     expect(getByPlaceholderText('HH:mm')).toBe(input);
     expect(input.value).toBe('08:00');

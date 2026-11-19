@@ -130,7 +130,7 @@ export function VariableForm(props: Props) {
           value={formData.defaultValue}
           type={formData.type}
           onChange={(value) => handleInputUpdate('defaultValue', value)}
-          suggestionGroups={[]}
+          suggestionGroupsForType={[]}
           isError={formData.fieldsWithErrors.has('defaultValue')}
           disabled={props.isReadOnly}
         />

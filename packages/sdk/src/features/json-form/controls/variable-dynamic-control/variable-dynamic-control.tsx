@@ -80,11 +80,10 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
       <DynamicTypedVariableOrInput
         key={variablesKey}
         type={variableType}
-        compatibleTypes={compatibleTypes}
         value={inputValue}
         onChange={onChange}
         onBlur={onBlur}
-        suggestionGroups={suggestionGroups}
+        suggestionGroupsForType={suggestionGroups}
         isError={errors.length > 0}
         isDisabled={isDisabled}
         placeholder={placeholder}

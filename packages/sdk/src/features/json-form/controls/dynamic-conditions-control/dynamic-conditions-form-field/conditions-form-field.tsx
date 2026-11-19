@@ -19,6 +19,7 @@ import {
 import { useStore } from '../../../../../store/store';
 import type { DynamicCondition } from '../../../../../types/controls';
 import { getStringVariableTypeIfPossible } from '../../../../variables/actions/get-string-variable-type-if-possible';
+import { filterSuggestionGroupsByType } from '../../../../variables/utils/filter-suggestion-groups-by-type';
 import { type ConditionErrors, getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
 
 type ConditionsFormFieldProps = {
@@ -49,6 +50,10 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
   const isReadOnly = useStore((store) => store.isReadOnly);
   const { condition, onChange, onRemove, shouldShowOperator = false, shouldShowValidation, suggestionGroups } = props;
   const [{ xType, comparisonsOperators }, setTypeOptions] = useState(getTypeOptions(condition.x));
+  const suggestionGroupsForType = useMemo(
+    () => filterSuggestionGroupsByType(suggestionGroups, [xType]),
+    [suggestionGroups, xType],
+  );
 
   const { t } = useTranslation();
 
@@ -131,7 +136,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             value={condition.y}
             isError={shouldShowValidation && errors.y}
             type={xType}
-            suggestionGroups={suggestionGroups}
+            suggestionGroupsForType={suggestionGroupsForType}
             isDisabled={isReadOnly}
           />
         </div>

@@ -1,9 +1,8 @@
 import { DatePicker, Input, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './dynamic-typed-input.module.css';
 
@@ -16,12 +15,11 @@ import {
 } from '../../../../utils/time-iso';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
 import { variableTypeInfoByType } from '../../constants';
-import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
 import { getBooleanStringIfPossible } from '../../utils/get-boolean-if-possible';
 import { getIsStringVariableReferenceStart } from '../../utils/keys/get-is-string-variable-reference';
 import { VariableText } from '../variable-text/variable-text';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
-import { itemsForBoolean, typesForInput } from './constants';
+import { itemsForBoolean } from './constants';
 import { TimeInput } from './core/time-input';
 
 type DynamicTypedInputProps = {
@@ -35,9 +33,8 @@ type DynamicTypedInputProps = {
   disabled?: boolean;
   timeForRawDates?: '00:00' | '23:59';
   endAdornment?: React.ReactNode;
-  suggestionGroups: VariableSuggestionGroup[];
-  /** Variable types the inline `{{` picker of a text field offers; defaults to `type` alone. */
-  compatibleTypes?: VariableType[];
+  /** Already narrowed to the types `type` accepts; a text field offers them in its inline `{{` picker. */
+  suggestionGroupsForType: VariableSuggestionGroup[];
 };
 
 export function DynamicTypedInput({
@@ -51,23 +48,10 @@ export function DynamicTypedInput({
   disabled = false,
   timeForRawDates = '00:00',
   endAdornment,
-  suggestionGroups = [],
-  compatibleTypes,
+  suggestionGroupsForType = [],
 }: DynamicTypedInputProps) {
   const variableTypeInfo = type ? variableTypeInfoByType[type] : undefined;
   const { t } = useTranslation();
-
-  const suggestionGroupsForString = useMemo(() => {
-    if (!variableTypeInfo || typesForInput.includes(variableTypeInfo.type) === false) {
-      return [];
-    }
-
-    if (!type) {
-      return [];
-    }
-
-    return filterSuggestionGroupsByType(suggestionGroups, compatibleTypes ?? [type]);
-  }, [compatibleTypes, suggestionGroups, type, variableTypeInfo]);
 
   if (!variableTypeInfo) {
     return null;
@@ -82,7 +66,7 @@ export function DynamicTypedInput({
   };
 
   if (variableTypeInfo.type === 'string') {
-    if (suggestionGroupsForString.length > 0) {
+    if (suggestionGroupsForType.length > 0) {
       return (
         <div className={styles['date-with-reset-container']}>
           <VariableText
@@ -93,7 +77,7 @@ export function DynamicTypedInput({
             hasError={isError}
             mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable'), disabled }}
             mentionProps={{ appendSpaceOnAdd: false }}
-            suggestionGroups={suggestionGroupsForString}
+            suggestionGroups={suggestionGroupsForType}
           />
           {endAdornment && <span className={clsx(styles['adornment--date'], 'right-adornment')}>{endAdornment}</span>}
         </div>
