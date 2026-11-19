@@ -8,7 +8,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '440ccd46-0f50-4e35-ae74-64fee988a4f6',
         type: 'node',
-        position: { x: 18, y: 144 },
+        position: { x: 22, y: 154 },
         data: {
           segments: [],
           properties: {
@@ -27,7 +27,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: 'da47caa9-c695-47bb-be52-b30bb8a6be6d',
         type: 'node',
-        position: { x: 378, y: 144 },
+        position: { x: 374, y: 154 },
         data: {
           segments: [],
           properties: {
@@ -44,7 +44,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '47375954-4e4a-4567-b7d3-c70c3921e1dd',
         type: 'node',
-        position: { x: 864, y: 18 },
+        position: { x: 858, y: 22 },
         data: {
           segments: [],
           properties: {
@@ -61,7 +61,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: 'e7ecd597-55ca-4bba-9d32-d0c51173046d',
         type: 'node',
-        position: { x: 1242, y: 144 },
+        position: { x: 1232, y: 154 },
         data: {
           segments: [],
           properties: {
@@ -78,7 +78,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '798dbba1-d356-4fcd-8ba2-90e75f4912f9',
         type: 'node',
-        position: { x: 864, y: 270 },
+        position: { x: 858, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -95,7 +95,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '801b6f56-05d9-4639-b426-ef171741a408',
         type: 'node',
-        position: { x: 1602, y: 18 },
+        position: { x: 1584, y: 22 },
         data: {
           segments: [],
           properties: {
@@ -116,7 +116,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: 'fd7745bf-4562-447f-a65c-2581b6a77eac',
         type: 'node',
-        position: { x: 1980, y: 144 },
+        position: { x: 1958, y: 154 },
         data: {
           segments: [],
           properties: {
@@ -133,7 +133,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: 'c87efe62-6394-43c2-8714-96c0dc19a407',
         type: 'node',
-        position: { x: 1602, y: 270 },
+        position: { x: 1584, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -150,7 +150,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '3bfaad20-c0b8-4a90-bf8b-04c3eec2ce31',
         type: 'node',
-        position: { x: 2358, y: 18 },
+        position: { x: 2332, y: 22 },
         data: {
           segments: [],
           properties: {
@@ -167,7 +167,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '8b356b4a-5959-48ff-9374-cd07dc9522f6',
         type: 'node',
-        position: { x: 2358, y: 270 },
+        position: { x: 2332, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -184,7 +184,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: 'abac90c2-af48-458e-8e0c-48a505d0826e',
         type: 'node',
-        position: { x: 2790, y: 18 },
+        position: { x: 2772, y: 22 },
         data: {
           segments: [],
           properties: {
@@ -205,7 +205,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '33bfbf0d-f0eb-452e-aeba-f330bb9badec',
         type: 'node',
-        position: { x: 3168, y: 144 },
+        position: { x: 3146, y: 154 },
         data: {
           segments: [],
           properties: {
@@ -222,7 +222,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: '263e749c-dfaa-4aed-af11-c7ad161aee54',
         type: 'node',
-        position: { x: 3528, y: 144 },
+        position: { x: 3498, y: 154 },
         data: {
           segments: [],
           properties: {
@@ -239,7 +239,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: 'caae31f8-9bf6-4488-addf-d1b80842e1f7',
         type: 'node',
-        position: { x: 3960, y: 18 },
+        position: { x: 3938, y: 22 },
         data: {
           segments: [],
           properties: {
@@ -256,7 +256,7 @@ const defaultDiagram: DiagramModel = {
       {
         id: 'c125ce95-d5f4-4a93-a9de-407e45016d8d',
         type: 'node',
-        position: { x: 3960, y: 270 },
+        position: { x: 3938, y: 286 },
         data: {
           segments: [],
           properties: {

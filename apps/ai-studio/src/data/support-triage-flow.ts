@@ -13,7 +13,7 @@ const diagram: DiagramModel = {
       {
         id: 'trigger-1',
         type: 'start-node',
-        position: { x: 0, y: 300 },
+        position: { x: 0, y: 286 },
         data: {
           segments: [],
           isStartNode: true,
@@ -38,7 +38,7 @@ Head of Ops, Brightwave`,
       {
         id: 'classify-1',
         type: 'node',
-        position: { x: 350, y: 300 },
+        position: { x: 352, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -67,7 +67,7 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
       {
         id: 'decision-1',
         type: 'decision-node',
-        position: { x: 700, y: 300 },
+        position: { x: 704, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -117,7 +117,7 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
       {
         id: 'billing-1',
         type: 'node',
-        position: { x: 1100, y: 50 },
+        position: { x: 1100, y: 44 },
         data: {
           segments: [],
           properties: {
@@ -140,7 +140,7 @@ You handle billing issues. Draft a reply to the customer:
       {
         id: 'bug-1',
         type: 'node',
-        position: { x: 1100, y: 300 },
+        position: { x: 1100, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -163,7 +163,7 @@ You triage product bugs. Draft a reply to the customer:
       {
         id: 'general-1',
         type: 'node',
-        position: { x: 1100, y: 550 },
+        position: { x: 1100, y: 528 },
         data: {
           segments: [],
           properties: {
@@ -185,7 +185,7 @@ You answer how-to and general questions. Draft a friendly reply:
       {
         id: 'qa-1',
         type: 'node',
-        position: { x: 1500, y: 300 },
+        position: { x: 1496, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -210,7 +210,7 @@ If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
       {
         id: 'visualize-1',
         type: 'node',
-        position: { x: 1850, y: 300 },
+        position: { x: 1848, y: 286 },
         data: {
           segments: [],
           properties: {
