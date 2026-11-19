@@ -13,7 +13,8 @@ replacement when it meets a removed slot or prop. The
 [4.0 changelog](https://github.com/synergycodes/workflowbuilder/blob/main/packages/sdk/CHANGELOG.md)
 lists every one of them with its replacement.
 
-One change reaches saved workflows rather than code, and this page walks through it.
+Two changes are silent: one reaches saved workflows rather than code, and one changes
+a path that TypeScript does not check. This page walks through both.
 
 ## Date and time values
 
@@ -64,6 +65,30 @@ three locations and the marker of this section:
 A field that you move from the `DatePicker` form control to `VariableDynamic` carries the
 same caveat for the values it already holds. `DatePicker` keeps writing `Date#toString()`
 strings in 4.0, and the warning does not cover them.
+
+## Custom errors shown through `globalControls`
+
+The `MessageOnError` entry of `globalControls` listens on `#/properties/customError`. In
+3.0.0 it listened on `#/properties/missingPreviousVariable` and carried a default `text`.
+
+A custom error written to `properties.customErrors` with
+`instancePath: '/missingPreviousVariable'` still marks the node with the exclamation mark,
+but its message no longer shows in the properties panel. Change the path:
+
+```ts
+data.properties.customErrors = [
+  {
+    instancePath: '/customError',
+    message: i18n.t('your.custom.message'),
+    schemaPath: '',
+    keyword: '',
+    params: {},
+  },
+];
+```
+
+The message comes from the error itself; a `MessageOnError` of your own can still set `text`
+to override it.
 
 ## Where to go next
 
