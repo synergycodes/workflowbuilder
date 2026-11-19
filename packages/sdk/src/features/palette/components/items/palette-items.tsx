@@ -9,7 +9,7 @@ import { PaletteItem } from './palette-item';
 
 type PaletteItemsProps = {
   onDragStart: (event: DragEvent) => void;
-  onMouseDown: (type: string) => void;
+  onPointerDown: (type: string) => void;
   items: (PaletteItemType | PaletteGroup)[];
   isDisabled?: boolean;
   /** While `true`, every group renders open regardless of its own `isOpen`. */
@@ -19,7 +19,7 @@ type PaletteItemsProps = {
 export function PaletteItems({
   items,
   onDragStart,
-  onMouseDown,
+  onPointerDown,
   isDisabled = false,
   isFiltering = false,
 }: PaletteItemsProps) {
@@ -47,7 +47,7 @@ export function PaletteItems({
                     key={item.type}
                     item={item}
                     isDisabled={isDisabled}
-                    onMouseDown={onMouseDown}
+                    onPointerDown={onPointerDown}
                     onDragStart={onDragStart}
                   />
                 ))}
@@ -63,7 +63,7 @@ export function PaletteItems({
             key={item.type}
             item={item}
             isDisabled={isDisabled}
-            onMouseDown={onMouseDown}
+            onPointerDown={onPointerDown}
             onDragStart={onDragStart}
           />
         );
