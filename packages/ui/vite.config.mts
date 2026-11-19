@@ -17,6 +17,7 @@ const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 const componentEntries = [
   'accordion',
   'avatar',
+  'badge-label',
   'button',
   'checkbox',
   'chip',

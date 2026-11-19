@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
-import styles from './workflow-node-template.module.css';
+import styles from '../components/collapsible-body/collapsible-body.module.css';
 
 import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { NodeData } from '../../../../node/node-data';
@@ -86,13 +86,13 @@ const WorkflowNodeTemplateComponent = memo(
 
     return (
       <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
-        <NodePanel.Root selected={selected} disabled={disabled} className={styles['content']}>
+        <NodePanel.Root selected={selected} disabled={disabled}>
           <NodePanel.Header>
             <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
             {!!children && <Collapsible.Button />}
           </NodePanel.Header>
-          <NodePanel.Content isVisible={isCanvasNode}>
+          <NodePanel.Content isVisible={isCanvasNode} className={styles['content']}>
             <OptionalNodeContent nodeId={id}>
               <Status status={isValid === false ? 'invalid' : undefined} />
               <Collapsible.Content>

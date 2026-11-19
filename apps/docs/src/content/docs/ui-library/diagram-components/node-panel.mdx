@@ -13,7 +13,7 @@ and accepts up to one of each optional slot — `NodePanel.Header`,
 warning, and each slot may appear at most once.
 
 - `NodePanel.Root` - outer wrapper. Takes a `selected` boolean that drives the
-  selected border / shadow, and arranges the header, handles, and content.
+  selected outline, background and shadow, and arranges the header, handles, and content.
 - `NodePanel.Header` - the node's header row, typically holding a
   [`NodeIcon`](/ui-library/diagram-components/node-icon/) and a
   [`NodeDescription`](/ui-library/diagram-components/node-description/).
@@ -79,5 +79,7 @@ it for node types that cannot be added at the moment, for example in read-only m
 | `NodePanel.Handles` | `isVisible?` (default `true`), `alignment?` (`'center' \| 'header'`, default `'center'`), `children?` | Container for connection handles. At most one per `Root`.                                      |
 
 ## CSS variables
+
+Set the `--wb-public-node-header-*` variables on `NodePanel.Root` or an ancestor: the handles are siblings of the header, so a value set on `NodePanel.Header` alone moves the header content but leaves the ports where they were.
 
 <CssVariablesTable slug="node-panel" />
