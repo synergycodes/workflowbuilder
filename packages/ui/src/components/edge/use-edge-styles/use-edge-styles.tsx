@@ -51,12 +51,13 @@ export type EdgeStyle = {
   animation?: string;
 };
 
-function runStroke(runState: EdgeRunState, tone: EdgeRunToneName | undefined) {
+// The content of `var()`: a custom tone falls back to the run state's tone when its variable is missing.
+function runStrokeVariable(runState: EdgeRunState, tone: EdgeRunToneName | undefined) {
   const defaultTone = DEFAULT_EDGE_RUN_TONE[runState];
-  const fallback = `var(--wb-public-edge-run-status-stroke-${defaultTone})`;
   const resolved = resolveEdgeRunTone(runState, tone);
+  const variable = `--wb-public-edge-run-status-stroke-${defaultTone}`;
 
-  return resolved === defaultTone ? fallback : `var(--wb-public-edge-run-status-stroke-${resolved}, ${fallback})`;
+  return resolved === defaultTone ? variable : `--wb-public-edge-run-status-stroke-${resolved}, var(${variable})`;
 }
 
 /**
@@ -75,19 +76,19 @@ export function useEdgeStyle({
   lineType = 'solid',
 }: UseEdgeStyleParams): EdgeStyle {
   return useMemo(() => {
-    const stroke =
+    const strokeCssVariable =
       state === 'disabled'
-        ? 'var(--wb-public-edge-color-disabled)'
+        ? '--wb-public-edge-color-disabled'
         : runState
-          ? runStroke(runState, tone)
+          ? runStrokeVariable(runState, tone)
           : state === 'selected' || state === 'temporary'
-            ? 'var(--wb-public-edge-color-select)'
+            ? '--wb-public-edge-color-select'
             : isHovered
-              ? 'var(--wb-public-edge-color-hover)'
-              : 'var(--wb-public-edge-color)';
+              ? '--wb-public-edge-color-hover'
+              : '--wb-public-edge-color';
 
     const style: EdgeStyle = {
-      stroke,
+      stroke: `var(${strokeCssVariable})`,
       strokeWidth: 'var(--wb-public-edge-stroke-width)',
       transition: isHovered && !runState ? 'none' : 'stroke var(--wb-public-transition)',
     };
