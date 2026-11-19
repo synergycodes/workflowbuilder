@@ -3,4 +3,4 @@ export const FIT_VIEW_MAX_ZOOM = 1;
 export const FIT_VIEW_BASE_PADDING = 36;
 
 export const SNAP_IS_ACTIVE: boolean = true;
-export const SNAP_GRID: [number, number] | undefined = [18, 18];
+export const SNAP_GRID: [number, number] | undefined = [22, 22];

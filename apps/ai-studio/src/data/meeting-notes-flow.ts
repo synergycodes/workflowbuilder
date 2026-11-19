@@ -7,7 +7,7 @@ const diagram: DiagramModel = {
       {
         id: 'trigger-1',
         type: 'start-node',
-        position: { x: 0, y: 300 },
+        position: { x: 0, y: 308 },
         data: {
           segments: [],
           isStartNode: true,
@@ -29,7 +29,7 @@ const diagram: DiagramModel = {
       {
         id: 'summary-1',
         type: 'node',
-        position: { x: 360, y: 300 },
+        position: { x: 352, y: 308 },
         data: {
           segments: [],
           properties: {
@@ -46,7 +46,7 @@ was decided. Neutral, factual tone.`,
       {
         id: 'actions-1',
         type: 'node',
-        position: { x: 720, y: 300 },
+        position: { x: 704, y: 308 },
         data: {
           segments: [],
           properties: {
@@ -64,7 +64,7 @@ mark it "unassigned". Do not invent items that were not discussed.`,
       {
         id: 'recap-1',
         type: 'node',
-        position: { x: 1080, y: 300 },
+        position: { x: 1056, y: 308 },
         data: {
           segments: [],
           properties: {
@@ -92,7 +92,7 @@ line "_Meeting Bot_".`,
       {
         id: 'visualize-1',
         type: 'node',
-        position: { x: 1440, y: 300 },
+        position: { x: 1408, y: 308 },
         data: {
           segments: [],
           properties: {

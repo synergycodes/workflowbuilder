@@ -8,7 +8,7 @@ const diagram: DiagramModel = {
       {
         id: 'a954a959-9bc1-4f6e-bd9f-35807a220c0b',
         type: 'node',
-        position: { x: 18, y: 630 },
+        position: { x: 22, y: 638 },
         data: {
           segments: [],
           properties: { label: 'Incoming Call', description: 'Trigger', dataSource: 'Time-based Trigger' },
@@ -21,7 +21,7 @@ const diagram: DiagramModel = {
       {
         id: '6e4c57e4-4136-4aa4-a183-43679b1f7170',
         type: 'node',
-        position: { x: 378, y: 630 },
+        position: { x: 374, y: 638 },
         data: {
           segments: [],
           properties: {
@@ -38,7 +38,7 @@ const diagram: DiagramModel = {
       {
         id: 'a845d12e-0852-4809-96ce-334159e100fe',
         type: 'node',
-        position: { x: 792, y: 756 },
+        position: { x: 792, y: 770 },
         data: {
           segments: [],
           properties: {
@@ -55,7 +55,7 @@ const diagram: DiagramModel = {
       {
         id: '65706043-b1d2-4600-b918-3b82ff5dfc13',
         type: 'node',
-        position: { x: 792, y: 504 },
+        position: { x: 792, y: 506 },
         data: {
           segments: [],
           properties: {
@@ -72,7 +72,7 @@ const diagram: DiagramModel = {
       {
         id: 'c187ef68-0fb8-47da-9a62-310afe91bfaa',
         type: 'node',
-        position: { x: 1170, y: 756 },
+        position: { x: 1166, y: 770 },
         data: {
           segments: [],
           properties: {
@@ -89,7 +89,7 @@ const diagram: DiagramModel = {
       {
         id: 'b2a4b7a7-1900-4218-aea4-902de2e4eb51',
         type: 'node',
-        position: { x: 1170, y: 504 },
+        position: { x: 1166, y: 506 },
         data: {
           segments: [],
           properties: {
@@ -106,7 +106,7 @@ const diagram: DiagramModel = {
       {
         id: '09c67367-8d0d-44ae-bf4e-66b36f5c389f',
         type: 'node',
-        position: { x: 1566, y: 504 },
+        position: { x: 1562, y: 506 },
         data: {
           segments: [],
           properties: {
@@ -123,7 +123,7 @@ const diagram: DiagramModel = {
       {
         id: 'b01ced25-ca06-47c7-a14f-21e5a0200a61',
         type: 'node',
-        position: { x: 1566, y: 756 },
+        position: { x: 1562, y: 770 },
         data: {
           segments: [],
           properties: {
@@ -140,7 +140,7 @@ const diagram: DiagramModel = {
       {
         id: 'f1d785cc-1715-4b27-97e4-59347f08e660',
         type: 'node',
-        position: { x: 2070, y: 396 },
+        position: { x: 2068, y: 396 },
         data: {
           segments: [],
           properties: {
@@ -157,7 +157,7 @@ const diagram: DiagramModel = {
       {
         id: '6c3fca17-a1d4-4008-8a72-605d91eb7fd6',
         type: 'node',
-        position: { x: 2070, y: 630 },
+        position: { x: 2068, y: 638 },
         data: {
           segments: [],
           properties: {
@@ -174,7 +174,7 @@ const diagram: DiagramModel = {
       {
         id: '6c0ecb78-cd09-4728-8dc7-414ab1c42ea2',
         type: 'node',
-        position: { x: 2070, y: 882 },
+        position: { x: 2068, y: 902 },
         data: {
           segments: [],
           properties: {
@@ -191,7 +191,7 @@ const diagram: DiagramModel = {
       {
         id: '18562830-da0b-443e-a859-79cb95473f59',
         type: 'node',
-        position: { x: 2502, y: 270 },
+        position: { x: 2508, y: 264 },
         data: {
           segments: [],
           properties: {
@@ -208,7 +208,7 @@ const diagram: DiagramModel = {
       {
         id: 'bc34e3ae-6dd2-4543-8efe-190863df49e6',
         type: 'node',
-        position: { x: 2502, y: 756 },
+        position: { x: 2508, y: 770 },
         data: {
           segments: [],
           properties: {
@@ -225,7 +225,7 @@ const diagram: DiagramModel = {
       {
         id: '6ab2c9e2-7e1e-4061-83ea-83a88aa246eb',
         type: 'node',
-        position: { x: 2502, y: 18 },
+        position: { x: 2508, y: 22 },
         data: {
           segments: [],
           properties: {
@@ -242,7 +242,7 @@ const diagram: DiagramModel = {
       {
         id: 'feb863db-de51-4aee-8746-f9e02d993cb7',
         type: 'node',
-        position: { x: 2502, y: 504 },
+        position: { x: 2508, y: 506 },
         data: {
           segments: [],
           properties: {
@@ -259,7 +259,7 @@ const diagram: DiagramModel = {
       {
         id: '456f755a-a1fe-4e18-a850-802cf28b4cf5',
         type: 'node',
-        position: { x: 2502, y: 1008 },
+        position: { x: 2508, y: 1034 },
         data: {
           segments: [],
           properties: {
@@ -276,7 +276,7 @@ const diagram: DiagramModel = {
       {
         id: 'cd9ae822-5ae4-4fe0-b876-760d460faf0e',
         type: 'node',
-        position: { x: 2502, y: 1260 },
+        position: { x: 2508, y: 1276 },
         data: {
           segments: [],
           properties: {
@@ -293,7 +293,7 @@ const diagram: DiagramModel = {
       {
         id: '53f8322b-96ef-4775-824a-020f02cccd20',
         type: 'node',
-        position: { x: 2898, y: 630 },
+        position: { x: 2904, y: 638 },
         data: {
           segments: [],
           properties: {

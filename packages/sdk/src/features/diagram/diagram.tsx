@@ -208,7 +208,11 @@ function DiagramContainerComponent({ edgeTypes = {} }: WorkflowBuilderCanvasProp
         nodesDraggable={!isReadOnly}
         isValidConnection={isValidConnection}
       >
-        <Background color="var(--wb-public-canvas-grid-color)" bgColor="var(--wb-public-background-color)" />
+        <Background
+          gap={SNAP_GRID}
+          color="var(--wb-public-canvas-grid-color)"
+          bgColor="var(--wb-public-background-color)"
+        />
       </ReactFlow>
     </div>
   );

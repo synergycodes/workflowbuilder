@@ -7,7 +7,7 @@ const diagram: DiagramModel = {
       {
         id: 'trigger-1',
         type: 'start-node',
-        position: { x: 0, y: 320 },
+        position: { x: 0, y: 330 },
         data: {
           segments: [],
           isStartNode: true,
@@ -30,7 +30,7 @@ of the most tedious parts of their week.`,
       {
         id: 'twitter-1',
         type: 'node',
-        position: { x: 420, y: 100 },
+        position: { x: 418, y: 110 },
         data: {
           segments: [],
           properties: {
@@ -50,7 +50,7 @@ Number each post (1/, 2/, ...).`,
       {
         id: 'linkedin-1',
         type: 'node',
-        position: { x: 420, y: 320 },
+        position: { x: 418, y: 330 },
         data: {
           segments: [],
           properties: {
@@ -71,7 +71,7 @@ Keep it under 200 words. Professional but human.`,
       {
         id: 'instagram-1',
         type: 'node',
-        position: { x: 420, y: 540 },
+        position: { x: 418, y: 550 },
         data: {
           segments: [],
           properties: {
@@ -91,7 +91,7 @@ Keep it under 200 words. Professional but human.`,
       {
         id: 'pack-1',
         type: 'node',
-        position: { x: 840, y: 320 },
+        position: { x: 836, y: 330 },
         data: {
           segments: [],
           properties: {
@@ -121,7 +121,7 @@ Keep each draft's wording as-is - do not rewrite it. Just organize and label.`,
       {
         id: 'visualize-1',
         type: 'node',
-        position: { x: 1260, y: 320 },
+        position: { x: 1254, y: 330 },
         data: {
           segments: [],
           properties: {
