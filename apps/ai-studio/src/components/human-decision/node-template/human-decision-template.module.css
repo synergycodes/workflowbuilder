@@ -28,22 +28,3 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.waiting {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--wb-ds-space-100);
-  margin-top: var(--wb-ds-space-100);
-  padding-top: var(--wb-ds-space-100);
-  border-top: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
-}
-
-.waiting-label {
-  composes: wb-text-body-s from global;
-
-  display: flex;
-  align-items: center;
-  gap: var(--wb-ds-space-50);
-  color: var(--ai-studio-status-color--waiting);
-}
