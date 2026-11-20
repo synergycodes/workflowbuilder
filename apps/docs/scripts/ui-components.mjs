@@ -103,6 +103,7 @@ export const COMPONENTS = [
     dir: 'node/node-run-indicator',
   },
   { slug: 'node-run-badge', name: 'NodeRunBadge', propsType: 'NodeRunBadgeProps', dir: 'node/node-run-badge' },
+  { slug: 'node-footer', name: 'NodeFooter', propsType: 'NodeFooterProps', dir: 'node/node-footer' },
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
   // Documented on the Edge page, which already renders the edge variables.
   { slug: 'use-edge-style', name: 'useEdgeStyle', propsType: 'UseEdgeStyleParams', dir: null },

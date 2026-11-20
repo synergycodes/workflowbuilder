@@ -1,6 +1,6 @@
 ---
 title: NodePanel
-description: Node container with Root, Header, Content, Handles, and Overlay slots.
+description: Node container with Root, Header, Content, Footer, Handles, and Overlay slots.
 ---
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
@@ -9,7 +9,7 @@ import { NodePanelExample } from '../../../../components/ui-examples/node-panel'
 `NodePanel` is the structural container Workflow Builder uses to render a node on
 the canvas. It is a compound component: `NodePanel.Root` orchestrates the layout
 and accepts up to one of each optional slot — `NodePanel.Header`,
-`NodePanel.Content`, `NodePanel.Handles`, and `NodePanel.Overlay`. Any other
+`NodePanel.Content`, `NodePanel.Footer`, `NodePanel.Handles`, and `NodePanel.Overlay`. Any other
 child triggers a runtime warning, and each slot may appear at most once.
 
 - `NodePanel.Root` - outer wrapper. Takes a `selected` boolean that drives the
@@ -18,6 +18,10 @@ child triggers a runtime warning, and each slot may appear at most once.
   [`NodeIcon`](/ui-library/diagram-components/node-icon/) and a
   [`NodeDescription`](/ui-library/diagram-components/node-description/).
 - `NodePanel.Content` - the node's main body. Can be toggled with `isVisible`.
+- `NodePanel.Footer` - the place below the content for a
+  [`NodeFooter`](/ui-library/diagram-components/node-footer/). It renders its children as they are,
+  after `Content` but not inside it,
+  so it stays visible when the content is hidden. Can be toggled with `isVisible`.
 - `NodePanel.Handles` - container for React Flow connection `Handle`s. Supports
   `isVisible` and an `alignment` of `'center'` or `'header'`.
 - `NodePanel.Overlay` - a layer stretched over the whole node, drawn above the
@@ -84,9 +88,10 @@ block of absolutely positioned content, and the handles sit above the `Overlay`.
 
 | Part                | Props                                                                                                 | Description                                                                                                               |
 | ------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `NodePanel.Root`    | `selected: boolean`, `disabled?: boolean`, `className?`, `children?`                                  | Outer wrapper. Lays out header + handles, then content and overlay; applies selected and disabled styling.                |
+| `NodePanel.Root`    | `selected: boolean`, `disabled?: boolean`, `className?`, `children?`                                  | Outer wrapper. Lays out header + handles, then content, footer and overlay; applies selected and disabled styling.        |
 | `NodePanel.Header`  | `className?`, `children?`                                                                             | Header row. At most one per `Root`.                                                                                       |
 | `NodePanel.Content` | `isVisible?` (default `true`), `className?`, `children?`                                              | Main body. Renders nothing when `isVisible` is `false`. At most one per `Root`.                                           |
+| `NodePanel.Footer`  | `isVisible?` (default `true`), `children?`                                                            | Below the content, outside it. Renders nothing when `isVisible` is `false`. At most one per `Root`.                       |
 | `NodePanel.Handles` | `isVisible?` (default `true`), `alignment?` (`'center' \| 'header'`, default `'center'`), `children?` | Container for connection handles. At most one per `Root`.                                                                 |
 | `NodePanel.Overlay` | `isVisible?` (default `true`), `className?`, `children?`                                              | Layer over the whole node, above header and content. Renders nothing when `isVisible` is `false`. At most one per `Root`. |
 
