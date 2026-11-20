@@ -1,13 +1,10 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
-import { act } from 'react';
+import { type CSSProperties, act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
 import badgeStyles from '../../badge-label/badge-label.module.css';
 import styles from './node-run-badge.module.css';
-import postcss from 'postcss';
 
-import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { NODE_RUN_TONES } from '../run-status/run-status-tone';
 import { throughPalette } from '../run-status/test-utils';
 import { NodeRunBadge } from './node-run-badge';
 
@@ -25,52 +22,72 @@ afterEach(() => {
   container.remove();
 });
 
-const DS_TONES = RUN_STATUS_TONES.filter((tone) => tone !== 'inverse');
+const DS_TONES = NODE_RUN_TONES.filter((tone) => tone !== 'inverse');
+
+function badge() {
+  return container.firstElementChild as HTMLElement;
+}
+
+function color(property: string) {
+  return badge().style.getPropertyValue(property);
+}
 
 describe('NodeRunBadge', () => {
-  it('renders a size m BadgeLabel on the default variant, coloured by its tone', () => {
-    act(() => root.render(<NodeRunBadge tone="inverse" label="Rejected" />));
+  it('renders a size m BadgeLabel on the default variant', () => {
+    act(() => root.render(<NodeRunBadge tone="info" label="Running" />));
 
-    const badge = container.firstElementChild as HTMLElement;
-    expect(badge.textContent).toBe('Rejected');
-    expect(badge.classList).toContain(badgeStyles['m']);
-    expect(badge.classList).not.toContain(badgeStyles['inverse']);
-    expect(badge.dataset['tone']).toBe('inverse');
-    expect(badge.classList).not.toContain(styles['dimmed']);
+    expect(badge().textContent).toBe('Running');
+    expect(badge().classList).toContain(badgeStyles['m']);
+    expect(badge().classList).not.toContain(badgeStyles['inverse']);
+    expect(badge().classList).not.toContain(styles['dimmed']);
   });
 
   it('dims the label on request', () => {
     act(() => root.render(<NodeRunBadge tone="neutral" label="Skipped" dimmed />));
 
-    expect(container.firstElementChild?.classList).toContain(styles['dimmed']);
+    expect(badge().classList).toContain(styles['dimmed']);
   });
-});
-
-describe('node-run-badge.module.css', () => {
-  const file = path.join(import.meta.dirname, 'node-run-badge.module.css');
-  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
-
-  function declarations(selector: string) {
-    const found = new Map<string, string>();
-    stylesheet.walkRules(selector, (rule) => {
-      rule.walkDecls((declaration) => {
-        found.set(declaration.prop, declaration.value);
-      });
-    });
-    return found;
-  }
 
   it.each(DS_TONES)('colours the %s label with the DS run status tokens', (tone) => {
-    const rule = declarations(`.badge[data-tone='${tone}']`);
-    expect(throughPalette(rule.get('--badge-label-background-color'))).toBe(
-      `var(--wb-ds-canvas-run-status-bg-${tone})`,
-    );
-    expect(throughPalette(rule.get('--badge-label-color'))).toBe(`var(--wb-ds-canvas-run-status-fg-${tone})`);
+    act(() => root.render(<NodeRunBadge tone={tone} label="Status" />));
+
+    expect(throughPalette(color('--badge-label-background-color'))).toBe(`var(--wb-ds-canvas-run-status-bg-${tone})`);
+    expect(throughPalette(color('--badge-label-color'))).toBe(`var(--wb-ds-canvas-run-status-fg-${tone})`);
   });
 
-  it('colours the inverse label with the BadgeLabel Inverse variables', () => {
-    const rule = declarations(".badge[data-tone='inverse']");
-    expect(rule.get('--badge-label-background-color')).toBe('var(--wb-public-badge-label-background-color-inverse)');
-    expect(rule.get('--badge-label-color')).toBe('var(--wb-public-badge-label-color-inverse)');
+  it('renders the BadgeLabel Inverse variant for the inverse tone, without run status colours', () => {
+    act(() => root.render(<NodeRunBadge tone="inverse" label="Rejected" />));
+
+    expect(badge().classList).toContain(badgeStyles['inverse']);
+    expect(badge().dataset['tone']).toBe('inverse');
+    expect(color('--badge-label-background-color')).toBe('');
+    expect(color('--badge-label-color')).toBe('');
+  });
+
+  it('reads a custom tone from its own variables with the neutral fallback', () => {
+    act(() => root.render(<NodeRunBadge tone="paused" label="Paused" />));
+
+    expect(color('--badge-label-background-color')).toBe(
+      'var(--wb-public-node-run-status-bg-paused, var(--wb-public-node-run-status-bg-neutral))',
+    );
+    expect(color('--badge-label-color')).toBe(
+      'var(--wb-public-node-run-status-fg-paused, var(--wb-public-node-run-status-fg-neutral))',
+    );
+  });
+
+  it.each(['My Tone', 'a b'])('uses the neutral colours for the invalid name %j', (tone) => {
+    act(() => root.render(<NodeRunBadge tone={tone} label="Status" />));
+
+    expect(color('--badge-label-background-color')).toBe('var(--wb-public-node-run-status-bg-neutral)');
+    expect(color('--badge-label-color')).toBe('var(--wb-public-node-run-status-fg-neutral)');
+  });
+
+  it('lets the consumer style override the tone variables and merges the rest', () => {
+    const style = { opacity: 0.5, '--badge-label-color': 'red' } as CSSProperties;
+    act(() => root.render(<NodeRunBadge tone="info" label="Running" style={style} />));
+
+    expect(color('--badge-label-color')).toBe('red');
+    expect(throughPalette(color('--badge-label-background-color'))).toBe('var(--wb-ds-canvas-run-status-bg-info)');
+    expect(badge().style.opacity).toBe('0.5');
   });
 });

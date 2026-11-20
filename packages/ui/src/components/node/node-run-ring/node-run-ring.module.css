@@ -6,6 +6,7 @@
 @layer ui.component {
   .ring {
     --ring-halo-size: 0;
+    --ring-color: var(--wb-public-node-run-status-stroke-neutral);
     --ring-halo-color: transparent;
 
     position: absolute;
@@ -15,37 +16,6 @@
     box-shadow:
       inset 0 0 0 var(--wb-public-node-run-ring-width) var(--ring-color),
       0 0 0 var(--ring-halo-size) var(--ring-halo-color);
-  }
-
-  .ring[data-tone='info'] {
-    --ring-color: var(--wb-public-node-run-status-stroke-info);
-    --ring-halo-color: var(--wb-public-node-run-status-halo-info);
-  }
-
-  .ring[data-tone='success'] {
-    --ring-color: var(--wb-public-node-run-status-stroke-success);
-  }
-
-  .ring[data-tone='warning'] {
-    --ring-color: var(--wb-public-node-run-status-stroke-warning);
-    --ring-halo-color: var(--wb-public-node-run-status-halo-warning);
-  }
-
-  .ring[data-tone='critical'] {
-    --ring-color: var(--wb-public-node-run-status-stroke-critical);
-  }
-
-  .ring[data-tone='human'] {
-    --ring-color: var(--wb-public-node-run-status-stroke-human);
-    --ring-halo-color: var(--wb-public-node-run-status-halo-human);
-  }
-
-  .ring[data-tone='neutral'] {
-    --ring-color: var(--wb-public-node-run-status-stroke-neutral);
-  }
-
-  .ring[data-tone='inverse'] {
-    --ring-color: var(--wb-public-node-run-status-stroke-inverse);
   }
 
   .ring[data-halo] {

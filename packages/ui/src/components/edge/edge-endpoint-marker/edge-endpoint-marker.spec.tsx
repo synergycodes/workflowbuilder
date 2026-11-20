@@ -1,10 +1,11 @@
 import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
+import { useEdgeStyle } from '../use-edge-styles/use-edge-styles';
 import { EdgeEndpointMarker } from './edge-endpoint-marker';
 
 const pathStyle = {
-  stroke: 'var(--wb-public-edge-color-running)',
+  stroke: 'var(--wb-public-edge-run-status-stroke-active)',
   strokeWidth: 'var(--wb-public-edge-stroke-width)',
   transition: 'stroke var(--wb-public-transition)',
   strokeDasharray: 'var(--wb-public-edge-dash-running)',
@@ -55,6 +56,22 @@ describe('EdgeEndpointMarker', () => {
     expect(shape.style.transition).toBe(pathStyle.transition);
     expect(shape.style.strokeDasharray).toBe('');
     expect(shape.style.animation).toBe('');
+  });
+
+  it('follows an explicit run tone through the style of useEdgeStyle', () => {
+    function TonedMarker() {
+      const style = useEdgeStyle({ runState: 'completed', tone: 'warning' });
+      return (
+        <svg>
+          <EdgeEndpointMarker id="marker-1" type="arrow" style={style} />
+        </svg>
+      );
+    }
+    act(() => root.render(<TonedMarker />));
+
+    expect(container.querySelector<SVGElement>('marker polyline')!.style.stroke).toBe(
+      'var(--wb-public-edge-run-status-stroke-warning, var(--wb-public-edge-run-status-stroke-success))',
+    );
   });
 
   it('draws the arrow as an open chevron whose tip is the end of the path', () => {

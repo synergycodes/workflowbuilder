@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 
 import './use-edge-styles.css';
 
-import { EdgeLineType, EdgeRunState, EdgeState } from '../types';
+import { DEFAULT_EDGE_RUN_TONE, resolveEdgeRunTone } from '../resolve-edge-run-tone/resolve-edge-run-tone';
+import { EdgeLineType, EdgeRunState, EdgeRunToneName, EdgeState } from '../types';
 
 export type UseEdgeStyleParams = {
   /**
@@ -25,6 +26,12 @@ export type UseEdgeStyleParams = {
   runState?: EdgeRunState;
 
   /**
+   * Colour of the edge under `runState`, replacing the default tone of that run state. Ignored without `runState`.
+   * A custom name reads `--wb-public-edge-run-status-stroke-<name>` and falls back to the run state's tone.
+   */
+  tone?: EdgeRunToneName;
+
+  /**
    * Line pattern when the edge is not running. `running` always uses its own dash.
    * @default 'solid'
    */
@@ -44,16 +51,18 @@ export type EdgeStyle = {
   animation?: string;
 };
 
-const RUN_STATE_COLOR: Record<EdgeRunState, string> = {
-  pending: '--wb-public-edge-color-pending',
-  running: '--wb-public-edge-color-running',
-  completed: '--wb-public-edge-color-completed',
-  outOfRun: '--wb-public-edge-color-out-of-run',
-};
+// The content of `var()`: a custom tone falls back to the run state's tone when its variable is missing.
+function runStrokeVariable(runState: EdgeRunState, tone: EdgeRunToneName | undefined) {
+  const defaultTone = DEFAULT_EDGE_RUN_TONE[runState];
+  const resolved = resolveEdgeRunTone(runState, tone);
+  const variable = `--wb-public-edge-run-status-stroke-${defaultTone}`;
+
+  return resolved === defaultTone ? variable : `--wb-public-edge-run-status-stroke-${resolved}, var(${variable})`;
+}
 
 /**
  * A custom hook for computing CSS style properties for diagram edges based on their visual state,
- * hover interaction, run state and line type.
+ * hover interaction, run state, run tone and line type.
  *
  * The `useEdgeStyle` hook returns an object of CSS properties (`stroke`, `strokeWidth`, `transition`, and
  * `strokeDasharray` / `animation` when the line is dashed or running) that can be directly applied to an SVG path
@@ -63,6 +72,7 @@ export function useEdgeStyle({
   state = 'default',
   isHovered = false,
   runState,
+  tone,
   lineType = 'solid',
 }: UseEdgeStyleParams): EdgeStyle {
   return useMemo(() => {
@@ -70,7 +80,7 @@ export function useEdgeStyle({
       state === 'disabled'
         ? '--wb-public-edge-color-disabled'
         : runState
-          ? RUN_STATE_COLOR[runState]
+          ? runStrokeVariable(runState, tone)
           : state === 'selected' || state === 'temporary'
             ? '--wb-public-edge-color-select'
             : isHovered
@@ -91,5 +101,5 @@ export function useEdgeStyle({
     }
 
     return style;
-  }, [state, isHovered, runState, lineType]);
+  }, [state, isHovered, runState, tone, lineType]);
 }

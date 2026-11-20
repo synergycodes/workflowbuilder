@@ -1,5 +1,6 @@
-import { Check, Clock, PlayCircle, Warning, X } from '@phosphor-icons/react';
+import { Check, Clock, Pause, PlayCircle, Warning, X } from '@phosphor-icons/react';
 import {
+  NODE_RUN_TONES,
   NodeDescription,
   NodeIcon,
   NodePanel,
@@ -10,7 +11,6 @@ import {
   NodeRunRing,
   type NodeRunRingProps,
   NodeRunVeil,
-  RUN_STATUS_TONES,
   runStatusPresets,
 } from '@workflowbuilder/ui';
 import type { CSSProperties, ReactNode } from 'react';
@@ -52,7 +52,7 @@ function DemoNode({ title = 'Node title', selected = false, indicator, caption: 
 
 export function NodeRunRingExample() {
   const rings: (NodeRunRingProps & { caption: string; selected?: boolean })[] = [
-    ...RUN_STATUS_TONES.map((tone) => ({ tone, caption: tone })),
+    ...NODE_RUN_TONES.map((tone) => ({ tone, caption: tone })),
     { tone: 'info', halo: 'static', caption: "info, halo 'static'" },
     { tone: 'info', halo: 'heartbeat', caption: "info, halo 'heartbeat'" },
     { tone: 'human', halo: 'waiting', caption: "human, halo 'waiting'" },
@@ -123,7 +123,7 @@ export function NodeRunBadgeExample() {
   return (
     <ComponentPreview>
       <div style={grid}>
-        {RUN_STATUS_TONES.map((tone) => (
+        {NODE_RUN_TONES.map((tone) => (
           <DemoNode key={tone} caption={tone}>
             <NodeRunBadge tone={tone} label={tone} />
           </DemoNode>
@@ -151,6 +151,27 @@ export function RunStatusExample() {
           <NodeRunRing tone="info" halo="heartbeat" />
           <NodeRunProgress value={60} />
           <NodeRunBadge {...runStatusPresets.running.badge} />
+        </DemoNode>
+      </div>
+    </ComponentPreview>
+  );
+}
+
+// Set inline so the page needs no global CSS; an application sets them on :root.
+const pausedTone = {
+  '--wb-public-node-run-status-stroke-paused': '#7c3aed',
+  '--wb-public-node-run-status-halo-paused': '#ede9fe',
+  '--wb-public-node-run-status-bg-paused': '#ede9fe',
+  '--wb-public-node-run-status-fg-paused': '#5b21b6',
+} as CSSProperties;
+
+export function NodeRunCustomToneExample() {
+  return (
+    <ComponentPreview>
+      <div style={{ ...grid, ...pausedTone }}>
+        <DemoNode indicator={{ tone: 'paused', icon: <Pause /> }} caption="paused">
+          <NodeRunRing tone="paused" halo="static" />
+          <NodeRunBadge tone="paused" label="Paused" />
         </DemoNode>
       </div>
     </ComponentPreview>

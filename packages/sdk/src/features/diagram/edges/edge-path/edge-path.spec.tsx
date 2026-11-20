@@ -79,10 +79,58 @@ describe('OptionalEdgePath', () => {
     );
 
     const visible = visiblePath(container);
-    expect(visible.dataset.stroke).toBe('var(--wb-public-edge-color-completed)');
+    expect(visible.dataset.stroke).toBe('var(--wb-public-edge-run-status-stroke-success)');
     expect(visible.dataset.strokeDasharray).toBe('var(--wb-public-edge-dash-dashed)');
     expect(visible.dataset.runState).toBe('completed');
     expect(visible.getAttribute('d')).toBe('M 0 0 L 100 0');
+  });
+
+  it.each([
+    ['running', undefined, 'var(--wb-public-edge-run-status-stroke-active)'],
+    [
+      'completed',
+      'warning',
+      'var(--wb-public-edge-run-status-stroke-warning, var(--wb-public-edge-run-status-stroke-success))',
+    ],
+    [
+      'completed',
+      'brand',
+      'var(--wb-public-edge-run-status-stroke-brand, var(--wb-public-edge-run-status-stroke-success))',
+    ],
+  ] as const)('colours a %s edge with tone %s', async (runState, tone, stroke) => {
+    const { OptionalEdgePath } = await load();
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} runState={runState} tone={tone} />
+      </svg>,
+    );
+
+    expect(visiblePath(container).dataset.stroke).toBe(stroke);
+  });
+
+  it('ignores a tone without a run state', async () => {
+    const { OptionalEdgePath } = await load();
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} tone="warning" />
+      </svg>,
+    );
+
+    expect(visiblePath(container).dataset.stroke).toBe('var(--wb-public-edge-color-select)');
+  });
+
+  it('draws a disabled edge gray whatever its tone', async () => {
+    const { OptionalEdgePath } = await load();
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} state="disabled" runState="completed" tone="warning" />
+      </svg>,
+    );
+
+    expect(visiblePath(container).dataset.stroke).toBe('var(--wb-public-edge-color-disabled)');
   });
 
   it('draws no terminator unless the app asks for one', async () => {
@@ -189,7 +237,7 @@ describe('OptionalEdgePath', () => {
     const arrow = container.querySelector('marker polyline')!.parentElement!;
     expect(visiblePath(container).dataset.runState).toBe('completed');
     expect(visiblePath(container).getAttribute('marker-end')).toBe(`url(#${arrow.id})`);
-    expect(arrow.querySelector('polyline')!.style.stroke).toBe('var(--wb-public-edge-color-completed)');
+    expect(arrow.querySelector('polyline')!.style.stroke).toBe('var(--wb-public-edge-run-status-stroke-success)');
   });
 
   it('a wrapper decorator that returns children keeps the edit look', async () => {

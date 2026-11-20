@@ -9,7 +9,9 @@ postcss.parse(readFileSync(paletteFile, 'utf8'), { from: paletteFile }).walkDecl
   palette.set(declaration.prop, declaration.value);
 });
 
-export function throughPalette(value = '') {
-  const name = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
-  return (name && palette.get(name)) ?? value;
+/** Resolves `var(--a, <fallback>)` the way the browser would against the run status palette. */
+export function throughPalette(value = ''): string {
+  const [, name, fallback] = /^var\((--[\w-]+)(?:,\s*(.+))?\)$/.exec(value) ?? [];
+  if (!name) return value;
+  return palette.get(name) ?? (fallback === undefined ? value : throughPalette(fallback));
 }

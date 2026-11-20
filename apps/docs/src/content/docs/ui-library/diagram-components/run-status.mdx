@@ -4,7 +4,7 @@ description: The thirteen design-system run statuses, composed from NodeRunRing,
 ---
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
-import { RunStatusExample } from '../../../../components/ui-examples/run-status';
+import { NodeRunCustomToneExample, RunStatusExample } from '../../../../components/ui-examples/run-status';
 
 A node's run status is drawn with independent parts, each with its own `tone`:
 
@@ -107,6 +107,46 @@ part, or on one part with a `className`:
 ```
 
 <CssVariablesTable slug="run-status" />
+
+## Custom tone
+
+`tone` takes the built-in names in `NODE_RUN_TONES` (type `NodeRunTone`) or a name of your own. To add
+a tone, define its palette and pass the name as `tone`:
+
+```css
+:root {
+  --wb-public-node-run-status-stroke-paused: #7c3aed;
+  --wb-public-node-run-status-halo-paused: #ede9fe;
+  --wb-public-node-run-status-bg-paused: #ede9fe;
+  --wb-public-node-run-status-fg-paused: #5b21b6;
+}
+
+:root[data-theme='dark'] {
+  /* the same names, dark values */
+}
+```
+
+```tsx
+<NodeRunRing tone="paused" halo="static" />
+<NodeRunIndicator tone="paused" icon={<Pause />} />
+<NodeRunBadge tone="paused" label="Paused" />
+```
+
+<NodeRunCustomToneExample client:visible />
+
+Define `stroke`, `bg` and `fg`; `halo` only if the ring uses one. Each variable falls back on its own:
+
+| Part                    | Variable                                            | Fallback          |
+| ----------------------- | --------------------------------------------------- | ----------------- |
+| Ring line               | `--wb-public-node-run-status-stroke-<tone>`         | `stroke-neutral`  |
+| Ring halo               | `--wb-public-node-run-status-halo-<tone>`           | `transparent`     |
+| Indicator circle        | `--wb-public-node-run-status-bg-<tone>`             | `bg-neutral`      |
+| Indicator glyph         | `--wb-public-node-run-status-fg-<iconTone ?? tone>` | `fg-neutral`      |
+| Badge background / text | `--wb-public-node-run-status-{bg,fg}-<tone>`        | `{bg,fg}-neutral` |
+
+The `inverse` badge has no fallback: it renders the `BadgeLabel` Inverse variant. A name that does not
+match `/^[a-z0-9-]+$/` (for example `My Tone`) uses the fallback. Edges have their own tone list, see
+[Edge](/ui-library/diagram-components/edge/).
 
 ## Accessibility
 
