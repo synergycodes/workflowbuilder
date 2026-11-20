@@ -15,6 +15,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
     [
       ['OptionalNodeContent', 'content'],
       ['OptionalNodeHeaderEnd', 'header-end'],
+      ['OptionalNodeFooter', 'footer'],
     ].map(([component, name]) => [
       component,
       ({ nodeId, children }: { nodeId: string; children?: ReactNode }) => (
@@ -261,15 +262,15 @@ describe('HumanDecisionNodeTemplate', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
     );
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
     expect(decideButton()).toBeUndefined();
 
     parkOnHuman1();
-    expect(container.textContent).toContain('Waiting for decision');
-    expect(decideButton()).toBeDefined();
+    expect(container.textContent).toContain('Decision needed');
+    expect(decideButton()?.closest('[data-slot="footer"][data-node-id="human-1"]')).not.toBeNull();
 
     act(() => applyEvent(nodeEvent('node_completed', 'human-1')));
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
     expect(decideButton()).toBeUndefined();
   });
 
@@ -280,7 +281,7 @@ describe('HumanDecisionNodeTemplate', () => {
 
     act(() => applySnapshot(snapshotFrame('cancelling')));
 
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
   });
 
   it('names Decide after its node, and a press on it does not drag the node', () => {

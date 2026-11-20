@@ -13,6 +13,7 @@ import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
 import {
   NodeOverlaySlots,
+  OptionalNodeFooter,
   OptionalNodeHeaderEnd,
 } from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
@@ -107,6 +108,9 @@ export const AiAgentNodeTemplate = memo(
               })}
             </ToolInfo>
           </NodePanel.Content>
+          <NodePanel.Footer isVisible={isCanvasNode}>
+            <OptionalNodeFooter nodeId={id} />
+          </NodePanel.Footer>
           <NodePanel.Overlay isVisible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>

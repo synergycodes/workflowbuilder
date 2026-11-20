@@ -14,6 +14,7 @@ import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/ada
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
 import {
   NodeOverlaySlots,
+  OptionalNodeFooter,
   OptionalNodeHeaderEnd,
 } from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
@@ -104,6 +105,9 @@ const WorkflowNodeTemplateComponent = memo(
               </Collapsible.Content>
             </OptionalNodeContent>
           </NodePanel.Content>
+          <NodePanel.Footer isVisible={isCanvasNode}>
+            <OptionalNodeFooter nodeId={id} />
+          </NodePanel.Footer>
           <NodePanel.Overlay isVisible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>

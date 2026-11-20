@@ -2,6 +2,7 @@ import {
   Icon,
   NodeOverlaySlots,
   OptionalNodeContent,
+  OptionalNodeFooter,
   OptionalNodeHeaderEnd,
   defineNodeTemplate,
   getHandleId,
@@ -78,8 +79,12 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
                 </div>
               )}
             </OptionalNodeContent>
-            <DecisionWaitingFooter nodeId={id} nodeLabel={label} />
           </NodePanel.Content>
+          <NodePanel.Footer isVisible={isCanvasNode}>
+            <OptionalNodeFooter nodeId={id}>
+              <DecisionWaitingFooter nodeId={id} nodeLabel={label} />
+            </OptionalNodeFooter>
+          </NodePanel.Footer>
           <NodePanel.Overlay isVisible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
