@@ -37,7 +37,7 @@ const iconSizes: Record<IconSize, string> = {
  *
  * @category Icons
  */
-export function Icon({ name, icon, size = 'medium', color = 'currentColor', style, ...svgProps }: IconProps) {
+export function Icon({ name, icon, size = 'medium', color, style, ...svgProps }: IconProps) {
   const data = icon ?? (name === undefined ? undefined : findIcon(name));
 
   useEffect(() => {
@@ -52,7 +52,8 @@ export function Icon({ name, icon, size = 'medium', color = 'currentColor', styl
   }
 
   // Iconify bodies paint with `currentColor` on their own shapes, so the color goes through CSS, not `fill`.
-  return <IconGlyph icon={data} style={{ ...sizeStyle, color, ...style }} {...svgProps} />;
+  // Without a `color` prop the inline style leaves color unset, so a container's `svg { color }` rule still applies.
+  return <IconGlyph icon={data} style={{ ...sizeStyle, ...(color && { color }), ...style }} {...svgProps} />;
 }
 
 const warnedIconNames = new Set<string>();

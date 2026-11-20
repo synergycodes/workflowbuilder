@@ -40,7 +40,7 @@ export function AddAiToolFormContent({ onSubmit, data }: ContentProps) {
     option.icon
       ? {
           ...option,
-          icon: <Icon name={option.icon} size="small" />,
+          icon: <Icon name={option.icon} />,
         }
       : option,
   );

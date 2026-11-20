@@ -66,6 +66,24 @@ describe('Icon', () => {
     expect(container.querySelector('svg')?.innerHTML).toBe('<path d="M2 2"></path>');
   });
 
+  it('leaves the color to the surrounding CSS unless a color is passed', () => {
+    setRegisteredIcons(defineIcons({ Lightning: lightning }));
+
+    act(() =>
+      root.render(
+        <>
+          <Icon name="Lightning" />
+          <Icon name="Lightning" color="red" />
+        </>,
+      ),
+    );
+
+    const icons = container.querySelectorAll('svg');
+    expect(icons).toHaveLength(2);
+    expect(icons[0].style.color).toBe('');
+    expect(icons[1].style.color).toBe('red');
+  });
+
   it('renders a same-size placeholder for an unknown name and warns once per name', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
