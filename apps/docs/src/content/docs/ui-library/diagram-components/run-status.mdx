@@ -67,7 +67,7 @@ copy, spread the part into a new object, for example `{ ...preset.badge, label: 
 A label holds only the status name: text built from run data, such as `Waiting · since 10:30` or
 `Rejected · by Ewa`, is up to the application.
 Six statuses also carry `footer`, the default message of a
-[`NodeFooter`](/ui-library/diagram-components/node-footer/): `<NodeFooter {...preset.footer} />`.
+[`NodeFooter`](/ui-library/diagram-components/node-footer/): `{preset.footer && <NodeFooter {...preset.footer} />}`.
 
 The badge sits in its node's stacking context, so a node rendered later that overlaps it can cover it.
 
