@@ -1,5 +1,6 @@
 import { ArrowClockwise, Check, Clock, LinkBreak, Question, SkipForward, Warning, X } from '@phosphor-icons/react';
 
+import type { NodeFooterProps } from '../node-footer/node-footer';
 import type { NodeRunBadgeProps } from '../node-run-badge/node-run-badge';
 import type { NodeRunIndicatorProps } from '../node-run-indicator/node-run-indicator';
 import type { NodeRunRingProps } from '../node-run-ring/node-run-ring';
@@ -27,6 +28,7 @@ export type NodeRunStatus =
 /**
  * The parts one run status is drawn with, each shaped as the props of its component, so a part spreads straight
  * onto it: `<NodeRunRing {...preset.ring} />`. A status without `indicator` shows none; `veil` adds a `NodeRunVeil`.
+ * `footer` holds the design-system copy of a `NodeFooter`, on the statuses that have one.
  *
  * @category Node
  */
@@ -35,7 +37,10 @@ export type NodeRunStatusPreset = Readonly<{
   indicator?: Readonly<NodeRunIndicatorProps>;
   badge: Readonly<Pick<NodeRunBadgeProps, 'tone' | 'icon' | 'dimmed'> & { label: string }>;
   veil?: boolean;
+  footer?: Readonly<Pick<NodeFooterProps, 'tone' | 'message'>>;
 }>;
+
+type FooterStatus = 'failed' | 'waitingForHuman' | 'waitingExternal' | 'waitingUntil' | 'partialJoin' | 'cancelled';
 
 /**
  * Default parts of each design-system run status. The SDK does not use them: an application maps its own run states
@@ -44,7 +49,9 @@ export type NodeRunStatusPreset = Readonly<{
  *
  * @category Node
  */
-export const runStatusPresets: Readonly<Record<NodeRunStatus, NodeRunStatusPreset>> = {
+export const runStatusPresets: Readonly<
+  Record<NodeRunStatus, NodeRunStatusPreset> & Record<FooterStatus, Required<Pick<NodeRunStatusPreset, 'footer'>>>
+> = {
   running: {
     ring: { tone: 'info', halo: 'static' },
     indicator: { tone: 'info', spinner: 'running' },
@@ -74,6 +81,7 @@ export const runStatusPresets: Readonly<Record<NodeRunStatus, NodeRunStatusPrese
     ring: { tone: 'critical' },
     indicator: { tone: 'critical', icon: <Warning /> },
     badge: { tone: 'critical', label: 'Failed' },
+    footer: { tone: 'critical', message: 'Step failed' },
   },
   rejected: {
     ring: { tone: 'inverse' },
@@ -84,26 +92,31 @@ export const runStatusPresets: Readonly<Record<NodeRunStatus, NodeRunStatusPrese
     ring: { tone: 'human', halo: 'waiting' },
     indicator: { tone: 'human', icon: <Clock /> },
     badge: { tone: 'human', label: 'Waiting' },
+    footer: { tone: 'human', message: 'Decision needed' },
   },
   waitingExternal: {
     ring: { tone: 'info', halo: 'waiting' },
     indicator: { tone: 'info', icon: <Clock /> },
     badge: { tone: 'info', label: 'Waiting' },
+    footer: { tone: 'info', message: 'Waiting for external system' },
   },
   waitingUntil: {
     ring: { tone: 'neutral' },
     indicator: { tone: 'neutral', icon: <Clock /> },
     badge: { tone: 'neutral', label: 'Waiting until' },
+    footer: { tone: 'neutral', message: 'Waiting until 14:00' },
   },
   partialJoin: {
     ring: { tone: 'neutral' },
     indicator: { tone: 'neutral', icon: <Clock /> },
     badge: { tone: 'neutral', label: 'Waiting for input' },
+    footer: { tone: 'neutral', message: '1 of 2 inputs ready' },
   },
   cancelled: {
     ring: { tone: 'neutral' },
     indicator: { tone: 'neutral', icon: <X /> },
     badge: { tone: 'neutral', label: 'Cancelled' },
+    footer: { tone: 'neutral', message: 'Run ended before a decision was made' },
   },
   skipped: {
     ring: { tone: 'neutral' },
