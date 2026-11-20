@@ -1,0 +1,40 @@
+.container {
+  position: fixed;
+  top: 5.875rem;
+  left: 50%;
+  z-index: 20;
+  display: grid;
+  gap: 0.5rem;
+  transform: translateX(-50%);
+}
+
+.panel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border: 0.0625rem solid var(--wb-app-bar-border-color);
+  border-radius: var(--wb-app-bar-border-radius);
+  background: var(--wb-app-bar-background);
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 14%);
+}
+
+.status {
+  min-width: 5rem;
+  padding-left: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ax-txt-secondary-default);
+}
+
+.error {
+  max-width: 24rem;
+  padding: 0.5rem 0.75rem;
+  border: 0.0625rem solid var(--ax-txt-error-default);
+  border-radius: 0.375rem;
+  background: var(--wb-app-bar-background);
+  color: var(--ax-txt-error-default);
+  font-size: 0.7rem;
+  white-space: pre-wrap;
+}

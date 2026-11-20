@@ -1,0 +1,162 @@
+# Complete executable demo stack. Usage: copy .env.example to .env, then run
+# `docker compose up -d --build --wait`. OpenRouter is optional.
+
+name: workflow-builder-demo
+
+x-runtime-build: &runtime-build
+  context: ../..
+  dockerfile: deploy/demo/Dockerfile
+  target: runtime
+
+services:
+  app-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: workflow_builder
+      POSTGRES_USER: wb
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-wb}
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'wb', '-d', 'workflow_builder']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  temporal-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: temporal
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:-temporal}
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'temporal', '-d', 'temporal']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  # auto-setup is development/demo-grade; sustained load should move to
+  # Temporal Cloud or an operated cluster.
+  temporal:
+    image: temporalio/auto-setup:1.29.6.1
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-temporal}
+      POSTGRES_SEEDS: temporal-db
+    ports:
+      - '${TEMPORAL_BIND:-127.0.0.1}:${TEMPORAL_PORT:-7233}:7233'
+    healthcheck:
+      test: ['CMD', 'temporal', 'operator', '--address', '127.0.0.1:7233', 'cluster', 'health']
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+    restart: unless-stopped
+
+  temporal-ui:
+    image: temporalio/ui:2.51.0
+    depends_on:
+      temporal:
+        condition: service_healthy
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    ports:
+      - '${TEMPORAL_UI_BIND:-127.0.0.1}:${TEMPORAL_UI_PORT:-8233}:8080'
+    healthcheck:
+      test: ['CMD', 'dockerize', '-wait', 'http://127.0.0.1:8080/healthz', '-timeout', '5s']
+      interval: 10s
+      timeout: 6s
+      retries: 12
+      start_period: 5s
+    restart: unless-stopped
+
+  # Applies migrations at boot; on failure, exits and `restart` retries.
+  backend:
+    image: workflow-builder-demo-runtime
+    build: *runtime-build
+    command: ['pnpm', '--filter', 'backend', 'start:prod']
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3001
+      DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
+      TEMPORAL_ADDRESS: temporal:7233
+      EXECUTION_RUNTIME: demo
+      # Explicit opt-in: a forgotten setting fails instead of silently exposing the API.
+      WB_AUTH_PORT: allow-all
+      # nginx is on the same private Compose network, so its forwarded IP is trusted.
+      TRUST_PROXY: 'true'
+      RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
+      RATE_LIMIT_EXECUTE_PER_DAY: ${RATE_LIMIT_EXECUTE_PER_DAY:-50}
+      # Optional: enables /api/visualize/adapt; never exposed to the browser.
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
+    depends_on:
+      app-db:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    restart: unless-stopped
+
+  worker:
+    image: workflow-builder-demo-runtime
+    build: *runtime-build
+    command: ['pnpm', '--filter', 'execution-worker', 'start:demo:prod']
+    environment:
+      DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
+      TEMPORAL_ADDRESS: temporal:7233
+      # Optional: non-AI workflows run without an OpenRouter account.
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
+    depends_on:
+      app-db:
+        condition: service_healthy
+      # Backend healthy means migrations have been applied.
+      backend:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    image: workflow-builder-demo-web
+    build:
+      context: ../..
+      dockerfile: deploy/demo/Dockerfile
+      target: web
+    ports:
+      - '${WEB_BIND:-127.0.0.1}:${WEB_PORT:-4200}:8080'
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://127.0.0.1:8080/api/health']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
+
+volumes:
+  app-db-data:
+  temporal-db-data:

@@ -1,0 +1,21 @@
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 20rem;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Poppins, sans-serif;
+}
+
+:root {
+  --execution-active: var(--ax-colors-green-400, #24a865);
+  --execution-running: var(--ax-colors-blue-400, #2488d8);
+  --execution-waiting: var(--ax-colors-orange-300, #d78324);
+  --execution-completed: var(--ax-colors-green-400, #24a865);
+  --execution-failed: var(--ax-colors-red-400, #d94141);
+  --execution-skipped: var(--ax-colors-gray-400, #888);
+}

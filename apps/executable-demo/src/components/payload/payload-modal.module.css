@@ -1,0 +1,32 @@
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ax-txt-primary-default);
+}
+
+.editor textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  line-height: 1.5;
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  color: var(--ax-txt-secondary-default);
+  font-size: 0.7rem;
+}
+
+.error {
+  margin: 0.75rem 0 0;
+  color: var(--ax-txt-error-default);
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  width: 100%;
+}

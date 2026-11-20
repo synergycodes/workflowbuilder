@@ -5,8 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file=.env ./src/engines/temporal/worker.ts",
+    "dev:demo": "tsx watch --env-file=.env ./src/engines/temporal/demo-worker.ts",
     "start": "tsx --env-file=.env ./src/engines/temporal/worker.ts",
+    "start:demo": "tsx --env-file=.env ./src/engines/temporal/demo-worker.ts",
     "start:prod": "tsx ./src/engines/temporal/worker.ts",
+    "start:demo:prod": "tsx ./src/engines/temporal/demo-worker.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

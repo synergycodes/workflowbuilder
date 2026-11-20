@@ -119,7 +119,7 @@ async function checkDocker() {
   const { code } = await runCmd('docker', ['info']);
   return code === 0
     ? { name: 'docker', status: 'pass', detail: 'running' }
-    : { name: 'docker', status: 'warn', detail: 'not running (only needed for Path B)' };
+    : { name: 'docker', status: 'warn', detail: 'not running (only needed for Paths C/D)' };
 }
 
 // App ports may be held by the user's own running dev server, another local
@@ -170,6 +170,7 @@ function runAllChecks() {
     checkAppPort(3001, 'backend'),
     checkAppPort(4200, 'demo'),
     checkAppPort(4201, 'ai-studio'),
+    checkAppPort(4202, 'executable-demo'),
     checkServicePort(5432, 'postgres'),
     checkServicePort(5433, 'temporal-db'),
     checkServicePort(7233, 'temporal'),
