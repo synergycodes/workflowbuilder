@@ -85,58 +85,52 @@ describe('OptionalEdgePath', () => {
     expect(visible.getAttribute('d')).toBe('M 0 0 L 100 0');
   });
 
-  it('marks the visible path with the tone in use: the run state default or an explicit one', async () => {
+  it.each([
+    ['running', undefined, 'var(--wb-public-edge-run-status-stroke-active)'],
+    [
+      'completed',
+      'warning',
+      'var(--wb-public-edge-run-status-stroke-warning, var(--wb-public-edge-run-status-stroke-success))',
+    ],
+    [
+      'completed',
+      'brand',
+      'var(--wb-public-edge-run-status-stroke-brand, var(--wb-public-edge-run-status-stroke-success))',
+    ],
+  ] as const)('colours a %s edge with tone %s', async (runState, tone, stroke) => {
     const { OptionalEdgePath } = await load();
 
     const { container } = render(
       <svg>
-        <OptionalEdgePath {...pathProps} runState="running" />
-        <OptionalEdgePath {...pathProps} edgeId="edge-2" runState="completed" tone="warning" />
-        <OptionalEdgePath {...pathProps} edgeId="edge-3" />
+        <OptionalEdgePath {...pathProps} runState={runState} tone={tone} />
       </svg>,
     );
 
-    expect(visiblePath(container).dataset.tone).toBe('active');
-    expect(container.querySelector<SVGPathElement>('[data-edge-id="edge-2"]')!.dataset.tone).toBe('warning');
-    expect(Object.hasOwn(container.querySelector<SVGPathElement>('[data-edge-id="edge-3"]')!.dataset, 'tone')).toBe(
-      false,
-    );
+    expect(visiblePath(container).dataset.stroke).toBe(stroke);
   });
 
-  it('warns once that a tone without a run state is ignored, also across re-renders', async () => {
+  it('ignores a tone without a run state', async () => {
     const { OptionalEdgePath } = await load();
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const { container, rerender } = render(
+    const { container } = render(
       <svg>
         <OptionalEdgePath {...pathProps} tone="warning" />
       </svg>,
     );
-    rerender(
-      <svg>
-        <OptionalEdgePath {...pathProps} tone="warning" hovered />
-      </svg>,
-    );
 
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0]![0]).toContain('runState');
     expect(visiblePath(container).dataset.stroke).toBe('var(--wb-public-edge-color-select)');
-    expect(Object.hasOwn(visiblePath(container).dataset, 'tone')).toBe(false);
-    warn.mockRestore();
   });
 
-  it('does not warn about a tone set together with a run state', async () => {
+  it('draws a disabled edge gray whatever its tone', async () => {
     const { OptionalEdgePath } = await load();
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    render(
+    const { container } = render(
       <svg>
-        <OptionalEdgePath {...pathProps} runState="completed" tone="warning" />
+        <OptionalEdgePath {...pathProps} state="disabled" runState="completed" tone="warning" />
       </svg>,
     );
 
-    expect(warn).not.toHaveBeenCalled();
-    warn.mockRestore();
+    expect(visiblePath(container).dataset.stroke).toBe('var(--wb-public-edge-color-disabled)');
   });
 
   it('draws no terminator unless the app asks for one', async () => {

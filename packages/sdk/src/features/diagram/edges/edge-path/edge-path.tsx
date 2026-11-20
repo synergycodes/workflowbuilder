@@ -4,12 +4,10 @@ import {
   type EdgeRunState,
   type EdgeRunToneName,
   type EdgeState,
-  resolveEdgeRunTone,
   useEdgeStyle,
 } from '@workflowbuilder/ui';
 import { useContext } from 'react';
 
-import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
 import { EdgeEndpointContext } from '../edge-endpoint-context';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 
@@ -30,7 +28,7 @@ export type EdgePathProps = {
   state?: EdgeState;
   hovered?: boolean;
   runState?: EdgeRunState;
-  /** Colour under `runState`, replacing its default tone. Works only together with `runState`. */
+  /** Colour under `runState`, replacing its default tone. Ignored without `runState`. */
   tone?: EdgeRunToneName;
   lineType?: EdgeLineType;
   /** Terminator at the target end. Defaults to `edgeEndpoint` of `<WorkflowBuilder.Root>`. */
@@ -47,10 +45,6 @@ export type EdgePathProps = {
 export function EdgePath({ edgeId, path, state, hovered, runState, tone, lineType, endpoint }: EdgePathProps) {
   const style = useEdgeStyle({ state, isHovered: hovered, runState, tone, lineType });
   const rootEndpoint = useContext(EdgeEndpointContext);
-  useWarnOnce(
-    tone !== undefined && !runState,
-    `[@workflowbuilder/sdk] <EdgePath> "${edgeId}" ignores tone without runState: a tone colours only a run state.`,
-  );
 
   return (
     <EnhancedBaseEdge
@@ -59,7 +53,6 @@ export function EdgePath({ edgeId, path, state, hovered, runState, tone, lineTyp
       style={style}
       endpoint={endpoint ?? rootEndpoint}
       data-run-state={runState}
-      data-tone={resolveEdgeRunTone(runState, tone)}
     />
   );
 }

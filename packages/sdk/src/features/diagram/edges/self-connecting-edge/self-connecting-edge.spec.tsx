@@ -16,7 +16,7 @@ const { nodeLookup } = vi.hoisted(() => ({ nodeLookup: new Map<string, unknown>(
 vi.mock('@xyflow/react', () => ({
   useStore: (selector: (state: { nodeLookup: Map<string, unknown> }) => unknown) => selector({ nodeLookup }),
   BaseEdge: ({ path, style, ...rest }: { path: string; style?: CSSProperties }) => (
-    <path d={path} data-stroke-dasharray={style?.strokeDasharray} {...rest} />
+    <path d={path} data-stroke={style?.stroke} data-stroke-dasharray={style?.strokeDasharray} {...rest} />
   ),
 }));
 
@@ -106,6 +106,8 @@ describe('SelfConnectingEdge', () => {
 
     const loop = container.querySelector<SVGPathElement>('[data-edge-id="toned-loop"]')!;
     expect(loop.dataset.runState).toBe('completed');
-    expect(loop.dataset.tone).toBe('warning');
+    expect(loop.dataset.stroke).toBe(
+      'var(--wb-public-edge-run-status-stroke-warning, var(--wb-public-edge-run-status-stroke-success))',
+    );
   });
 });

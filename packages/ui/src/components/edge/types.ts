@@ -39,8 +39,8 @@ export const EDGE_RUN_TONES = ['default', 'active', 'success', 'warning', 'disab
 export type EdgeRunTone = (typeof EDGE_RUN_TONES)[number];
 
 /**
- * A built-in {@link EdgeRunTone} or a custom tone name; a custom tone needs
- * `--wb-public-edge-run-status-stroke-<name>`.
+ * A built-in {@link EdgeRunTone} or the name of a custom one, which reads `--wb-public-edge-run-status-stroke-<name>`.
+ * A variable the application does not define, or a name outside `[a-z0-9-]`, falls back to the run state's own tone.
  *
  * @category Edge
  */
