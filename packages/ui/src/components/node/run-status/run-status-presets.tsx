@@ -104,19 +104,19 @@ export const runStatusPresets: Readonly<
     ring: { tone: 'neutral' },
     indicator: { tone: 'neutral', icon: <Clock /> },
     badge: { tone: 'neutral', label: 'Waiting until' },
-    footer: { tone: 'neutral', message: 'Waiting until 14:00' },
+    footer: { tone: 'neutral', message: 'Waiting for timer' },
   },
   partialJoin: {
     ring: { tone: 'neutral' },
     indicator: { tone: 'neutral', icon: <Clock /> },
     badge: { tone: 'neutral', label: 'Waiting for input' },
-    footer: { tone: 'neutral', message: '1 of 2 inputs ready' },
+    footer: { tone: 'neutral', message: 'Waiting for inputs' },
   },
   cancelled: {
     ring: { tone: 'neutral' },
     indicator: { tone: 'neutral', icon: <X /> },
     badge: { tone: 'neutral', label: 'Cancelled' },
-    footer: { tone: 'neutral', message: 'Run ended before a decision was made' },
+    footer: { tone: 'neutral', message: 'Run cancelled' },
   },
   skipped: {
     ring: { tone: 'neutral' },
