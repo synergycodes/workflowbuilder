@@ -101,7 +101,7 @@ describe('node run status slots', () => {
     '%s renders the Status and run status slots on the canvas only',
     async (name) => {
       const { registerComponentDecorator, templates } = await load();
-      const slots = ['OptionalNodeOverlay', 'OptionalNodeCorner', 'OptionalNodeHeaderEnd'];
+      const slots = ['OptionalNodeOverlay', 'OptionalNodeCorner', 'OptionalNodeHeaderEnd', 'OptionalNodeFooter'];
       for (const slot of slots) {
         registerComponentDecorator(slot, { name: slot, content: () => <span data-testid={slot} /> });
       }
@@ -112,7 +112,10 @@ describe('node run status slots', () => {
       for (const testId of ['status', 'OptionalNodeOverlay', 'OptionalNodeCorner']) {
         expect(screen.getByTestId(testId).closest('[class*="overlay"]')).not.toBeNull();
       }
-      expect(screen.getByTestId('OptionalNodeHeaderEnd').closest('[class*="overlay"]')).toBeNull();
+      for (const testId of ['OptionalNodeHeaderEnd', 'OptionalNodeFooter']) {
+        expect(screen.getByTestId(testId).closest('[class*="overlay"]')).toBeNull();
+      }
+      expect(screen.getByTestId('OptionalNodeFooter').closest('[class*="content-container"]')).toBeNull();
       canvas.unmount();
 
       render(<Template {...nodeProps} isValid={false} showHandles={false} />);
