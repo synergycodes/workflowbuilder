@@ -186,6 +186,7 @@ export { OptionalNodeContent } from './features/plugins-core/components/diagram/
 export {
   NodeOverlaySlots,
   OptionalNodeCorner,
+  OptionalNodeFooter,
   OptionalNodeHeaderEnd,
   OptionalNodeOverlay,
 } from './features/plugins-core/components/diagram/optional-node-run-status-slots';
