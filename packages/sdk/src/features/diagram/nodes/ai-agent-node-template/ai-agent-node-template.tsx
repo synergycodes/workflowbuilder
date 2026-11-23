@@ -38,6 +38,7 @@ type Props = {
   selectedTools?: AiAgentTool[] | undefined;
   isValid?: boolean;
   layoutDirection?: LayoutDirection;
+  isAddDisabled?: boolean;
   onAddTool?: () => void;
 };
 
@@ -57,6 +58,7 @@ export const AiAgentNodeTemplate = memo(
     selectedTools,
     isValid,
     layoutDirection = 'RIGHT',
+    isAddDisabled = false,
     onAddTool,
   }: Props) => {
     const { t } = useTranslation();
@@ -97,7 +99,7 @@ export const AiAgentNodeTemplate = memo(
                 />
               </div>
             </Collapsible.Content>
-            <ToolInfo onAddTool={onAddTool}>
+            <ToolInfo isAddDisabled={isAddDisabled} onAddTool={onAddTool}>
               {selectedTools?.map((tool, index) => {
                 const handleId = tool.sourceHandle;
 
