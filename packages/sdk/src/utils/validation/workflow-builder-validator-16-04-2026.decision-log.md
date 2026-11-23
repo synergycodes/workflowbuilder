@@ -32,13 +32,14 @@ The wrapper implements two methods - the only ones jsonforms calls:
 
 `@cfworker/json-schema` returns `OutputUnit` objects that differ from Ajv's `ErrorObject`:
 
-| Mapping     | `@cfworker/json-schema`          | Ajv                                  |
-| ----------- | -------------------------------- | ------------------------------------ |
-| Path        | `instanceLocation: "#/duration"` | `instancePath: "/duration"`          |
-| Root path   | `"#"`                            | `""`                                 |
-| Schema path | `keywordLocation`                | `schemaPath`                         |
-| Message     | `error`                          | `message`                            |
-| Params      | not present                      | `params: { missingProperty: "..." }` |
+| Mapping     | `@cfworker/json-schema`           | Ajv                                  |
+| ----------- | --------------------------------- | ------------------------------------ |
+| Path        | `instanceLocation: "#/duration"`  | `instancePath: "/duration"`          |
+| Root path   | `"#"`                             | `""`                                 |
+| Encoding    | `"#/reply%20draft"` (`encodeURI`) | `"/reply draft"` (`decodeURI`)       |
+| Schema path | `keywordLocation`                 | `schemaPath`                         |
+| Message     | `error`                           | `message`                            |
+| Params      | not present                       | `params: { missingProperty: "..." }` |
 
 The `params.missingProperty` field is **critical** - jsonforms' `useHasChildError` hook and `getControlPath` function read it to associate `required` errors with the correct form field. We extract it via regex from the error message: `/required property "(.+)"/`.
 
