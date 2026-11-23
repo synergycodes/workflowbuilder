@@ -194,6 +194,8 @@ export const appIcons = defineIcons({ Lightning: lightningIcon, ...fromIconify(b
 
 In your own components, an icon that is fixed in the code does not need a name: pass the imported data instead, `<Icon icon={timerIcon} />`. `name` is for names that come from data.
 
+A plugin registers the icons its own node types and templates name itself, with `registerIcons`, so the app's set does not list them: see [Icons in a plugin](/guides/build-a-plugin/#icons-in-a-plugin). An app icon of the same name wins over a plugin icon.
+
 ## Custom node and edge renderers
 
 By default every node uses the SDK's built-in renderer (a header with one input and one output handle) and every edge uses the built-in `'labelEdge'`. Override either per type, without writing a plugin:

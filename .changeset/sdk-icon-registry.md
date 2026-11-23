@@ -2,7 +2,7 @@
 '@workflowbuilder/sdk': major
 ---
 
-Icons are registered by the app instead of lazy-loaded one by one: pass the icons your node types, templates and select options name through `<WorkflowBuilder.Root icons={defineIcons({ ... })}>`. They render on the first frame with no request and no fade, only the registered icons are bundled, and augmenting `Register` types icon names against them. `fromIconify` turns an Iconify JSON set, such as one built from your own SVGs, into icons you can register, and `<Icon icon={data} />` renders imported icon data without a name.
+Icons are registered by the app instead of lazy-loaded one by one: pass the icons your node types, templates and select options name through `<WorkflowBuilder.Root icons={defineIcons({ ... })}>`. They render on the first frame with no request and no fade, only the registered icons are bundled, and augmenting `Register` types icon names against them. A plugin registers the icons its node types name itself with `registerIcons` and types them through `PluginIconNames`. `fromIconify` turns an Iconify JSON set, such as one built from your own SVGs, into icons you can register, and `<Icon icon={data} />` renders imported icon data without a name.
 
 Breaking changes:
 

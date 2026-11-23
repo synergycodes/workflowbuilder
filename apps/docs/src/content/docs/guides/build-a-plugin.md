@@ -418,3 +418,25 @@ registerPluginTranslation({
 ```
 
 Equivalent to passing `translations` via `<WorkflowBuilder.Root jsonForm={{ translations }} />`. Use whichever is more convenient for your plugin's lifecycle.
+
+## Icons in a plugin
+
+A plugin whose node types, templates or select options name icons registers them in its initializer with `registerIcons`, so the app does not have to list them and removing the plugin removes its icons too. Augment `PluginIconNames` with the same set to type the names; every plugin adds its own, and they count once the app augments `Register` (see [Icons](/guides/configuring-the-editor/#icons)).
+
+```ts
+import coinsIcon from '@iconify-icons/ph/coins';
+import ticketIcon from '@iconify-icons/ph/ticket';
+import { type IconNamesOf, defineIcons, registerIcons } from '@workflowbuilder/sdk';
+
+const pricingIcons = defineIcons({ Coins: coinsIcon, Ticket: ticketIcon });
+
+declare module '@workflowbuilder/sdk' {
+  interface PluginIconNames extends IconNamesOf<typeof pricingIcons> {}
+}
+
+export function plugin(): void {
+  registerIcons(pricingIcons);
+}
+```
+
+An app icon of the same name wins over a plugin icon. Icons fixed in the plugin's components do not need registering: pass the imported data, `<Icon icon={coinsIcon} />`.

@@ -299,9 +299,12 @@ export { Icon } from './icon/icon';
 export {
   defineIcons,
   fromIconify,
+  registerIcons,
+  type IconNamesOf,
   type IconSet,
   type IconifyAlias,
   type IconifyIconSet,
+  type PluginIconNames,
   type Register,
   type WBIcon,
 } from './icon/icon-registry';

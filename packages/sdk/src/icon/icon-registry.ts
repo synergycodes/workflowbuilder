@@ -19,14 +19,31 @@ export type IconSet = Readonly<Record<string, IconData>>;
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- filled by module augmentation in the app
 export interface Register {}
 
-type AppIconName = Register extends { icons: infer Icons } ? Extract<keyof Icons, string> : string;
-
 /**
- * Name of an icon the SDK can render: one of its built-in icons or one the app registered.
+ * Augment it in a plugin package with the icons the plugin passes to `registerIcons`:
+ * `declare module '@workflowbuilder/sdk' { interface PluginIconNames extends IconNamesOf<typeof pluginIcons> {} }`.
+ * Every plugin adds its own names; they count once the app augments `Register`.
  *
  * @category Icons
  */
-export type WBIcon = BuiltInIconName | AppIconName;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- filled by module augmentation in plugin packages
+export interface PluginIconNames {}
+
+/**
+ * The names of an icon set, in the shape `PluginIconNames` extends.
+ *
+ * @category Icons
+ */
+export type IconNamesOf<Icons extends IconSet> = { readonly [Name in keyof Icons]: true };
+
+type AppIconName = Register extends { icons: infer Icons } ? Extract<keyof Icons, string> : string;
+
+/**
+ * Name of an icon the SDK can render: one of its built-in icons, one the app registered or one a plugin registered.
+ *
+ * @category Icons
+ */
+export type WBIcon = BuiltInIconName | AppIconName | Extract<keyof PluginIconNames, string>;
 
 /**
  * Icon set in the Iconify JSON format, as produced by `@iconify/tools` or shipped by `@iconify-json/*` packages.
@@ -100,17 +117,29 @@ export function fromIconify<const IconSetJson extends IconifyIconSet>(
   return Object.fromEntries(entries) as RenamedIconifyIcons<IconSetJson>;
 }
 
+/**
+ * Registers icons a plugin's node types, templates or select options name. Call it in the plugin's initializer and
+ * augment `PluginIconNames` with the same set. An app icon of the same name wins over a plugin icon.
+ *
+ * @category Icons
+ */
+export function registerIcons(icons: IconSet): void {
+  pluginIcons = { ...pluginIcons, ...icons };
+}
+
 const builtIns: IconSet = builtInIcons;
 let appIcons: IconSet = {};
+let pluginIcons: IconSet = {};
 
 export function setRegisteredIcons(icons: IconSet | null): void {
   appIcons = icons ?? {};
 }
 
-/** App icons take precedence over built-in icons of the same name. */
+/** App icons win over plugin icons, and both over built-in icons of the same name. */
 export function findIcon(name: string): IconData | undefined {
   // Own-property checks, so a name such as `constructor` does not resolve off Object.prototype.
   if (Object.hasOwn(appIcons, name)) return appIcons[name];
+  if (Object.hasOwn(pluginIcons, name)) return pluginIcons[name];
   if (Object.hasOwn(builtIns, name)) return builtIns[name];
 
   return undefined;

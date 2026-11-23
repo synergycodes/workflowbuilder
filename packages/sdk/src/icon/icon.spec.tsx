@@ -3,7 +3,7 @@ import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Icon } from './icon';
-import { defineIcons, findIcon, fromIconify, setRegisteredIcons } from './icon-registry';
+import { defineIcons, findIcon, fromIconify, registerIcons, setRegisteredIcons } from './icon-registry';
 
 const appGear = { body: '<path d="M1 1"/>', width: 256, height: 256 };
 const lightning = { body: '<path d="M2 2"/>', width: 256, height: 256 };
@@ -29,6 +29,18 @@ describe('findIcon', () => {
     const builtInGear = findIcon('Gear');
     expect(builtInGear?.body).toBeTruthy();
     expect(builtInGear?.body).not.toBe(appGear.body);
+
+    setRegisteredIcons(defineIcons({ Gear: appGear }));
+
+    expect(findIcon('Gear')).toBe(appGear);
+  });
+
+  it('resolves plugin icons above built-in icons and below app icons', () => {
+    const pluginGear = { body: '<path d="M3 3"/>' };
+    registerIcons({ Gear: pluginGear, PluginOnly: pluginGear });
+
+    expect(findIcon('Gear')).toBe(pluginGear);
+    expect(findIcon('PluginOnly')).toBe(pluginGear);
 
     setRegisteredIcons(defineIcons({ Gear: appGear }));
 

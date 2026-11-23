@@ -141,7 +141,7 @@ declare module '@workflowbuilder/sdk' {
 <WorkflowBuilder.Root icons={appIcons} nodeTypes={nodeTypes} />;
 ```
 
-The `Register` augmentation makes an unregistered name a type error. For an icon fixed in your own code, pass the data instead of a name: `<Icon icon={lightningIcon} />`. Own SVGs go through an Iconify JSON set and `fromIconify`. See [Icons](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#icons).
+The `Register` augmentation makes an unregistered name a type error. For an icon fixed in your own code, pass the data instead of a name: `<Icon icon={lightningIcon} />`. Own SVGs go through an Iconify JSON set and `fromIconify`. A plugin registers the icons its node types name itself, with `registerIcons` in its initializer. See [Icons](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#icons).
 
 ## Persistence
 

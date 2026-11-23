@@ -37,6 +37,10 @@ exist.
   `<Icon icon={...} />`. The renderer lives in `@workflowbuilder/ui`, so the component library uses the
   same data without depending on the SDK.
 - An unregistered name renders a same-size empty placeholder and logs one warning per name.
+- A plugin registers the icons its own node types and templates name with `registerIcons` in its
+  initializer, and types them by extending `PluginIconNames`, which every plugin package can augment.
+  The app does not list plugin icons, so removing a plugin needs no change in the app; the demo's
+  stubs for missing plugins rely on that. App icons win over plugin icons, plugin icons over built-in ones.
 
 ## Rejected alternatives
 
