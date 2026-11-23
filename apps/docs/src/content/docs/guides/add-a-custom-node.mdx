@@ -302,7 +302,7 @@ const isCanvasNode = showHandles;
 </NodePanel.Root>;
 ```
 
-Keep `OptionalNodeHeaderEnd` the last child of the header. `NodePanel.Footer` sits outside `NodePanel.Content`, so `OptionalNodeFooter` stays visible while the content is collapsed. `NodeOverlaySlots` renders `OptionalNodeOverlay` and `OptionalNodeCorner` with the validation `Status`; put it inside `NodePanel.Overlay`, which it does not render itself.
+Keep `OptionalNodeHeaderEnd` the last child of the header. `NodeOverlaySlots` renders `OptionalNodeOverlay` and `OptionalNodeCorner` with the validation `Status`; put it inside `NodePanel.Overlay`, which it does not render itself.
 
 One thing the custom template path does **not** include: `NodeAsPortWrapper` (drag-to-create connections by dropping onto the node body). If you need that, register a custom node container through a plugin instead — see [Build a plugin](/guides/build-a-plugin/).
 

@@ -1,12 +1,9 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
 import styles from './node-footer.module.css';
-import postcss from 'postcss';
 
-import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { NODE_RUN_TONES } from '../run-status/run-status-tone';
 import { throughPalette } from '../run-status/test-utils';
 import { NodeFooter } from './node-footer';
 
@@ -31,7 +28,7 @@ describe('NodeFooter', () => {
     const footer = container.firstElementChild as HTMLElement;
     expect(footer.dataset['tone']).toBe('human');
     expect(footer.textContent).toBe('Decision needed');
-    expect(footer.querySelector('.wb-text-label-s')).not.toBeNull();
+    expect(footer.querySelector(`.${styles['s']}`)).not.toBeNull();
     expect(footer.querySelector(`.${styles['icon']}`)).toBeNull();
     expect(footer.querySelector(`.${styles['actions']}`)).toBeNull();
   });
@@ -46,35 +43,26 @@ describe('NodeFooter', () => {
     );
 
     const footer = container.firstElementChild as HTMLElement;
-    expect(footer.querySelector('.wb-text-body-s')).not.toBeNull();
+    expect(footer.querySelector(`.${styles['m']}`)).not.toBeNull();
     expect(footer.querySelector(`.${styles['icon']} [data-testid="icon"]`)).not.toBeNull();
     expect(footer.querySelector(`.${styles['actions']} button`)?.textContent).toBe('Fix');
   });
-});
 
-describe('node-footer.module.css', () => {
-  const file = path.join(import.meta.dirname, 'node-footer.module.css');
-  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
-  const variables = new Map<string, string>();
-  stylesheet.walkRules(':root', (rule) => {
-    rule.walkDecls((declaration) => {
-      variables.set(declaration.prop, declaration.value);
-    });
+  it.each(NODE_RUN_TONES)('colours the %s footer with the DS run status fg token', (tone) => {
+    act(() => root.render(<NodeFooter tone={tone} message="Status" />));
+
+    const footer = container.firstElementChild as HTMLElement;
+    expect(throughPalette(footer.style.getPropertyValue('--footer-color'))).toBe(
+      `var(--wb-ds-canvas-run-status-fg-${tone})`,
+    );
   });
 
-  it.each(RUN_STATUS_TONES.filter((tone) => tone !== 'inverse'))(
-    'colours the %s footer with the DS run status fg token',
-    (tone) => {
-      let colour: string | undefined;
-      stylesheet.walkRules(`.footer[data-tone='${tone}']`, (rule) =>
-        rule.walkDecls('--footer-color', (declaration) => {
-          colour = declaration.value;
-        }),
-      );
-      expect(colour).toBe(`var(--wb-public-node-footer-color-${tone})`);
-      expect(throughPalette(variables.get(`--wb-public-node-footer-color-${tone}`))).toBe(
-        `var(--wb-ds-canvas-run-status-fg-${tone})`,
-      );
-    },
-  );
+  it('reads a custom tone from its own fg variable with the neutral fallback', () => {
+    act(() => root.render(<NodeFooter tone="escalated" message="Escalated" />));
+
+    const footer = container.firstElementChild as HTMLElement;
+    expect(footer.style.getPropertyValue('--footer-color')).toBe(
+      'var(--wb-public-node-run-status-fg-escalated, var(--wb-public-node-run-status-fg-neutral))',
+    );
+  });
 });

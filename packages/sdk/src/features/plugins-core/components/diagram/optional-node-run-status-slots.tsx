@@ -54,8 +54,8 @@ export function NodeOverlaySlots({ nodeId, isValid }: { nodeId: string; isValid?
 
 /**
  * Plugin slot below the canvas node's content, inside `NodePanel.Footer`. Empty
- * by default; decorate `'OptionalNodeFooter'` to add a `NodeFooter`. It stays
- * visible while the content is collapsed. Receives `nodeId`.
+ * by default; decorate `'OptionalNodeFooter'` to add a `NodeFooter`. Receives
+ * `nodeId`.
  *
  * @category Components
  */

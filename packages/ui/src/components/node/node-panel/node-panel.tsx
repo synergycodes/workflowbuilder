@@ -25,7 +25,7 @@ type Props = {
  * This component ensures a structured layout with optional slots:
  * - `NodePanel.Header`: A container for the node's header (at most 1).
  * - `NodePanel.Content`: A container for the node's main content (at most 1).
- * - `NodePanel.Footer`: Below the content, outside it, for example a `NodeFooter` (at most 1).
+ * - `NodePanel.Footer`: A container below the content, for example for a `NodeFooter` (at most 1).
  * - `NodePanel.Handles`: A container for action handles (at most 1).
  * - `NodePanel.Overlay`: A layer over the whole node for status visuals (at most 1).
  *

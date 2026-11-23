@@ -274,6 +274,35 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(decideButton()).toBeUndefined();
   });
 
+  it('clears the wait and Decide on Reset', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+    expect(decideButton()).toBeDefined();
+
+    act(() => resetExecution());
+
+    expect(container.textContent).not.toContain('Decision needed');
+    expect(decideButton()).toBeUndefined();
+  });
+
+  it('keeps each action port in its content row while the wait shows in the footer', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+
+    const footer = container.querySelector('[data-slot="footer"]');
+    expect(footer?.contains(decideButton()!)).toBe(true);
+    const sources = handles(container, 'source');
+    expect(sources.map((handle) => handle.parentElement?.textContent)).toEqual(['Approve', 'Reject']);
+    for (const handle of sources) {
+      expect(handle.closest('[data-slot="content"]')).not.toBeNull();
+      expect(footer?.contains(handle)).toBe(false);
+    }
+  });
+
   it('keeps the wait off while the run is cancelling, since the backend refuses a decision then', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,

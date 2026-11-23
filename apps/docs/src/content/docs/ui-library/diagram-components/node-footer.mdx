@@ -7,17 +7,13 @@ import CssVariablesTable from '../../../../components/api/css-variables-table.as
 import PropsTable from '../../../../components/api/props-table.astro';
 import { NodeFooterExample } from '../../../../components/ui-examples/node-footer';
 
-`NodeFooter` is a strip below a divider at the bottom of a node: one line of message, an optional
-14px icon before it, and up to two actions after it. `tone` colours the message and the icon; `size`
-sets the message in Label S (`s`, the default) or Body S (`m`). A message that does not fit ends with
-an ellipsis.
+`NodeFooter` is the bottom strip of a node: a status message and up to two actions.
 
 <NodeFooterExample client:visible />
 
 ## Usage
 
-Place it in [`NodePanel.Footer`](/ui-library/diagram-components/node-panel/), which sits after
-`NodePanel.Content`, not inside it, so the footer stays visible while the content is hidden. Pass actions as
+Place it in [`NodePanel.Footer`](/ui-library/diagram-components/node-panel/). Pass actions as
 children, for example `Button`s of size `xs`. On the canvas, give each one the `nodrag` class so a
 press does not drag the node.
 

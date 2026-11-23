@@ -1,28 +1,29 @@
 import clsx from 'clsx';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import '../run-status/variables.css';
 import styles from './node-footer.module.css';
 
-import type { RunStatusTone } from '../run-status/run-status-tone';
+import type { NodeRunToneName } from '../run-status/run-status-tone';
+import { runStatusVariable } from '../run-status/run-status-variable';
 
 /**
- * Colour role of the footer message and icon, read from `--wb-public-node-footer-color-<tone>`.
+ * Text style of the footer message: `s` is Label S, `m` is Body S.
  *
  * @category Node
  */
-export type NodeFooterTone = Exclude<RunStatusTone, 'inverse'>;
+export type NodeFooterSize = 's' | 'm';
 
 export type NodeFooterProps = {
-  /** Colour of the message and the icon. */
-  tone: NodeFooterTone;
+  /** Colour of the message and the icon, read from `--wb-public-node-run-status-fg-<tone>`. */
+  tone: NodeRunToneName;
   /** One line of text; it ends with an ellipsis when it does not fit. */
   message: string;
   /**
    * `s` sets the message in Label S, `m` in Body S.
    * @default 's'
    */
-  size?: 's' | 'm';
+  size?: NodeFooterSize;
   /** Glyph before the message, drawn at 14 px in the tone colour. */
   icon?: ReactNode;
   /** Actions after the message, for example one or two `Button`s of size `xs`. */
@@ -38,9 +39,14 @@ export type NodeFooterProps = {
  */
 export function NodeFooter({ tone, message, size = 's', icon, children, className }: NodeFooterProps) {
   return (
-    <div className={clsx(styles['footer'], className)} data-tone={tone}>
+    <div
+      className={clsx(styles['footer'], className)}
+      style={{ '--footer-color': runStatusVariable('fg', tone) } as CSSProperties}
+      data-tone={tone}
+    >
       {icon && <span className={styles['icon']}>{icon}</span>}
-      <span className={clsx(size === 'm' ? 'wb-text-body-s' : 'wb-text-label-s', styles['message'])} title={message}>
+      {/* Native title until the DS Tooltip takes over; no keyboard or touch access today (follow-up: node-text-ds-tooltip). */}
+      <span className={clsx(styles['message'], styles[size])} title={message}>
         {message}
       </span>
       {children && <div className={styles['actions']}>{children}</div>}

@@ -73,21 +73,21 @@ The badge sits in its node's stacking context, so a node rendered later that ove
 
 ## Statuses
 
-| Status            | Key               | Ring              | Indicator                      | Badge                                       |
-| ----------------- | ----------------- | ----------------- | ------------------------------ | ------------------------------------------- |
-| Running           | `running`         | info, `static`    | info, spinner                  | info                                        |
-| No signal         | `noSignal`        | warning, `static` | warning, `slow` spinner        | warning, Question                           |
-| Retrying          | `retrying`        | warning, `static` | warning, spinner               | warning, ArrowClockwise                     |
-| Completed         | `completed`       | success           | success, Check                 | success                                     |
-| Incomplete        | `incomplete`      | success           | success, Check                 | warning, LinkBreak                          |
-| Failed            | `failed`          | critical          | critical, Warning              | critical                                    |
-| Rejected          | `rejected`        | inverse           | neutral, `iconTone` inverse, X | inverse                                     |
-| Waiting for human | `waitingForHuman` | human, `waiting`  | human, Clock                   | human                                       |
-| Waiting external  | `waitingExternal` | info, `waiting`   | info, Clock                    | info                                        |
-| Waiting until     | `waitingUntil`    | neutral           | neutral, Clock                 | neutral                                     |
-| Partial join      | `partialJoin`     | neutral           | neutral, Clock                 | neutral                                     |
-| Cancelled         | `cancelled`       | neutral           | neutral, X                     | neutral                                     |
-| Skipped           | `skipped`         | neutral           | none                           | neutral, SkipForward, dimmed; `NodeRunVeil` |
+| Status            | Key               | Ring              | Indicator                      | Badge                                       | Footer                            |
+| ----------------- | ----------------- | ----------------- | ------------------------------ | ------------------------------------------- | --------------------------------- |
+| Running           | `running`         | info, `static`    | info, spinner                  | info                                        | none                              |
+| No signal         | `noSignal`        | warning, `static` | warning, `slow` spinner        | warning, Question                           | none                              |
+| Retrying          | `retrying`        | warning, `static` | warning, spinner               | warning, ArrowClockwise                     | none                              |
+| Completed         | `completed`       | success           | success, Check                 | success                                     | none                              |
+| Incomplete        | `incomplete`      | success           | success, Check                 | warning, LinkBreak                          | none                              |
+| Failed            | `failed`          | critical          | critical, Warning              | critical                                    | critical, Step failed             |
+| Rejected          | `rejected`        | inverse           | neutral, `iconTone` inverse, X | inverse                                     | none                              |
+| Waiting for human | `waitingForHuman` | human, `waiting`  | human, Clock                   | human                                       | human, Decision needed            |
+| Waiting external  | `waitingExternal` | info, `waiting`   | info, Clock                    | info                                        | info, Waiting for external system |
+| Waiting until     | `waitingUntil`    | neutral           | neutral, Clock                 | neutral                                     | neutral, Waiting for timer        |
+| Partial join      | `partialJoin`     | neutral           | neutral, Clock                 | neutral                                     | neutral, Waiting for inputs       |
+| Cancelled         | `cancelled`       | neutral           | neutral, X                     | neutral                                     | neutral, Run cancelled            |
+| Skipped           | `skipped`         | neutral           | none                           | neutral, SkipForward, dimmed; `NodeRunVeil` | none                              |
 
 A running step that reports progress adds `NodeRunProgress` and switches the halo to `heartbeat`.
 
@@ -95,9 +95,10 @@ A running step that reports progress adds `NodeRunProgress` and switches the hal
 
 Each tone has one palette that every part reads: `--wb-public-node-run-status-stroke-<tone>` for the
 ring line, `-halo-<tone>` for the ring halo (`info`, `warning` and `human` only; the other tones have
-none), and `-bg-<tone>` and `-fg-<tone>` for the indicator circle and glyph and for the badge. They
-default to the run status tokens `--wb-ds-canvas-run-status-*`, which switch with the theme. The
-`inverse` badge reads the `BadgeLabel` Inverse variables instead.
+none), `-bg-<tone>` and `-fg-<tone>` for the indicator circle and glyph and for the badge, and
+`-fg-<tone>` for the `NodeFooter` message and icon. They default to the run status tokens
+`--wb-ds-canvas-run-status-*`, which switch with the theme. The `inverse` badge reads the
+`BadgeLabel` Inverse variables instead.
 
 Override a palette variable on `:root` (and `:root[data-theme='dark']`) to recolour a tone in every
 part, or on one part with a `className`:
