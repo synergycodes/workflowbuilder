@@ -156,11 +156,13 @@ Design decisions a reader of the code should know:
   replaces the whole diagram the same way `TemplateSelector` does), and the Settings modal, which
   lets a read-only viewer edit global variables, part of the persisted model (the design
   document's decision 24).
-- **Import refuses read-only mode in its action, not in `openImportModal` (Dominika Pacholec,
-  23.11.2026).** `openImport` became `whileEditable`, like `setWorkflowName` and the layout actions,
-  and the project menu shows Import disabled in read-only mode. Unlike the template selector,
-  Import has no path around the action: the built-in menu item calls `openImport` too. Settings is
-  still unguarded; an app that needs read-only to be airtight hides it explicitly:
+- **Import refuses read-only mode in its action and again on submit, not in `openImportModal`
+  (Dominika Pacholec, 23.11.2026).** `openImport` became `whileEditable`, like `setWorkflowName`
+  and the layout actions, and the project menu shows Import disabled in read-only mode. Unlike the
+  template selector, Import has no way to open around the action: the built-in menu item calls
+  `openImport` too. Read-only can still switch on while the modal is open (AI Studio sets it when a
+  run starts), so `ImportModal` checks again before it imports, as the canvas Add tool modal does.
+  Settings is still unguarded; an app that needs read-only to be airtight hides it explicitly:
   `builtInControls={{ settings: canEdit }}`.
 
 - **`EditorRuntime` is a render boundary, not inlined into `RootShell`.** `useAutoSave` subscribes
