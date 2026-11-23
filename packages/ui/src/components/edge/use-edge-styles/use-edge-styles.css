@@ -3,10 +3,11 @@
   --wb-public-edge-color-select: var(--wb-ds-canvas-edge-stroke-active);
   --wb-public-edge-color-hover: var(--wb-ds-canvas-edge-stroke-hover);
   --wb-public-edge-color: var(--wb-ds-canvas-edge-stroke-default);
-  --wb-public-edge-color-pending: var(--wb-ds-canvas-edge-stroke-default);
-  --wb-public-edge-color-running: var(--wb-ds-canvas-edge-stroke-active);
-  --wb-public-edge-color-completed: var(--wb-ds-canvas-edge-stroke-success);
-  --wb-public-edge-color-out-of-run: var(--wb-ds-canvas-edge-stroke-disabled);
+  --wb-public-edge-run-status-stroke-default: var(--wb-ds-canvas-edge-stroke-default);
+  --wb-public-edge-run-status-stroke-active: var(--wb-ds-canvas-edge-stroke-active);
+  --wb-public-edge-run-status-stroke-success: var(--wb-ds-canvas-edge-stroke-success);
+  --wb-public-edge-run-status-stroke-warning: var(--wb-ds-canvas-edge-stroke-warning);
+  --wb-public-edge-run-status-stroke-disabled: var(--wb-ds-canvas-edge-stroke-disabled);
   --wb-public-edge-stroke-width: var(--wb-ds-canvas-edge-stroke-regular);
   --wb-public-edge-dash-running: 6 5;
   /* Sum of the running dash pattern: change it together with --wb-public-edge-dash-running. */

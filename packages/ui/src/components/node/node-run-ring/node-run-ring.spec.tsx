@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { act } from 'react';
+import { type CSSProperties, act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
 import postcss, { type Rule } from 'postcss';
 
-import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { NODE_RUN_TONES } from '../run-status/run-status-tone';
 import { throughPalette } from '../run-status/test-utils';
 import { NodeRunRing } from './node-run-ring';
 
@@ -27,6 +27,10 @@ function ring() {
   return container.firstElementChild as HTMLElement;
 }
 
+function color(property: string) {
+  return ring().style.getPropertyValue(property);
+}
+
 describe('NodeRunRing', () => {
   it('passes tone and halo to the stylesheet', () => {
     act(() => root.render(<NodeRunRing tone="human" halo="waiting" />));
@@ -41,6 +45,40 @@ describe('NodeRunRing', () => {
     expect(ring().id).toBe('ring');
     expect(ring().classList).toContain('custom');
     expect(ring().classList.length).toBe(2);
+  });
+
+  it.each(NODE_RUN_TONES)('colours the %s line and halo with the DS run status tokens', (tone) => {
+    act(() => root.render(<NodeRunRing tone={tone} />));
+
+    expect(throughPalette(color('--ring-color'))).toBe(`var(--wb-ds-canvas-run-status-stroke-${tone})`);
+    expect(throughPalette(color('--ring-halo-color'))).toBe(
+      ['info', 'warning', 'human'].includes(tone) ? `var(--wb-ds-canvas-run-status-halo-${tone})` : 'transparent',
+    );
+  });
+
+  it('reads a custom tone from its own variables, falling back to the neutral line and no halo', () => {
+    act(() => root.render(<NodeRunRing tone="paused" />));
+
+    expect(color('--ring-color')).toBe(
+      'var(--wb-public-node-run-status-stroke-paused, var(--wb-public-node-run-status-stroke-neutral))',
+    );
+    expect(color('--ring-halo-color')).toBe('var(--wb-public-node-run-status-halo-paused, transparent)');
+  });
+
+  it.each(['My Tone', 'a b'])('draws the neutral line without a halo for the invalid name %j', (tone) => {
+    act(() => root.render(<NodeRunRing tone={tone} />));
+
+    expect(color('--ring-color')).toBe('var(--wb-public-node-run-status-stroke-neutral)');
+    expect(color('--ring-halo-color')).toBe('transparent');
+  });
+
+  it('lets the consumer style override the tone variables and merges the rest', () => {
+    const style = { opacity: 0.5, '--ring-color': 'red' } as CSSProperties;
+    act(() => root.render(<NodeRunRing tone="info" style={style} />));
+
+    expect(color('--ring-color')).toBe('red');
+    expect(throughPalette(color('--ring-halo-color'))).toBe('var(--wb-ds-canvas-run-status-halo-info)');
+    expect(ring().style.opacity).toBe('0.5');
   });
 });
 
@@ -59,15 +97,6 @@ describe('node-run-ring.module.css', () => {
     });
     return found;
   }
-
-  it.each(RUN_STATUS_TONES)('colours the %s line and halo with the DS run status tokens', (tone) => {
-    const rule = declarations(`.ring[data-tone='${tone}']`);
-    const halo = rule.get('--ring-halo-color') ?? declarations('.ring').get('--ring-halo-color');
-    expect(throughPalette(rule.get('--ring-color'))).toBe(`var(--wb-ds-canvas-run-status-stroke-${tone})`);
-    expect(throughPalette(halo)).toBe(
-      ['info', 'warning', 'human'].includes(tone) ? `var(--wb-ds-canvas-run-status-halo-${tone})` : 'transparent',
-    );
-  });
 
   it('draws the line as an inset box-shadow on an absolutely positioned layer', () => {
     expect(declarations('.ring').get('box-shadow')).toMatch(/^inset /);
