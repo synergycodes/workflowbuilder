@@ -44,11 +44,11 @@ export function Icon({ name, icon, size = 'medium', color, style, ...svgProps }:
     if (name !== undefined && !data) warnMissingIcon(name);
   }, [name, data]);
 
-  const dimension = iconSizes[size];
-  const sizeStyle = { width: dimension, height: dimension };
+  // `inherit` keeps the renderer's 1em attributes, so container CSS can still size the glyph.
+  const sizeStyle = size === 'inherit' ? {} : { width: iconSizes[size], height: iconSizes[size] };
 
   if (!data) {
-    return <svg aria-hidden style={{ ...sizeStyle, ...style }} {...svgProps} />;
+    return <svg aria-hidden width="1em" height="1em" style={{ ...sizeStyle, ...style }} {...svgProps} />;
   }
 
   // Iconify bodies paint with `currentColor` on their own shapes, so the color goes through CSS, not `fill`.

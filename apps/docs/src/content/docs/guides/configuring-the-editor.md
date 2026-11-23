@@ -184,7 +184,7 @@ declare module '@workflowbuilder/sdk' {
 
 The `Register` augmentation types icon names against the set: `icon: 'Acorn'` in a node type is then a type error until you register `Acorn`. Without it any string type-checks. A name that is neither registered nor built in renders an empty placeholder of the same size and logs one `console.warn`.
 
-Any `@iconify-icons/*` package works the same way, so you can mix sets. For your own SVG files, build an Iconify JSON set once, for example with `importDirectory` from `@iconify/tools`, and pass it through `fromIconify`, which renames `hubspot-logo` to `HubspotLogo`:
+Any `@iconify-icons/*` package works the same way, so you can mix sets; `Icon` does not rotate or flip glyphs, so pick icons that are not defined that way. For your own SVG files, build an Iconify JSON set once, for example with `importDirectory` from `@iconify/tools`, and pass it through `fromIconify`, which renames `hubspot-logo` to `HubspotLogo` and turns the set's aliases into icons of their own:
 
 ```ts
 import brandIcons from './icons/brand.json';

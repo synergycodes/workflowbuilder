@@ -4,6 +4,7 @@ import googleLogoIcon from '@iconify-icons/ph/google-logo';
 import microsoftExcelLogoIcon from '@iconify-icons/ph/microsoft-excel-logo';
 import openAiLogoIcon from '@iconify-icons/ph/open-ai-logo';
 import slackLogoIcon from '@iconify-icons/ph/slack-logo';
+import type { IconData } from '@workflowbuilder/ui';
 
 import {
   aiAgentIcon,
@@ -16,10 +17,26 @@ import {
   statusDisabledIcon,
   statusDraftIcon,
 } from './custom-glyphs';
-import type { IconSet } from './icon-registry';
+
+export type BuiltInIconName =
+  | 'AiAgent'
+  | 'AirtableLogo'
+  | 'ClaudeLogo'
+  | 'Database'
+  | 'GeminiLogo'
+  | 'Gear'
+  | 'GoogleLogo'
+  | 'HubspotLogo'
+  | 'JiraLogo'
+  | 'MicrosoftExcelLogo'
+  | 'OpenAiLogo'
+  | 'SlackLogo'
+  | 'StatusActive'
+  | 'StatusDisabled'
+  | 'StatusDraft';
 
 /** Icons the SDK's own data refers to by name: built-in select options, node statuses and the global variables group. */
-export const builtInIcons = {
+export const builtInIcons: Readonly<Record<BuiltInIconName, IconData>> = {
   AiAgent: aiAgentIcon,
   AirtableLogo: airtableLogoIcon,
   ClaudeLogo: claudeLogoIcon,
@@ -35,4 +52,4 @@ export const builtInIcons = {
   StatusActive: statusActiveIcon,
   StatusDisabled: statusDisabledIcon,
   StatusDraft: statusDraftIcon,
-} satisfies IconSet;
+};

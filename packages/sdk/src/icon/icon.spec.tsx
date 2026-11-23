@@ -26,7 +26,9 @@ afterEach(() => {
 
 describe('findIcon', () => {
   it('prefers an app icon over the built-in icon of the same name', () => {
-    expect(findIcon('Gear')?.body).not.toBe(appGear.body);
+    const builtInGear = findIcon('Gear');
+    expect(builtInGear?.body).toBeTruthy();
+    expect(builtInGear?.body).not.toBe(appGear.body);
 
     setRegisteredIcons(defineIcons({ Gear: appGear }));
 
@@ -55,6 +57,20 @@ describe('fromIconify', () => {
       ClaudeLogo: { body: '<g/>', width: 24, height: 24 },
     });
   });
+
+  it('turns aliases into icons of their own and leaves out those that rotate or flip', () => {
+    const icons = fromIconify({
+      icons: { 'archive-box': { body: '<path/>' } },
+      aliases: {
+        archive: { parent: 'archive-box' },
+        'archive-old': { parent: 'archive' },
+        'archive-flipped': { parent: 'archive-box', hFlip: true },
+      },
+    });
+
+    expect(Object.keys(icons)).toEqual(['ArchiveBox', 'Archive', 'ArchiveOld']);
+    expect(icons.ArchiveOld).toEqual({ body: '<path/>' });
+  });
 });
 
 describe('Icon', () => {
@@ -64,6 +80,16 @@ describe('Icon', () => {
     act(() => root.render(<Icon name="Lightning" />));
 
     expect(container.querySelector('svg')?.innerHTML).toBe('<path d="M2 2"></path>');
+  });
+
+  it('leaves an inherited size to the renderer attributes, so container CSS can size the glyph', () => {
+    setRegisteredIcons(defineIcons({ Lightning: lightning }));
+
+    act(() => root.render(<Icon name="Lightning" size="inherit" />));
+
+    const svg = container.querySelector('svg');
+    expect(svg?.style.width).toBe('');
+    expect(svg?.getAttribute('width')).toBe('1em');
   });
 
   it('leaves the color to the surrounding CSS unless a color is passed', () => {

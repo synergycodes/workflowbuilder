@@ -1,6 +1,6 @@
 import type { IconData } from '@workflowbuilder/ui';
 
-import { builtInIcons } from './built-in-icons';
+import { type BuiltInIconName, builtInIcons } from './built-in-icons';
 
 /**
  * Icons available by name, keyed by the name that node definitions, palette items, templates and select options use.
@@ -26,7 +26,7 @@ type AppIconName = Register extends { icons: infer Icons } ? Extract<keyof Icons
  *
  * @category Icons
  */
-export type WBIcon = Extract<keyof typeof builtInIcons, string> | AppIconName;
+export type WBIcon = BuiltInIconName | AppIconName;
 
 /**
  * Icon set in the Iconify JSON format, as produced by `@iconify/tools` or shipped by `@iconify-json/*` packages.
@@ -35,18 +35,39 @@ export type WBIcon = Extract<keyof typeof builtInIcons, string> | AppIconName;
  */
 export type IconifyIconSet = {
   icons: Readonly<Record<string, IconData>>;
+  aliases?: Readonly<Record<string, IconifyAlias>>;
   left?: number;
   top?: number;
   width?: number;
   height?: number;
 };
 
+/**
+ * Another name for an icon of the set. `Icon` does not rotate or flip glyphs, so `fromIconify` leaves out aliases that do.
+ *
+ * @category Icons
+ */
+export type IconifyAlias = {
+  parent: string;
+  rotate?: number;
+  hFlip?: boolean;
+  vFlip?: boolean;
+};
+
+type TransformedAlias = { rotate: unknown } | { hFlip: unknown } | { vFlip: unknown };
+
 type PascalCase<Name extends string> = Name extends `${infer Head}-${infer Tail}`
   ? `${Capitalize<Head>}${PascalCase<Tail>}`
   : Capitalize<Name>;
 
+type UntransformedAliasName<IconSetJson extends IconifyIconSet> = {
+  [Name in keyof IconSetJson['aliases']]: IconSetJson['aliases'][Name] extends TransformedAlias ? never : Name;
+}[keyof IconSetJson['aliases']];
+
 type RenamedIconifyIcons<IconSetJson extends IconifyIconSet> = {
-  [Name in keyof IconSetJson['icons'] as PascalCase<Extract<Name, string>>]: IconData;
+  [Name in keyof IconSetJson['icons'] | UntransformedAliasName<IconSetJson> as PascalCase<
+    Extract<Name, string>
+  >]: IconData;
 };
 
 /**
@@ -60,6 +81,7 @@ export function defineIcons<const Icons extends IconSet>(icons: Icons): Icons {
 
 /**
  * Turns an Iconify JSON icon set into an icon set for `defineIcons`, renaming `hubspot-logo` to `HubspotLogo`.
+ * Aliases become icons of their own, except those that rotate or flip their parent.
  *
  * @category Icons
  */
@@ -67,10 +89,12 @@ export function fromIconify<const IconSetJson extends IconifyIconSet>(
   iconSet: IconSetJson,
 ): RenamedIconifyIcons<IconSetJson> {
   const sharedDimensions = sharedDimensionsOf(iconSet);
-  const entries = Object.entries(iconSet.icons).map(([name, icon]) => [
-    toPascalCase(name),
-    { ...sharedDimensions, ...icon },
-  ]);
+  const names = [...Object.keys(iconSet.icons), ...Object.keys(iconSet.aliases ?? {})];
+  const entries = names.flatMap((name) => {
+    const icon = resolveIconifyIcon(iconSet, name, new Set());
+
+    return icon ? [[toPascalCase(name), { ...sharedDimensions, ...icon }]] : [];
+  });
 
   // Object.fromEntries cannot express the renamed keys of the mapped return type.
   return Object.fromEntries(entries) as RenamedIconifyIcons<IconSetJson>;
@@ -90,6 +114,16 @@ export function findIcon(name: string): IconData | undefined {
   if (Object.hasOwn(builtIns, name)) return builtIns[name];
 
   return undefined;
+}
+
+function resolveIconifyIcon(iconSet: IconifyIconSet, name: string, visited: Set<string>): IconData | undefined {
+  if (Object.hasOwn(iconSet.icons, name)) return iconSet.icons[name];
+
+  const alias = iconSet.aliases && Object.hasOwn(iconSet.aliases, name) ? iconSet.aliases[name] : undefined;
+  if (!alias || alias.rotate || alias.hFlip || alias.vFlip || visited.has(name)) return undefined;
+
+  visited.add(name);
+  return resolveIconifyIcon(iconSet, alias.parent, visited);
 }
 
 function toPascalCase(name: string): string {

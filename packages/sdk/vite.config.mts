@@ -118,6 +118,12 @@ export default defineConfig(({ command }) => ({
       // The one type we can't reach from source alone — the ai-tools-control
       // depends on a few @jsonforms types we export for consumer convenience.
       insertTypesEntry: true,
+      // The plugin only logs declaration errors, and a type it cannot emit then ships as an import of a missing file.
+      afterDiagnostic(diagnostics) {
+        if (diagnostics.length > 0) {
+          throw new Error(`Type declarations failed with ${diagnostics.length} error(s); see the log above.`);
+        }
+      },
     }),
   ],
   resolve: {

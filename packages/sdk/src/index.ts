@@ -300,6 +300,7 @@ export {
   defineIcons,
   fromIconify,
   type IconSet,
+  type IconifyAlias,
   type IconifyIconSet,
   type Register,
   type WBIcon,

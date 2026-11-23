@@ -4,7 +4,7 @@ import type { SVGProps } from 'react';
  * Glyph data in the Iconify icon format, as exported by `@iconify-icons/*` packages:
  * the inner SVG markup and its view box.
  *
- * @category Icon
+ * @category Icons
  */
 export type IconData = {
   body: string;
@@ -22,7 +22,7 @@ const ICONIFY_DEFAULT_SIZE = 16;
 /**
  * Renders icon data synchronously as an inline SVG sized to `1em` and colored with `currentColor`.
  *
- * @category Icon
+ * @category Icons
  */
 export function Icon({ icon, ...svgProps }: IconProps) {
   const { body, left = 0, top = 0, width = ICONIFY_DEFAULT_SIZE, height = ICONIFY_DEFAULT_SIZE } = icon;
