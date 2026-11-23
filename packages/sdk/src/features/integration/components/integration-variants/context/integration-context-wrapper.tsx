@@ -71,20 +71,23 @@ export function IntegrationContextWrapper({ onSave, autoSave, children }: Props)
 
   return (
     <IntegrationContext.Provider value={value}>
-      <MountTracker session={sessionRef} />
+      <MountTracker session={sessionRef} onSave={value.onSave} />
       {children}
     </IntegrationContext.Provider>
   );
 }
 
-function MountTracker({ session }: { session: RefObject<Session> }) {
+function MountTracker({ session, onSave }: { session: RefObject<Session>; onSave: OnSave }) {
   useLayoutEffect(() => {
     const current = session.current;
     current.isMounted = true;
     return () => {
+      // A host SPA route change unmounts the editor without `beforeunload`. Saved here, not in a
+      // descendant's cleanup: those run after this one, when the save is already refused.
+      void onSave({ isAutoSave: true });
       current.isMounted = false;
     };
-  }, [session]);
+  }, [session, onSave]);
 
   return null;
 }

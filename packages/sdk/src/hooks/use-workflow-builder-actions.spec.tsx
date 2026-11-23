@@ -7,6 +7,7 @@ import { trackFutureChange } from '../features/changes-tracker/stores/use-change
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { IntegrationContextWrapper } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
+import { hasUnsavedChanges } from '../features/integration/stores/use-integration-store';
 import { useModalStore } from '../features/modals/stores/use-modal-store';
 import type * as OpenTemplateSelectorModalModule from '../features/modals/template-selector/open-template-selector-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
@@ -577,6 +578,7 @@ describe('useWorkflowBuilderActions', () => {
       const { actions, onSave, unmount } = renderHook(useWorkflowBuilderActions);
       const kept = actions.current!;
 
+      vi.mocked(hasUnsavedChanges).mockReturnValueOnce(false);
       unmount();
       kept.togglePalette();
       kept.setWorkflowName('stale');

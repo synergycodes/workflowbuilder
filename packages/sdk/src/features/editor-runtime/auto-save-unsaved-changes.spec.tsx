@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { type RenderResult, act, fireEvent, render, screen } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -89,7 +89,7 @@ async function settle(ms = 0) {
 async function renderRoot(strategy: Strategy, integration: WorkflowBuilderIntegration) {
   const initialData =
     strategy === 'props' ? { name: stored.name, initialNodes: stored.nodes, initialEdges: stored.edges } : {};
-  render(
+  const view = render(
     <StrictMode>
       <WorkflowBuilderRoot integration={integration} {...initialData}>
         <ActionsProbe />
@@ -98,12 +98,19 @@ async function renderRoot(strategy: Strategy, integration: WorkflowBuilderIntegr
     </StrictMode>,
   );
   await settle();
+  return view;
 }
 
 async function closeTheTab() {
   await act(async () => {
     globalThis.dispatchEvent(new Event('beforeunload'));
   });
+  await settle(800);
+}
+
+// A host SPA route change: no beforeunload, the editor just unmounts.
+async function leaveTheRoute(view: RenderResult) {
+  view.unmount();
   await settle(800);
 }
 
@@ -163,6 +170,47 @@ describe.each<Strategy>(['localStorage', 'api', 'props'])('automatic saves with 
     await closeTheTab();
 
     expect(writes()).toBe(1);
+  });
+
+  it('opening a diagram and the host app unmounting the editor without a change writes nothing', async () => {
+    const { integration, writes } = harnessFor(strategy);
+    const view = await renderRoot(strategy, integration);
+
+    await leaveTheRoute(view);
+
+    expect(writes()).toBe(0);
+  });
+
+  it.each(Object.entries(edits))('%s alone, then the host app unmounting the editor, writes once', async (_, edit) => {
+    const { integration, writes } = harnessFor(strategy);
+    const view = await renderRoot(strategy, integration);
+
+    act(edit);
+    await leaveTheRoute(view);
+
+    expect(writes()).toBe(1);
+  });
+
+  it('a successful manual save, then the host app unmounting the editor, writes nothing more', async () => {
+    const { integration, writes } = harnessFor(strategy);
+    const view = await renderRoot(strategy, integration);
+
+    act(edits['a rename']);
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await settle(800);
+    await leaveTheRoute(view);
+
+    expect(writes()).toBe(1);
+  });
+
+  it('with autoSave: false the host app unmounting an edited editor writes nothing', async () => {
+    const { integration, writes } = harnessFor(strategy);
+    const view = await renderRoot(strategy, { ...integration, autoSave: false });
+
+    act(edits['a rename']);
+    await leaveTheRoute(view);
+
+    expect(writes()).toBe(0);
   });
 
   it('a successful manual save, then closing the tab, writes nothing more', async () => {
@@ -231,6 +279,31 @@ describe('an edit made while a save is in flight', () => {
 
     expect(onDataSave).toHaveBeenCalledTimes(2);
     expect(onDataSave.mock.calls[1][0].layoutDirection).toBe('DOWN');
+  });
+});
+
+describe('the host app swapping one editor for the next', () => {
+  it('writes the first diagram through the first integration before the second one loads', async () => {
+    const firstSave = vi.fn<OnSaveExternal>().mockResolvedValue('success');
+    const secondSave = vi.fn<OnSaveExternal>().mockResolvedValue('success');
+    const view = await renderRoot('props', { strategy: 'props', onDataSave: firstSave });
+
+    act(edits['a rename']);
+    view.rerender(
+      <StrictMode>
+        <WorkflowBuilderRoot key="second" integration={{ strategy: 'props', onDataSave: secondSave }} name="Second">
+          <ActionsProbe />
+        </WorkflowBuilderRoot>
+      </StrictMode>,
+    );
+    await settle(800);
+
+    expect(firstSave).toHaveBeenCalledTimes(1);
+    expect(firstSave).toHaveBeenCalledWith(expect.objectContaining({ name: 'Renamed', nodes: [expect.anything()] }), {
+      isAutoSave: true,
+    });
+    expect(secondSave).not.toHaveBeenCalled();
+    expect(useStore.getState().workflowName).toBe('Second');
   });
 });
 
