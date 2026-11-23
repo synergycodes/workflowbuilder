@@ -170,6 +170,24 @@ describe('useWorkflowBuilderActions', () => {
       expect(openImportModal).toHaveBeenCalledTimes(1);
     });
 
+    it('openImport is a no-op in read-only mode', () => {
+      useStore.setState({ isReadOnly: true });
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.openImport();
+
+      expect(openImportModal).not.toHaveBeenCalled();
+    });
+
+    it('openImport reads read-only mode when called, not when the actions are created', () => {
+      const { actions } = renderHook(useWorkflowBuilderActions);
+      useStore.setState({ isReadOnly: true });
+
+      actions.current!.openImport();
+
+      expect(openImportModal).not.toHaveBeenCalled();
+    });
+
     it('openExport delegates to openExportModal', () => {
       const { actions } = renderHook(useWorkflowBuilderActions);
 

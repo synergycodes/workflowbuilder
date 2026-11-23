@@ -152,12 +152,16 @@ Design decisions a reader of the code should know:
   `disabled` prop, but the welcome template selector that an empty diagram opens on mount went
   through the same modal without that check. Guarding the modal opener instead of only the action
   closes that path for every caller, present and future, instead of trusting each one to remember.
-  Two other paths to a read-only model change are left unguarded by design: `openImportModal` has
-  no read-only guard (`ImportModal` replaces the whole diagram the same way `TemplateSelector`
-  does), and the Settings modal lets a read-only viewer edit global variables, which are part of
-  the persisted model. Closing them is a separate task (the design document's decision 24), not
-  part of this release. An app that needs read-only to be airtight today hides both explicitly:
-  `builtInControls={{ import: canEdit, settings: canEdit }}`.
+  Two other paths to a read-only model change were left unguarded at first: Import (`ImportModal`
+  replaces the whole diagram the same way `TemplateSelector` does), and the Settings modal, which
+  lets a read-only viewer edit global variables, part of the persisted model (the design
+  document's decision 24).
+- **Import refuses read-only mode in its action, not in `openImportModal` (Dominika Pacholec,
+  23.11.2026).** `openImport` became `whileEditable`, like `setWorkflowName` and the layout actions,
+  and the project menu shows Import disabled in read-only mode. Unlike the template selector,
+  Import has no path around the action: the built-in menu item calls `openImport` too. Settings is
+  still unguarded; an app that needs read-only to be airtight hides it explicitly:
+  `builtInControls={{ settings: canEdit }}`.
 
 - **`EditorRuntime` is a render boundary, not inlined into `RootShell`.** `useAutoSave` subscribes
   to the changes tracker, so it reruns on every diagram change; `useAutoSaveOnClose` just registers
@@ -280,9 +284,9 @@ than folded into this release:
   authored as a component instead (mounted once, the way `OptionalAppChildren` content is today)
   would let it use `…Content`/`…MenuItem` directly instead of mounting one indirection component
   through `OptionalAppChildren` (follow-up: plugin-as-component).
-- `openImportModal` and the Settings modal do not check read-only mode, unlike every other path
-  that changes the persisted model; closing that gap is the design document's decision 24, tracked
-  as its own task (follow-up: read-only-import-settings).
+- The Settings modal does not check read-only mode, unlike every other path that changes the
+  persisted model (Import was closed on 23.11.2026, above); closing that gap is the rest of the
+  design document's decision 24, tracked as its own task (follow-up: read-only-import-settings).
 - Component decorators a plugin registers stay registered after its Root unmounts, so a later
   Root without that plugin still renders them; clearing them on boot would drop decorators
   registered at module level, which the plugin guide shows (follow-up: plugin-registry-per-root).

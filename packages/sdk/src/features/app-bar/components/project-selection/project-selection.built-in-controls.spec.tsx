@@ -165,3 +165,31 @@ describe('ProjectSelection builtInControls', () => {
     expect(screen.getByRole('textbox')).not.toBeNull();
   });
 });
+
+describe('ProjectSelection in read-only mode', () => {
+  it('shows Import disabled, and choosing it opens nothing', () => {
+    useModalStore.setState({ isOpen: false, modal: null });
+    resetWithDocumentName();
+    useStore.setState({ isReadOnly: true });
+    renderInRoot(<ProjectSelection />);
+
+    openProjectMenu();
+    const importItem = screen.getByRole('menuitem', { name: 'Import' });
+    expect(importItem.getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByRole('menuitem', { name: 'Export' }).getAttribute('aria-disabled')).toBeNull();
+
+    fireEvent.click(importItem);
+    expect(useModalStore.getState().isOpen).toBe(false);
+  });
+
+  it('opens the import modal from the menu while editable', () => {
+    useModalStore.setState({ isOpen: false, modal: null });
+    renderProjectSelection({});
+
+    openProjectMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Import' }));
+
+    expect(useModalStore.getState().isOpen).toBe(true);
+    expect(useModalStore.getState().modal?.title).toBe(i18n.t('importExport.import'));
+  });
+});
