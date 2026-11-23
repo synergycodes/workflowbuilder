@@ -96,7 +96,9 @@ function MyToolbar() {
     <header>
       <input value={workflowName} onChange={(event) => actions.setWorkflowName(event.target.value)} />
       <button onClick={actions.save}>Save</button>
-      <button onClick={actions.openImport}>Import</button>
+      <button disabled={isReadOnly} onClick={actions.openImport}>
+        Import
+      </button>
       <button onClick={actions.openExport}>Export</button>
       <button disabled={isReadOnly} onClick={actions.openTemplates}>
         Templates

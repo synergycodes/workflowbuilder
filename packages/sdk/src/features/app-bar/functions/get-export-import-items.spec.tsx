@@ -10,9 +10,12 @@ vi.mock('@workflow-builder/icons', () => ({
 const actions = { openExport: vi.fn(), openImport: vi.fn() };
 
 describe('getExportImportItems', () => {
-  it.each([true, false])('leaves a hidden Import out whatever read-only is (%s)', (isReadOnly) => {
-    const items = getExportImportItems({ export: true, import: false }, actions, isReadOnly);
+  it.each([true, false])('disables Import alone exactly when read-only mode is on (read-only: %s)', (isReadOnly) => {
+    const items = getExportImportItems({ export: true, import: true }, actions, isReadOnly);
 
-    expect(items.map((item) => item.label)).toEqual(['Export']);
+    expect(items.map(({ label, disabled }) => ({ label, disabled: disabled ?? false }))).toEqual([
+      { label: 'Export', disabled: false },
+      { label: 'Import', disabled: isReadOnly },
+    ]);
   });
 });
