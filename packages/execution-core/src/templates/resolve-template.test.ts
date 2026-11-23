@@ -258,3 +258,46 @@ describe('resolveTemplate — failures are permanent', () => {
     expect(resolving('{{unknown.x}}')).toThrow(expect.objectContaining({ code: 'template_unresolved' }));
   });
 });
+
+describe('resolveTemplate — only own properties resolve', () => {
+  const context = makeContext({ nodeOutputs: { writer: { response: 'hello', items: ['a', 'b'] } } });
+
+  it.each(['constructor', 'toString', '__proto__'])(
+    'an inherited %s is unresolved, not the prototype member',
+    (key) => {
+      expect(() => resolveTemplate(`{{nodes.writer.${key}}}`, context)).toThrow(
+        expect.objectContaining({ code: 'template_unresolved' }),
+      );
+    },
+  );
+
+  it.each(['{{nodes.constructor}}', '{{trigger.toString}}', '{{global.hasOwnProperty}}'])(
+    'an inherited member directly under a namespace is unresolved: %s',
+    (template) => {
+      expect(() => resolveTemplate(template, context)).toThrow(
+        expect.objectContaining({ code: 'template_unresolved' }),
+      );
+    },
+  );
+
+  it('an inherited member falls back like any missing key', () => {
+    expect(resolveTemplate('{{nodes.writer.constructor?}}', context)).toBe('');
+    expect(resolveTemplate("{{nodes.writer.toString | default:'none'}}", context)).toBe('none');
+  });
+
+  it('an own __proto__ key, as JSON.parse creates it, still resolves', () => {
+    const fromJson = makeContext({
+      nodeOutputs: JSON.parse('{"writer":{"__proto__":"own"}}') as Record<string, unknown>,
+    });
+    expect(resolveTemplate('{{nodes.writer.__proto__}}', fromJson)).toBe('own');
+  });
+
+  it('null-prototype objects still resolve', () => {
+    const variables = Object.assign(Object.create(null) as Record<string, unknown>, { region: 'eu' });
+    expect(resolveTemplate('{{variables.region}}', makeContext({ variables }))).toBe('eu');
+  });
+
+  it('array indices and length still resolve', () => {
+    expect(resolveTemplate('{{nodes.writer.items.1}} {{nodes.writer.items.length}}', context)).toBe('b 2');
+  });
+});

@@ -100,7 +100,10 @@ function getNestedValue(object: unknown, path: string): unknown {
   let current: unknown = object;
 
   for (const key of keys) {
-    if (current === null || current === undefined || typeof current !== 'object') {
+    // Own properties only: a plain lookup would let `{{nodes.x.constructor}}` or
+    // `{{nodes.x.__proto__}}` reach the prototype chain instead of failing as unresolved.
+    // Array indices and `length` are own properties, so they still resolve.
+    if (current === null || current === undefined || typeof current !== 'object' || !Object.hasOwn(current, key)) {
       return undefined;
     }
     current = (current as Record<string, unknown>)[key];
