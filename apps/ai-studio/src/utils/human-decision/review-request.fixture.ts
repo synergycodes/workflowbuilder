@@ -1,6 +1,6 @@
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
-// Every type the form shows (number, string, boolean) and two it leaves out (integer, array).
+// Every type the form shows (number, integer, string, boolean) and two it leaves out (nullable integer, array).
 export const reviewRequest = {
   version: 1,
   actions: [
@@ -14,6 +14,7 @@ export const reviewRequest = {
       orderDate: { type: 'string', readOnly: true },
       replyDraft: { type: 'string', title: 'Reply draft' },
       itemCount: { type: 'integer', title: 'Item count' },
+      discount: { type: ['integer', 'null'], title: 'Discount' },
       expedite: { type: 'boolean', title: 'Expedite' },
       tags: { type: 'array' },
     },
