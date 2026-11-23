@@ -60,8 +60,6 @@ export function editorLayout(schema: unknown): EditorLayout {
       return [];
     }
     const title = field['title'];
-    // The SDK label translates any text that is an i18n key, so an untitled key like `validation` shows
-    // i18next's notice instead (follow-up: sdk-label-i18n-object-keys).
     return [{ type, scope: `#/properties/${encodePointerSegment(key)}`, label: hasText(title) ? title : key }];
   });
   return { type: 'VerticalLayout', elements };
