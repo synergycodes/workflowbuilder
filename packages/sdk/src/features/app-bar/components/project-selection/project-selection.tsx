@@ -56,7 +56,7 @@ export function ProjectSelection(props: object) {
       ...getExportImportItems(
         { export: isExportVisible, import: isImportVisible },
         { openExport, openImport },
-        { isReadOnly },
+        isReadOnly,
       ),
       ...(isSaveAsPdfAvailable
         ? [{ label: t('header.projectSelection.saveAsPdf'), icon: <Icon name="FilePdf" />, onClick: saveAsPdf }]

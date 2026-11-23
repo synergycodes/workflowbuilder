@@ -8,7 +8,7 @@ import type { WorkflowBuilderActions } from '../../../hooks/use-workflow-builder
 export function getExportImportItems(
   visible: { export: boolean; import: boolean },
   { openExport, openImport }: Pick<WorkflowBuilderActions, 'openExport' | 'openImport'>,
-  { isReadOnly }: { isReadOnly: boolean },
+  isReadOnly: boolean,
 ): MenuItemProps[] {
   return [
     ...(visible.export

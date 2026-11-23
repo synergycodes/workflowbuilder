@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
 
@@ -167,11 +167,13 @@ describe('ProjectSelection builtInControls', () => {
 });
 
 describe('ProjectSelection in read-only mode', () => {
-  it('shows Import disabled, and choosing it opens nothing', () => {
+  beforeEach(() => {
     useModalStore.setState({ isOpen: false, modal: null });
-    resetWithDocumentName();
-    useStore.setState({ isReadOnly: true });
-    renderInRoot(<ProjectSelection />);
+  });
+
+  it('shows Import disabled, and choosing it opens nothing', () => {
+    renderProjectSelection({});
+    act(() => useStore.setState({ isReadOnly: true }));
 
     openProjectMenu();
     const importItem = screen.getByRole('menuitem', { name: 'Import' });
@@ -183,7 +185,6 @@ describe('ProjectSelection in read-only mode', () => {
   });
 
   it('opens the import modal from the menu while editable', () => {
-    useModalStore.setState({ isOpen: false, modal: null });
     renderProjectSelection({});
 
     openProjectMenu();

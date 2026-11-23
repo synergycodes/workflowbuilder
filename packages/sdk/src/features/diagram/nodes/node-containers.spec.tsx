@@ -67,14 +67,11 @@ describe.each(containers)('%s', (_name, Container) => {
 describe.each(Object.entries({ DecisionNodeContainer, AiNodeContainer }) as unknown as [string, Container][])(
   '%s add button',
   (_name, Container) => {
-    it.each([
-      [true, 'true'],
-      [false, 'false'],
-    ])('with isReadOnly %s in the store, passes isAddDisabled %s', (isReadOnly, expected) => {
+    it.each([true, false])('passes the store isReadOnly %s as isAddDisabled', (isReadOnly) => {
       useStore.setState({ isReadOnly });
       renderContainer(Container);
 
-      expect(screen.getByTestId('template').dataset.addDisabled).toBe(expected);
+      expect(screen.getByTestId('template').dataset.addDisabled).toBe(String(isReadOnly));
     });
   },
 );

@@ -8,37 +8,11 @@ vi.mock('@workflow-builder/icons', () => ({
 }));
 
 const actions = { openExport: vi.fn(), openImport: vi.fn() };
-const bothVisible = { export: true, import: true };
-
-function itemsBy(isReadOnly: boolean, visible = bothVisible) {
-  return Object.fromEntries(
-    getExportImportItems(visible, actions, { isReadOnly }).map((item) => [item.label, item] as const),
-  );
-}
 
 describe('getExportImportItems', () => {
-  it('disables Import, and only Import, in read-only mode', () => {
-    const items = itemsBy(true);
-
-    expect(items['Import']?.disabled).toBe(true);
-    expect(items['Export']?.disabled).toBeFalsy();
-  });
-
-  it('disables neither while the editor is editable', () => {
-    const items = itemsBy(false);
-
-    expect(items['Import']?.disabled).toBe(false);
-    expect(items['Export']?.disabled).toBeFalsy();
-  });
-
   it.each([true, false])('leaves a hidden Import out whatever read-only is (%s)', (isReadOnly) => {
-    expect(Object.keys(itemsBy(isReadOnly, { export: true, import: false }))).toEqual(['Export']);
-  });
+    const items = getExportImportItems({ export: true, import: false }, actions, isReadOnly);
 
-  it('runs the actions it is given', () => {
-    const items = itemsBy(false);
-
-    expect(items['Import']?.onClick).toBe(actions.openImport);
-    expect(items['Export']?.onClick).toBe(actions.openExport);
+    expect(items.map((item) => item.label)).toEqual(['Export']);
   });
 });

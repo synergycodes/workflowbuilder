@@ -10,10 +10,7 @@ vi.mock('@xyflow/react', () => ({
 }));
 
 describe('DecisionNodeTemplate', () => {
-  it.each([
-    [true, true],
-    [false, false],
-  ])('with isAddDisabled %s, Add branch is disabled: %s', (isAddDisabled, isDisabled) => {
+  it.each([true, false])('disables Add branch when isAddDisabled is %s', (isAddDisabled) => {
     render(
       <DecisionNodeTemplate
         id="decision"
@@ -25,6 +22,6 @@ describe('DecisionNodeTemplate', () => {
       />,
     );
 
-    expect((screen.getByRole('button', { name: 'Add branch' }) as HTMLButtonElement).disabled).toBe(isDisabled);
+    expect((screen.getByRole('button', { name: 'Add branch' }) as HTMLButtonElement).disabled).toBe(isAddDisabled);
   });
 });

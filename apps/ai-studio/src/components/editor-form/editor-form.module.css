@@ -1,6 +1,4 @@
 /* 1rem as in the panel's own fields, over the SDK's 0.5rem for a nested layout. */
 .fields > div {
-  display: flex;
-  flex-direction: column;
   gap: 1rem;
 }

@@ -27,12 +27,9 @@ describe('AiAgentNodeTemplate', () => {
     expect(screen.getByTestId('node-icon').dataset.accent).toBe('green');
   });
 
-  it.each([
-    [true, true],
-    [false, false],
-  ])('with isAddDisabled %s, Add Tool is disabled: %s', (isAddDisabled, isDisabled) => {
+  it.each([true, false])('disables Add Tool when isAddDisabled is %s', (isAddDisabled) => {
     render(<AiAgentNodeTemplate id="agent" icon="Robot" label="Agent" description="" isAddDisabled={isAddDisabled} />);
 
-    expect((screen.getByRole('button', { name: 'Add Tool' }) as HTMLButtonElement).disabled).toBe(isDisabled);
+    expect((screen.getByRole('button', { name: 'Add Tool' }) as HTMLButtonElement).disabled).toBe(isAddDisabled);
   });
 });
