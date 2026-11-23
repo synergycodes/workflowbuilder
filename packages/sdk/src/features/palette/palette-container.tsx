@@ -29,7 +29,7 @@ export function PaletteContainer() {
   const isReadOnly = useStore((state) => state.isReadOnly);
   const translateIfPossible = useTranslateIfPossible();
 
-  const { draggedItem, zoom, ref, onMouseDown, onDragStart } = usePaletteDragAndDrop(!isReadOnly);
+  const { draggedItem, zoom, ref, onPointerDown, onDragStart } = usePaletteDragAndDrop(!isReadOnly);
 
   const isFiltering = paletteFilter.trim() !== '';
   const filteredItems = filterPaletteItems(paletteItems, paletteFilter, (label) => translateIfPossible(label) || label);
@@ -43,7 +43,7 @@ export function PaletteContainer() {
     >
       <PaletteItems
         items={filteredItems}
-        onMouseDown={onMouseDown}
+        onPointerDown={onPointerDown}
         onDragStart={onDragStart}
         isDisabled={isReadOnly}
         isFiltering={isFiltering}
