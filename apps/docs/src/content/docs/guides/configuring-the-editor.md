@@ -117,9 +117,10 @@ function MyToolbar() {
 
 - Call both from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) through context, so outside Root `save()` logs an error and resolves to `'error'`. `deleteSelection` does nothing until `<WorkflowBuilder.Canvas />` has mounted.
 - Besides the editor header's commands, the actions hook also covers the palette and the properties panel: `togglePalette`/`setPaletteOpen`, `togglePropertiesPanel`/`setPropertiesPanelOpen`, `setPaletteFilter` (filters the palette's node list by a case-insensitive match on each item's translated label, without touching node definitions, validation or forms), `setLanguage`, and layout-direction control, which the editor header surfaces as the Clean up menu while `<EditorHeaderCleanUp>` is mounted: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
-- `openTemplates`, `openImport`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection` and `cleanUp` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openSettings`, which does change the persisted global variables but is not read-only-guarded today. Hide it explicitly where that matters, e.g. `builtInControls={{ settings: canEdit }}`.
+- `openTemplates`, `openImport`, `loadWorkflow`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection` and `cleanUp` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openSettings`, which does change the persisted global variables but is not read-only-guarded today. Hide it explicitly where that matters, e.g. `builtInControls={{ settings: canEdit }}`.
 - To select from your own controls, use `useSetSelection()`: `setSelection({ nodeIds, edgeIds })` replaces the selection as a click does, and returns `false` when the canvas lacks any of the ids.
 - The editor header also shows and edits the workflow name. Read it with `useWorkflowBuilderState()`'s `workflowName` and change it with `useWorkflowBuilderActions()`'s `setWorkflowName(name)`, up to 128 characters; a longer name is ignored (with a console warning) rather than truncated, and the call does nothing in read-only mode.
+- To put a diagram of your own into the editor, for example from your own template picker, call `loadWorkflow(model)` with a [`DiagramModel`](/api/types/diagrammodel/). It replaces the nodes, edges, name and layout direction the way the built-in template selector does: nodes snap to the grid, the change is recorded for undo, and the view fits the new diagram once the canvas has mounted. Global variables are kept. The model is required, so call it from a handler (`onClick={() => actions.loadWorkflow(template)}`) rather than passing the action itself.
 
 ## Node types
 
@@ -274,14 +275,14 @@ Today the runtime treats every non-empty resolution of `onDataSave` as "the save
 - `loadFailed` is `true` when the `api` load request failed, and always `false` for `localStorage` and `props`. After a failed load the editor stays usable but refuses to save for the rest of that Root mount, so nothing can overwrite the copy on the server that could not be loaded. What to show the user is up to you.
 - `actions` is the same object as [`useWorkflowBuilderActions()`](/api/hooks/useworkflowbuilderactions/), so `actions.save()` works inside the handler and `actions.openTemplates()` does nothing in read-only mode. You can keep `actions` after the handler returns, for example for a welcome screen or a ref outside Root: every action acts on the current editor, and once that Root unmounts every action does nothing and `save()` resolves `'error'`.
 
-Without `onLoad`, the builder opens the template selector for an empty diagram, unless the load failed. A custom handler replaces that default entirely, so the template selector opens only when the handler calls `actions.openTemplates()`. For example, to open the palette and show your own welcome screen that offers the templates:
+Without `onLoad`, the builder opens the template selector for an empty diagram, unless the load failed. A custom handler replaces that default entirely, so the template selector opens only when the handler calls `actions.openTemplates()`. For example, to open the palette and show your own welcome screen, which loads the diagram the user picks with `actions.loadWorkflow` (pass `actions.openTemplates` instead to offer the built-in selector):
 
 ```tsx
 <WorkflowBuilder.Root
   onLoad={({ isEmpty, loadFailed, actions }) => {
     if (loadFailed) return showLoadError();
     actions.setPaletteOpen(true);
-    if (isEmpty) showWelcome({ onPickTemplate: actions.openTemplates });
+    if (isEmpty) showWelcome({ onPick: (model) => actions.loadWorkflow(model) });
   }}
 />
 ```
