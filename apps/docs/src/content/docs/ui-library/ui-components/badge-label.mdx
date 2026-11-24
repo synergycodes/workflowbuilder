@@ -22,14 +22,25 @@ function Example() {
 }
 ```
 
+## Colour
+
 A `BadgeLabel` takes its colour from two CSS variables, `--wb-public-badge-label-background-color` for the background and `--wb-public-badge-label-color` for the foreground. Set them on `:root` to change every `BadgeLabel`, on a container to change the ones inside it, or on a single instance through `className` or `style`, for example to use a colour that comes from your data.
 
 ```tsx
+import type { CSSProperties } from 'react';
+
 <BadgeLabel
   label="Failed"
-  style={{ '--wb-public-badge-label-background-color': '#fee2e2', '--wb-public-badge-label-color': '#991b1b' }}
-/>
+  style={
+    {
+      '--wb-public-badge-label-background-color': '#fee2e2',
+      '--wb-public-badge-label-color': '#991b1b',
+    } as CSSProperties
+  }
+/>;
 ```
+
+The `inverse` variant has its own pair: `--wb-public-badge-label-background-color-inverse` for the background and `--wb-public-badge-label-color-inverse` for the foreground.
 
 ## Props
 
