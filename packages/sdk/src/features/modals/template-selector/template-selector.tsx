@@ -5,26 +5,19 @@ import { Trans, useTranslation } from 'react-i18next';
 import styles from './template-selector.module.css';
 
 import { getTemplates } from '../../../data/templates';
-import { useFitView } from '../../../hooks/use-fit-view';
+import { loadDiagramModel } from '../../../hooks/load-diagram-model';
 import type { DiagramModel } from '../../../node/common';
-import { useStore } from '../../../store/store';
 import { trackFutureChange } from '../../changes-tracker/stores/use-changes-tracker-store';
 import { closeModal } from '../stores/use-modal-store';
 import { Tile } from './components/tile';
 
 export function TemplateSelector() {
   const { t } = useTranslation();
-  const setDiagramModel = useStore((store) => store.setDiagramModel);
-  const fitView = useFitView();
 
-  const selectTemplate = useCallback(
-    (model?: DiagramModel) => {
-      setDiagramModel(model);
-      fitView();
-      closeModal();
-    },
-    [setDiagramModel, fitView],
-  );
+  const selectTemplate = useCallback((model?: DiagramModel) => {
+    loadDiagramModel(model);
+    closeModal();
+  }, []);
 
   return (
     <div className={styles['container']}>
