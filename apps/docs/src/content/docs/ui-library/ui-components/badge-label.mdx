@@ -22,8 +22,14 @@ function Example() {
 }
 ```
 
-To show another status colour, override the colour variables on that instance, for example
-with a `className` that sets `--wb-public-badge-label-background-color`.
+A `BadgeLabel` takes its colour from two CSS variables, `--wb-public-badge-label-background-color` for the background and `--wb-public-badge-label-color` for the foreground. Set them on `:root` to change every `BadgeLabel`, on a container to change the ones inside it, or on a single instance through `className` or `style`, for example to use a colour that comes from your data.
+
+```tsx
+<BadgeLabel
+  label="Failed"
+  style={{ '--wb-public-badge-label-background-color': '#fee2e2', '--wb-public-badge-label-color': '#991b1b' }}
+/>
+```
 
 ## Props
 
