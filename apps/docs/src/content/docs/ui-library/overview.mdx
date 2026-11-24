@@ -120,4 +120,8 @@ import type { CSSProperties } from 'react';
 />;
 ```
 
-The one exception is `accent` on `NodeIcon`. Use it in a node definition, where the SDK draws the icon and your app cannot reach the instance. Everywhere else, set the variables.
+A free colour is a pair of public variables. The only prop that takes a free colour is `accent` on `NodeIcon`, for node definitions where the SDK draws the icon and your app cannot reach the instance. Everywhere else, set the variables.
+
+A variant or a status is chosen by a prop (`variant`, `tone`), and each variant has its own set of public variables. For example, the run status tones read `--wb-public-node-run-status-{stroke,halo,bg,fg}-<tone>`. A custom tone is a custom variant defined by the same variables, see [Run status](/ui-library/diagram-components/run-status/#custom-tone).
+
+`NodeRunBadge` takes its colour from the status palette, not from `--wb-public-badge-label-*`, except for the `inverse` tone.
