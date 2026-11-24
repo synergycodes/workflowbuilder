@@ -83,6 +83,20 @@ it('marks the container and items with the secondary variant', () => {
   expect(buttons[0]?.getAttribute('aria-pressed')).toBe('true');
 });
 
+it('renders the round shape on the container and its items', () => {
+  act(() => {
+    root.render(
+      <SegmentPicker defaultValue="a" shape="round">
+        <SegmentPicker.Item value="a" prefixIcon={<svg />} aria-label="First" />
+        <SegmentPicker.Item value="b" prefixIcon={<svg />} aria-label="Second" />
+      </SegmentPicker>,
+    );
+  });
+
+  expect(container.firstElementChild?.className).toMatch(/round/);
+  expect(container.querySelector('button')?.className).toMatch(/round/);
+});
+
 it('renders the primary variant by default', () => {
   act(() => {
     root.render(

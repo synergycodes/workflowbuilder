@@ -1,5 +1,5 @@
 @layer ui.component {
-  .item:not(.circle, .secondary) {
+  .item:not(.round, .secondary) {
     width: 100%;
   }
 

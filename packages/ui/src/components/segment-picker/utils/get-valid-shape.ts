@@ -7,7 +7,7 @@ export function getValidShape(
   shape: SegmentPickerShape,
   items: ReactElement<SegmentPickerItemProps, typeof Item>[],
 ): SegmentPickerShape {
-  if (shape !== 'circle') {
+  if (shape !== 'round') {
     return shape;
   }
 
@@ -19,7 +19,7 @@ export function getValidShape(
   });
 
   if (!everyItemHasOnlyIcon) {
-    console.error('[SegmentPicker] The "circle" shape can only be used when all items contain only a prefix icon.');
+    console.error('[SegmentPicker] The "round" shape can only be used when all items contain only a prefix icon.');
     return 'default';
   }
 

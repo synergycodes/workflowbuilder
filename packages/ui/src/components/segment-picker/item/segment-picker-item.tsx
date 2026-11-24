@@ -35,7 +35,7 @@ export function Item({
     return null;
   }
 
-  const { selectedValue, onSelect, shape, variant, size, navVariant } = context;
+  const { selectedValue, onSelect, shape, variant, size, navShape } = context;
   const isSelected = selectedValue === value;
 
   return (
@@ -48,8 +48,8 @@ export function Item({
         onClick?.(event);
       }}
       prefixIcon={prefixIcon}
+      shape={navShape}
       size={size}
-      variant={navVariant}
       suffixIcon={suffixIcon}
       {...buttonProps}
     >

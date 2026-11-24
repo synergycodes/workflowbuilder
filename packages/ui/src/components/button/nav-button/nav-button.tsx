@@ -12,9 +12,10 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
     className,
     isSelected = false,
     prefixIcon,
+    shape = 'square',
     size = 'm',
     suffixIcon,
-    variant = 'square',
+    variant = 'default',
     ...props
   } = buttonProps;
   const renderableChildren = Children.toArray(children).filter((child) => child !== '');
@@ -24,7 +25,8 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
     <BaseButton
       ref={ref}
       className={className}
-      styles={clsx(styles['nav-button'], styles[size], styles[variant], {
+      styles={clsx(styles['nav-button'], styles[size], styles[shape], {
+        [styles['plain']]: variant === 'plain',
         [styles['icon-only']]: isIconOnly,
         [styles['selected']]: isSelected,
       })}

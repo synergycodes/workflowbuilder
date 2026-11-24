@@ -13,12 +13,12 @@
 
     background-color: var(--wb-public-segment-picker-background-color);
 
-    &.circle {
+    &.round {
       border-radius: var(--wb-public-segment-picker-circle-border-radius);
       width: fit-content;
     }
 
-    &:not(.circle, .secondary) {
+    &:not(.round, .secondary) {
       width: 100%;
     }
 
@@ -27,7 +27,7 @@
       width: fit-content;
     }
 
-    &.secondary:not(.circle) {
+    &.secondary:not(.round) {
       border-radius: var(--wb-public-segment-picker-secondary-border-radius);
     }
   }

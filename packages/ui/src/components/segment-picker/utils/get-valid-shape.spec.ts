@@ -25,18 +25,18 @@ describe('getValidShape', () => {
     expect(getValidShape('default', [labelItem('a')])).toBe('default');
   });
 
-  it("returns 'circle' when every item has an explicit prefix icon", () => {
-    expect(getValidShape('circle', [iconItem('a'), iconItem('b')])).toBe('circle');
+  it("returns 'round' when every item has an explicit prefix icon", () => {
+    expect(getValidShape('round', [iconItem('a'), iconItem('b')])).toBe('round');
   });
 
-  it("returns 'circle' for the existing icon-child API", () => {
-    expect(getValidShape('circle', [legacyIconItem('a'), legacyIconItem('b')])).toBe('circle');
+  it("returns 'round' for the existing icon-child API", () => {
+    expect(getValidShape('round', [legacyIconItem('a'), legacyIconItem('b')])).toBe('round');
   });
 
   it("falls back to 'default' and logs an error when an item has a label", () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(getValidShape('circle', [iconItem('a'), labelItem('b')])).toBe('default');
+    expect(getValidShape('round', [iconItem('a'), labelItem('b')])).toBe('default');
     expect(spy).toHaveBeenCalledOnce();
 
     spy.mockRestore();

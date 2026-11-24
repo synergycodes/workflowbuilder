@@ -9,7 +9,7 @@ export function NavButtonExample() {
       <ComponentPreview.Stack>
         <ComponentPreview.Row>
           <NavButton prefixIcon={<House />}>Square</NavButton>
-          <NavButton variant="round" prefixIcon={<House />}>
+          <NavButton shape="round" prefixIcon={<House />}>
             Round
           </NavButton>
           <NavButton aria-label="Plain" variant="plain" prefixIcon={<House />} />

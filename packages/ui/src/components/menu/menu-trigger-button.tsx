@@ -1,5 +1,5 @@
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
-import type { NavButtonSize, NavButtonVariant } from '@ui/components/button/nav-button/types';
+import type { NavButtonShape, NavButtonSize, NavButtonVariant } from '@ui/components/button/nav-button/types';
 import type { BaseButtonProps, IconNode } from '@ui/components/button/types';
 import { forwardRef, useContext } from 'react';
 
@@ -10,6 +10,8 @@ export type MenuTriggerButtonProps = BaseButtonProps & {
   /** @default 'm' */
   size?: NavButtonSize;
   /** @default 'square' */
+  shape?: NavButtonShape;
+  /** @default 'default' */
   variant?: NavButtonVariant;
 };
 

@@ -1,4 +1,4 @@
-import type { NavButtonSize, NavButtonVariant } from '@ui/components/button/nav-button/types';
+import type { NavButtonShape, NavButtonSize } from '@ui/components/button/nav-button/types';
 import type { Size } from '@ui/shared/types/size';
 import clsx from 'clsx';
 import {
@@ -28,9 +28,9 @@ const NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE: Record<Size, NavButtonSize> = {
   'xxx-small': 'xxxs',
 };
 
-const NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE: Record<SegmentPickerShape, Exclude<NavButtonVariant, 'plain'>> = {
+const NAV_BUTTON_SHAPE_BY_SEGMENT_PICKER_SHAPE: Record<SegmentPickerShape, NavButtonShape> = {
   default: 'square',
-  circle: 'round',
+  round: 'round',
 };
 
 export type SegmentPickerPropsBase = {
@@ -38,7 +38,7 @@ export type SegmentPickerPropsBase = {
   /** @default 'medium' */
   size?: Size;
   /**
-   * Circle is supported only when every item contains an icon without a label.
+   * Round is supported only when every item contains an icon without a label.
    * @default 'default'
    */
   shape?: SegmentPickerShape;
@@ -91,7 +91,7 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
           size: NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE[size],
           shape: validShape,
           variant,
-          navVariant: NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE[validShape],
+          navShape: NAV_BUTTON_SHAPE_BY_SEGMENT_PICKER_SHAPE[validShape],
         }}
       >
         <div
