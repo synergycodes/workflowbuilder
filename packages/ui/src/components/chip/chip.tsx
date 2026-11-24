@@ -38,12 +38,7 @@ export type ChipVariant = 'solid' | 'outline';
 export type ChipSize = 's' | 'm' | 'l' | 'xl';
 
 /**
- * A small label. Colour it through CSS variables, on `:root`, on a container, or on one chip through
- * `className` or `style`.
- *
- * - `solid`: `--wb-public-chip-background-color` and `--wb-public-chip-color`.
- * - `outline`: `--wb-public-chip-color-outline` paints the text, the ring and the fill;
- *   `--wb-public-chip-background-color-outline` is a wash over that fill.
+ * A small label. Colour it through `--wb-public-chip-*` variables, on `:root`, a container or one instance.
  *
  * @category Chip
  */
