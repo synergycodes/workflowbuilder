@@ -21,7 +21,6 @@
     "@jsonforms/core": "^3.4.1",
     "@jsonforms/react": "^3.4.1",
     "@microsoft/clarity": "^1.0.0",
-    "@phosphor-icons/react": "^2.1.7",
     "@workflowbuilder/ui": "workspace:*",
     "@xyflow/react": "catalog:",
     "ajv": "catalog:",

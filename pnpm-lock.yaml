@@ -292,9 +292,6 @@ importers:
       '@microsoft/clarity':
         specifier: ^1.0.0
         version: 1.0.2
-      '@phosphor-icons/react':
-        specifier: ^2.1.7
-        version: 2.1.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@workflowbuilder/ui':
         specifier: workspace:*
         version: link:../../packages/ui
