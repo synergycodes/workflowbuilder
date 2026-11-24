@@ -1,3 +1,4 @@
+import questionIcon from '@iconify-icons/ph/question';
 import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -122,7 +123,7 @@ describe('Icon', () => {
     expect(icons[1].style.color).toBe('red');
   });
 
-  it('renders a same-size placeholder for an unknown name and warns once per name', () => {
+  it('renders a same-size question mark for an unknown name and warns once per name', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     act(() =>
@@ -134,9 +135,11 @@ describe('Icon', () => {
       ),
     );
 
-    const placeholder = container.querySelector('svg');
-    expect(placeholder?.innerHTML).toBe('');
-    expect(placeholder?.style.width).toBe('1.5rem');
+    const fallback = container.querySelector('svg');
+    const questionPath = /d="([^"]+)"/.exec(questionIcon.body)?.[1];
+    expect(fallback?.querySelector('path')?.getAttribute('d')).toBe(questionPath);
+    expect(fallback?.getAttribute('aria-hidden')).toBe('true');
+    expect(fallback?.style.width).toBe('1.5rem');
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('"NotRegistered"'));
   });

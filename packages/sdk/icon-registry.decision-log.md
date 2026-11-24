@@ -36,7 +36,8 @@ exist.
 - Icons fixed in code (editor header, menus, modals, form controls) are imports passed as
   `<Icon icon={...} />`. The renderer lives in `@workflowbuilder/ui`, so the component library uses the
   same data without depending on the SDK.
-- An unregistered name renders a same-size empty placeholder and logs one warning per name.
+- An unregistered name renders a same-size question mark and logs one warning per name, so a missing
+  registration shows on the canvas: without the `Register` augmentation nothing fails at build time.
 - A plugin registers the icons its own node types and templates name with `registerIcons` in its
   initializer, and types them by extending `PluginIconNames`, which every plugin package can augment.
   The app does not list plugin icons, so removing a plugin needs no change in the app; the demo's

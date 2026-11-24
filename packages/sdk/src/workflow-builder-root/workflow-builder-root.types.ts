@@ -294,7 +294,8 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   layoutDirection?: LayoutDirection;
   /**
    * Icons that nodes, palette items and templates refer to by name, built with `defineIcons`.
-   * They render synchronously and only these end up in the bundle. **Must be a stable reference.**
+   * They render synchronously and only these end up in the bundle.
+   * Read when an icon renders: set it once, a later change does not refresh icons already on the canvas.
    */
   icons?: IconSet;
   /** Initial nodes rendered on first mount. */
