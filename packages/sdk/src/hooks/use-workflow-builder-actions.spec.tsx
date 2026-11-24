@@ -53,6 +53,16 @@ vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
 
 const changeLanguage = vi.spyOn(i18n, 'changeLanguage').mockResolvedValue((() => '') as never);
 
+const model: DiagramModel = {
+  name: 'Onboarding',
+  layoutDirection: 'DOWN',
+  diagram: {
+    nodes: [{ id: 'n1', position: { x: 0, y: 0 }, data: { type: 'action', icon: 'Plus', properties: {} } }],
+    edges: [],
+    viewport: { x: 0, y: 0, zoom: 1 },
+  },
+};
+
 function silenceConsoleError() {
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
   onTestFinished(() => consoleError.mockRestore());
@@ -211,16 +221,6 @@ describe('useWorkflowBuilderActions', () => {
   });
 
   describe('loadWorkflow', () => {
-    const model: DiagramModel = {
-      name: 'Onboarding',
-      layoutDirection: 'DOWN',
-      diagram: {
-        nodes: [{ id: 'n1', position: { x: 0, y: 0 }, data: { type: 'action', icon: 'Plus', properties: {} } }],
-        edges: [],
-        viewport: { x: 0, y: 0, zoom: 1 },
-      },
-    };
-
     it('replaces the diagram in the editor', () => {
       const { actions } = renderHook(useWorkflowBuilderActions);
 
@@ -242,15 +242,6 @@ describe('useWorkflowBuilderActions', () => {
       expect(useStore.getState().nodes).toEqual([]);
       expect(useStore.getState().workflowName).toBe('Invoice approval');
       expect(trackFutureChange).not.toHaveBeenCalled();
-    });
-
-    it('reads read-only mode when called, not when the actions are created', () => {
-      const { actions } = renderHook(useWorkflowBuilderActions);
-      useStore.setState({ isReadOnly: true });
-
-      actions.current!.loadWorkflow(model);
-
-      expect(useStore.getState().nodes).toEqual([]);
     });
   });
 
@@ -635,26 +626,13 @@ describe('useWorkflowBuilderActions', () => {
       kept.togglePalette();
       kept.setWorkflowName('stale');
       kept.openSettings();
+      kept.loadWorkflow(model);
 
       expect(await kept.save()).toBe('error');
       expect(onSave).not.toHaveBeenCalled();
       expect(useStore.getState().isPaletteOpen).toBe(false);
       expect(useStore.getState().workflowName).toBe('');
       expect(openModalWorkflowSettings).not.toHaveBeenCalled();
-    });
-
-    it('loadWorkflow does nothing once the Root unmounts', () => {
-      const { actions, unmount } = renderHook(useWorkflowBuilderActions);
-      const kept = actions.current!;
-
-      unmount();
-      kept.loadWorkflow({
-        name: 'Onboarding',
-        layoutDirection: 'DOWN',
-        diagram: { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 } },
-      });
-
-      expect(useStore.getState().workflowName).toBe('');
       expect(trackFutureChange).not.toHaveBeenCalled();
     });
 

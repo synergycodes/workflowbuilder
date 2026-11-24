@@ -282,7 +282,7 @@ Without `onLoad`, the builder opens the template selector for an empty diagram, 
   onLoad={({ isEmpty, loadFailed, actions }) => {
     if (loadFailed) return showLoadError();
     actions.setPaletteOpen(true);
-    if (isEmpty) showWelcome({ onPick: (model) => actions.loadWorkflow(model) });
+    if (isEmpty) showWelcome({ onPick: actions.loadWorkflow });
   }}
 />
 ```

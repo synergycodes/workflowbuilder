@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 import styles from './template-selector.module.css';
@@ -11,13 +10,13 @@ import { trackFutureChange } from '../../changes-tracker/stores/use-changes-trac
 import { closeModal } from '../stores/use-modal-store';
 import { Tile } from './components/tile';
 
+function selectTemplate(model?: DiagramModel) {
+  loadDiagramModel(model);
+  closeModal();
+}
+
 export function TemplateSelector() {
   const { t } = useTranslation();
-
-  const selectTemplate = useCallback((model?: DiagramModel) => {
-    loadDiagramModel(model);
-    closeModal();
-  }, []);
 
   return (
     <div className={styles['container']}>

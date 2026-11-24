@@ -1,4 +1,5 @@
 import { SNAP_GRID, SNAP_IS_ACTIVE } from '../features/diagram/diagram.const';
+import type { DiagramModel } from '../node/common';
 
 export function snapToGridIfNeeded(node?: { x?: number; y?: number }) {
   const { x = 0, y = 0 } = node || {};
@@ -16,5 +17,18 @@ export function snapToGridIfNeeded(node?: { x?: number; y?: number }) {
   return {
     x,
     y,
+  };
+}
+
+export function snapDiagramToGrid(model: DiagramModel): DiagramModel {
+  return {
+    ...model,
+    diagram: {
+      ...model.diagram,
+      nodes: model.diagram.nodes.map((node) => ({
+        ...node,
+        ...(node.position ? { position: snapToGridIfNeeded(node.position) } : {}),
+      })),
+    },
   };
 }

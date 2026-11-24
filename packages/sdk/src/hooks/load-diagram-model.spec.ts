@@ -102,28 +102,30 @@ describe('loadDiagramModel', () => {
     expect(useStore.getState().globalVariables).toBe(before);
   });
 
-  it('fits the view once the canvas has mounted', () => {
-    const fitView = vi.fn();
-    useStore.setState({ reactFlowInstance: { getZoom: () => 1, fitView } as never });
-    const rafSpy = vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((callback) => {
-      callback(0);
-      return 0;
+  describe('fitting the view', () => {
+    beforeEach(() => {
+      vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((callback) => {
+        callback(0);
+        return 0;
+      });
     });
 
-    loadDiagramModel(makeModel([makeNode('n1')]));
-
-    expect(fitView).toHaveBeenCalledTimes(1);
-    rafSpy.mockRestore();
-  });
-
-  it('writes the store before the canvas has mounted', () => {
-    const rafSpy = vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((callback) => {
-      callback(0);
-      return 0;
+    afterEach(() => {
+      vi.restoreAllMocks();
     });
 
-    expect(() => loadDiagramModel(makeModel([makeNode('n1')]))).not.toThrow();
-    expect(useStore.getState().nodes.map(({ id }) => id)).toEqual(['n1']);
-    rafSpy.mockRestore();
+    it('fits the view once the canvas has mounted', () => {
+      const fitView = vi.fn();
+      useStore.setState({ reactFlowInstance: { getZoom: () => 1, fitView } as never });
+
+      loadDiagramModel(makeModel([makeNode('n1')]));
+
+      expect(fitView).toHaveBeenCalledTimes(1);
+    });
+
+    it('writes the store before the canvas has mounted', () => {
+      expect(() => loadDiagramModel(makeModel([makeNode('n1')]))).not.toThrow();
+      expect(useStore.getState().nodes.map(({ id }) => id)).toEqual(['n1']);
+    });
   });
 });
