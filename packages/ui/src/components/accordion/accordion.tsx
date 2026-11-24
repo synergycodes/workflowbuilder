@@ -20,17 +20,17 @@ export type AccordionProps = React.HTMLAttributes<HTMLDivElement> &
     children: React.ReactNode;
 
     /**
-     * True if not collapsed
+     * Open state when controlled
      */
-    isOpen?: boolean;
+    open?: boolean;
 
     /**
-     * Callback run when the open state changes
+     * Called with the next open state when the header is clicked
      */
-    onToggleOpen?: (isOpen: boolean) => void;
+    onOpenChange?: (open: boolean) => void;
 
     /**
-     * Initial open state
+     * Initial open state when uncontrolled
      * @default true
      */
     defaultOpen?: boolean;
@@ -43,21 +43,21 @@ export type AccordionProps = React.HTMLAttributes<HTMLDivElement> &
  * and documentation to present layered content efficiently.
  */
 export const Accordion = forwardRef<HTMLDivElement, AccordionProps>(
-  ({ label, children, onToggleOpen, isOpen: isOpenProperty, defaultOpen = true, className, ...props }, ref) => {
+  ({ label, children, onOpenChange, open, defaultOpen = true, className, ...props }, ref) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
-    const isExpanded = isOpenProperty ?? isOpen;
+    const isExpanded = open ?? isOpen;
 
     function onExpandCollapse() {
       const newValue = !isExpanded;
 
       setIsOpen(newValue);
-      onToggleOpen?.(newValue);
+      onOpenChange?.(newValue);
     }
 
     return (
-      // The arrow bubbles into the header's onClick, so it must not fire onToggle too.
-      <Collapsible defaultExpanded={defaultOpen} isExpanded={isExpanded}>
+      // The arrow bubbles into the header's onClick, so it must not fire onOpenChange too.
+      <Collapsible defaultOpen={defaultOpen} open={isExpanded}>
         <div ref={ref} className={clsx(styles['accordion'], className)} {...props}>
           <div
             className={clsx(styles['header'], {

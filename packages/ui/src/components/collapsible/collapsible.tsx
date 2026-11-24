@@ -27,9 +27,19 @@ function useCollapsibleContext() {
 
 export type CollapsibleProps = {
   children: ReactNode;
-  isExpanded?: boolean;
-  defaultExpanded?: boolean;
-  onToggle?: (expanded: boolean) => void;
+  /**
+   * Open state when controlled
+   */
+  open?: boolean;
+  /**
+   * Initial open state when uncontrolled
+   * @default false
+   */
+  defaultOpen?: boolean;
+  /**
+   * Called with the next open state when the button is clicked
+   */
+  onOpenChange?: (open: boolean) => void;
   /**
    * Accessible label for the button when the content is collapsed
    * @default 'Expand'
@@ -44,27 +54,27 @@ export type CollapsibleProps = {
 
 export function Collapsible({
   children,
-  isExpanded,
-  defaultExpanded = false,
-  onToggle,
+  open,
+  defaultOpen = false,
+  onOpenChange,
   expandLabel = 'Expand',
   collapseLabel = 'Collapse',
 }: CollapsibleProps) {
-  const isControlled = isExpanded !== undefined;
-  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const isControlled = open !== undefined;
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
 
-  const actualExpanded = isControlled ? isExpanded : internalExpanded;
+  const actualOpen = isControlled ? open : internalOpen;
 
   const toggle = useCallback(() => {
-    const next = !actualExpanded;
+    const next = !actualOpen;
     if (!isControlled) {
-      setInternalExpanded(next);
+      setInternalOpen(next);
     }
-    onToggle?.(next);
-  }, [actualExpanded, isControlled, onToggle]);
+    onOpenChange?.(next);
+  }, [actualOpen, isControlled, onOpenChange]);
 
   return (
-    <CollapsibleContext.Provider value={{ isExpanded: actualExpanded, toggle, expandLabel, collapseLabel }}>
+    <CollapsibleContext.Provider value={{ isExpanded: actualOpen, toggle, expandLabel, collapseLabel }}>
       {children}
     </CollapsibleContext.Provider>
   );
