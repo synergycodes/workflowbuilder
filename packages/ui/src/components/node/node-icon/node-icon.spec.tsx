@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { act } from 'react';
+import { type CSSProperties, act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
 import postcss from 'postcss';
@@ -65,6 +65,27 @@ describe('NodeIcon', () => {
 
     expect(rendered().className).toMatch(/disabled/);
     expect(rendered().style.getPropertyValue('--node-icon-color')).toContain('violet');
+  });
+});
+
+describe('NodeIcon style', () => {
+  it('lands on the root without an accent', () => {
+    act(() =>
+      root.render(<NodeIcon icon={<svg />} style={{ '--wb-public-node-icon-color': 'red' } as CSSProperties} />),
+    );
+
+    expect(rendered().style.getPropertyValue('--wb-public-node-icon-color')).toBe('red');
+  });
+
+  it('merges with the accent style', () => {
+    act(() =>
+      root.render(
+        <NodeIcon icon={<svg />} accent="violet" style={{ '--wb-public-node-icon-color': 'red' } as CSSProperties} />,
+      ),
+    );
+
+    expect(rendered().style.getPropertyValue('--node-icon-color')).toContain('violet');
+    expect(rendered().style.getPropertyValue('--wb-public-node-icon-color')).toBe('red');
   });
 });
 

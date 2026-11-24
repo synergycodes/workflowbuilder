@@ -23,13 +23,19 @@ export type NodeIconProps = {
   /** Muted glyph and container of the Node Disabled variant. */
   disabled?: boolean;
   className?: string;
+  /**
+   * Inline style of the container, for example `--wb-public-node-icon-color` and
+   * `--wb-public-node-icon-container-background-color` for one icon. An `accent` sets its own
+   * variables next to it.
+   */
+  style?: CSSProperties;
 };
 
-export function NodeIcon({ icon, accent, disabled = false, className }: NodeIconProps) {
+export function NodeIcon({ icon, accent, disabled = false, className, style }: NodeIconProps) {
   return (
     <div
       className={clsx(styles['container'], { [styles['disabled']]: disabled }, className)}
-      style={isCssNamePart(accent) ? accentStyle(accent) : undefined}
+      style={isCssNamePart(accent) ? { ...accentStyle(accent), ...style } : style}
     >
       {icon}
     </div>

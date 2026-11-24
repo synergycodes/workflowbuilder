@@ -37,6 +37,16 @@ export type ChipVariant = 'solid' | 'outline';
  */
 export type ChipSize = 's' | 'm' | 'l' | 'xl';
 
+/**
+ * A small label. Colour it through CSS variables, on `:root`, on a container, or on one chip through
+ * `className` or `style`.
+ *
+ * - `solid`: `--wb-public-chip-background-color` and `--wb-public-chip-color`.
+ * - `outline`: `--wb-public-chip-color-outline` paints the text, the ring and the fill;
+ *   `--wb-public-chip-background-color-outline` is a wash over that fill.
+ *
+ * @category Chip
+ */
 export const Chip = forwardRef<HTMLSpanElement, ChipProps>(
   ({ label, variant = 'solid', size = 'm', prefixIcon, onClose, closeLabel, className, ...rest }, ref) => {
     return (
