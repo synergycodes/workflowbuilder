@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 
 import { IntegrationContext } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
-import type { LayoutDirection } from '../node/common';
+import type { DiagramModel, LayoutDirection } from '../node/common';
 import type { DidSaveStatus } from '../types/integration';
 import type { Theme } from './theme';
 import type { WorkflowBuilderLanguage } from './use-workflow-builder-state';
@@ -30,14 +30,14 @@ export type LayoutChangeOptions = {
  * `<WorkflowBuilder.EditorHeader />`. Mirrors every command the built-in editor header
  * exposes (`save`, modal openers, read-only and theme toggles, Clean up, Save as PDF,
  * Publish), and also sets the layout direction on its own, which the header does only as
- * part of Clean up.
+ * part of Clean up, and loads a workflow of the app's own (`loadWorkflow`).
  *
  * The same object for the whole Root mount: every action reads the current canvas,
  * integration and read-only mode when it is called, so it is safe to keep, e.g. from
  * `onLoad`. Once the Root unmounts, every action does nothing and `save()` resolves
  * `'error'` without sending data.
  *
- * Actions that change the persisted diagram (`setWorkflowName`, `deleteSelection`,
+ * Actions that change the persisted diagram (`loadWorkflow`, `setWorkflowName`, `deleteSelection`,
  * `setLayoutDirection`, `toggleLayoutDirection`, `cleanUp`) or open the template picker or the
  * import modal (`openTemplates`, `openImport`) do nothing while the editor is in read-only mode.
  *
@@ -58,6 +58,13 @@ export type WorkflowBuilderActions = {
   openExport: () => void;
   /** Open the template picker modal. */
   openTemplates: () => void;
+  /**
+   * Replace the diagram in the editor with `model`: its nodes, edges, name and layout
+   * direction. The same as picking it in the built-in template selector: nodes snap to the
+   * grid, the change is recorded for undo, and the view fits the new diagram once the canvas
+   * has mounted. Global variables are kept.
+   */
+  loadWorkflow: (model: DiagramModel) => void;
   /** Flip read-only mode. */
   toggleReadOnly: () => void;
   /** Set read-only mode explicitly. */
@@ -120,7 +127,8 @@ export type WorkflowBuilderActions = {
 /**
  * Returns the Root's action object, the same one `onLoad` receives: every command the built-in
  * `<WorkflowBuilder.EditorHeader />` offers, plus setting the layout direction without a
- * clean-up. Use it from a custom header or toolbar when omitting the editor header.
+ * clean-up and loading a workflow of the app's own. Use it from a custom header or toolbar
+ * when omitting the editor header.
  *
  * Must be called from a descendant of `<WorkflowBuilder.Root>`: `save` reads the active
  * integration through React context, so outside Root `save()` logs an error and resolves
