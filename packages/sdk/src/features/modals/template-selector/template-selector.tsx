@@ -18,7 +18,16 @@ export function TemplateSelector() {
   const fitView = useFitView();
 
   const selectTemplate = useCallback(
-    (model?: DiagramModel) => {
+    (model?: DiagramModel, templateName?: string) => {
+      // Read-only can switch on while the modal is open: AI Studio sets it when a run starts.
+      if (useStore.getState().isReadOnly) {
+        closeModal();
+        return;
+      }
+
+      if (templateName) {
+        trackFutureChange('selectTemplate', { templateName });
+      }
       setDiagramModel(model);
       fitView();
       closeModal();
@@ -41,10 +50,7 @@ export function TemplateSelector() {
               key={id}
               title={name}
               subTitle={`${value.diagram.nodes.length} nodes`}
-              onClick={() => {
-                trackFutureChange('selectTemplate', { templateName: name });
-                selectTemplate(value);
-              }}
+              onClick={() => selectTemplate(value, name)}
             />
           ))}
           <Tile icon="CornersOut" title={t('templateSelector.emptyCanvas')} outlined={true} onClick={selectTemplate} />
