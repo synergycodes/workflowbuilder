@@ -27,7 +27,7 @@ exist.
   Only the imported icons are bundled, and they render synchronously.
 - Glyph data is the Iconify format (`{ body, width, height }`). Apps install `@iconify-icons/ph` (or any
   `@iconify-icons/*` set) themselves and import one file per icon; the SDK does not re-export icons.
-  `fromIconify` turns an Iconify JSON set, such as one built from a folder of SVGs, into an icon set.
+  Own SVGs go through an Iconify JSON set and `getIconData` from `@iconify/utils`.
 - Names stay PascalCase (`PlayCircle`), so saved diagrams and templates need no migration.
 - `Register` is augmented by the app to type names against what it registered. Without the
   augmentation any string type-checks, because the SDK's own code and apps that skip it must compile.
@@ -50,6 +50,8 @@ exist.
 - **Iconify's React component with its public API**: fetches icons from `api.iconify.design` at
   runtime, which breaks air-gapped deployments, and renders empty on the first render.
 - **`unplugin-icons`**: compiles static imports only, so it cannot resolve names stored in data.
+- **A `fromIconify` converter in the SDK** (Iconify JSON set to an icon set with PascalCase names):
+  no app used it, `getIconData` covers the same need, and adding it later is not a breaking change.
 - **Semantic names for the editor's own icons** (`'close'`, `'expand'`) so apps can swap them: not
   needed yet, and it can be added later without breaking the imports.
 

@@ -25,7 +25,7 @@ For walkthroughs, integration patterns, and design rationale, see the hand-writt
 | [Utilities](/docs/api/utilities/)     | Reusable schema fragments + small helpers (`getHandleId`, `sharedProperties`, `DeepPartial`).                                                                                                     |
 | [Constants](/docs/api/constants/)     | Edge-routing constants and reserved keys.                                                                                                                                                         |
 | [i18n](/docs/api/i18n/)               | `TranslationKey` for type-safe `t(...)` calls.                                                                                                                                                    |
-| [Icons](/docs/api/icons/)             | `Icon`, `defineIcons`, `fromIconify`, the `Register` augmentation and `WBIcon`.                                                                                                                   |
+| [Icons](/docs/api/icons/)             | `Icon`, `defineIcons`, `registerIcons`, the `Register` augmentation and `WBIcon`.                                                                                                                 |
 
 ## How this is generated
 

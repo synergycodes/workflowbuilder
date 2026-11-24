@@ -184,12 +184,17 @@ declare module '@workflowbuilder/sdk' {
 
 The `Register` augmentation types icon names against the set: `icon: 'Acorn'` in a node type is then a type error until you register `Acorn`. Without it any string type-checks. A name that is neither registered nor built in renders a question mark of the same size and logs one `console.warn` that says how to register it.
 
-Any `@iconify-icons/*` package works the same way, so you can mix sets; `Icon` does not rotate or flip glyphs, so pick icons that are not defined that way. For your own SVG files, build an Iconify JSON set once, for example with `importDirectory` from `@iconify/tools`, and pass it through `fromIconify`, which renames `hubspot-logo` to `HubspotLogo` and turns the set's aliases into icons of their own:
+Any `@iconify-icons/*` package works the same way, so you can mix sets; `Icon` does not rotate or flip glyphs, so pick icons that are not defined that way. For your own SVG files, build an Iconify JSON set once, for example with `importDirectory` from `@iconify/tools`, and take each icon out of it with `getIconData` from `@iconify/utils`:
 
 ```ts
+import { getIconData } from '@iconify/utils';
+
 import brandIcons from './icons/brand.json';
 
-export const appIcons = defineIcons({ Lightning: lightningIcon, ...fromIconify(brandIcons) });
+export const appIcons = defineIcons({
+  Lightning: lightningIcon,
+  HubspotLogo: getIconData(brandIcons, 'hubspot-logo')!,
+});
 ```
 
 In your own components, an icon that is fixed in the code does not need a name: pass the imported data instead, `<Icon icon={timerIcon} />`. `name` is for names that come from data.

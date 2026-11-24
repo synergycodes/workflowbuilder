@@ -298,12 +298,9 @@ export type { TranslationKey } from './features/i18n/i18next';
 export { Icon } from './icon/icon';
 export {
   defineIcons,
-  fromIconify,
   registerIcons,
   type IconNamesOf,
   type IconSet,
-  type IconifyAlias,
-  type IconifyIconSet,
   type PluginIconNames,
   type Register,
   type WBIcon,
