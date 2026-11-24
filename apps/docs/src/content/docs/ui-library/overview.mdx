@@ -106,3 +106,13 @@ switch themes (this is also how these docs theme the live examples):
 ```
 
 Override a generated `--wb-ds-*` design token to retune colors, spacing, or radii across the UI. For a single component, use a `--wb-public-*` override; component pages include generated tables for component-local variables.
+
+### Setting a component's colour
+
+A component that takes a free colour, such as [Chip](/ui-library/ui-components/chip/), [BadgeLabel](/ui-library/ui-components/badge-label/) and [NodeIcon](/ui-library/diagram-components/node-icon/), exposes it as a pair of public variables: a background and a foreground. A variant that has its own colours, such as the `outline` Chip, has its own pair. Set the pair on `:root` to change every instance, on a container to change the ones inside it, or on a single instance through `className` or `style`, for example to use a colour that comes from your data.
+
+```tsx
+<Chip label="Beta" style={{ '--wb-public-chip-background-color': tag.color, '--wb-public-chip-color': '#fff' }} />
+```
+
+The one exception is `accent` on `NodeIcon`. Use it in a node definition, where the SDK draws the icon and your app cannot reach the instance. Everywhere else, set the variables.
