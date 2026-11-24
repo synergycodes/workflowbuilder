@@ -98,6 +98,51 @@ describe('NodePanel.Overlay', () => {
   });
 });
 
+describe('NodePanel.Footer', () => {
+  it('is an accepted slot rendered after the content, also when the content is hidden', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const shell = render(
+      <NodePanel.Root selected={false}>
+        <NodePanel.Footer>
+          <span data-testid="footer" />
+        </NodePanel.Footer>
+        <NodePanel.Header>header</NodePanel.Header>
+        <NodePanel.Content>
+          <span data-testid="content" />
+        </NodePanel.Content>
+      </NodePanel.Root>,
+    );
+
+    expect(error).not.toHaveBeenCalled();
+    expect(shell.lastElementChild?.matches('[data-testid="footer"]')).toBe(true);
+    expect(shell.querySelector('[data-testid="content"]')).not.toBeNull();
+
+    act(() =>
+      root.render(
+        <NodePanel.Root selected={false}>
+          <NodePanel.Content isVisible={false}>content</NodePanel.Content>
+          <NodePanel.Footer>
+            <span data-testid="footer" />
+          </NodePanel.Footer>
+        </NodePanel.Root>,
+      ),
+    );
+    expect(shell.querySelector('[data-testid="footer"]')).not.toBeNull();
+  });
+
+  it('renders nothing when isVisible is false', () => {
+    const shell = render(
+      <NodePanel.Root selected={false}>
+        <NodePanel.Footer isVisible={false}>
+          <span data-testid="footer" />
+        </NodePanel.Footer>
+      </NodePanel.Root>,
+    );
+
+    expect(shell.querySelector('[data-testid="footer"]')).toBeNull();
+  });
+});
+
 describe('node-panel.module.css Overlay', () => {
   const stylesheet = parse('node-panel.module.css');
 

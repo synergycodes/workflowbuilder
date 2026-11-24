@@ -1,7 +1,5 @@
-import { Icon, useSetSelection } from '@workflowbuilder/sdk';
-import { Button } from '@workflowbuilder/ui';
-
-import styles from './human-decision-template.module.css';
+import { useSetSelection } from '@workflowbuilder/sdk';
+import { Button, NodeFooter, runStatusPresets } from '@workflowbuilder/ui';
 
 import { isDecidable, requestDecisionFocus, useExecutionStore } from '../../../stores/use-execution-store';
 import { hasText } from '../../../utils/has-text';
@@ -29,20 +27,16 @@ export function DecisionWaitingFooter({ nodeId, nodeLabel }: Props) {
   };
 
   return (
-    <div className={styles['waiting']}>
-      <span className={styles['waiting-label']}>
-        <Icon name="Clock" />
-        Waiting for decision
-      </span>
+    <NodeFooter {...runStatusPresets.waitingForHuman.footer}>
       <Button
         className="nodrag"
-        variant="ghost-primary"
+        variant="ghost-secondary"
         size="xs"
         aria-label={hasText(nodeLabel) ? `Decide: ${nodeLabel}` : undefined}
         onClick={decide}
       >
         Decide
       </Button>
-    </div>
+    </NodeFooter>
   );
 }

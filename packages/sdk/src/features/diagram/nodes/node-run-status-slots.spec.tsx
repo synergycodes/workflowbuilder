@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { WorkflowBuilderDecoratorWrapperProps } from '../../plugins-core/adapters/adapter-components';
@@ -10,15 +10,17 @@ vi.mock('@workflowbuilder/ui', async (importOriginal) => ({
 }));
 
 vi.mock('@xyflow/react', () => ({
-  Handle: () => null,
+  Handle: ({ type }: { type: string }) => <div data-handle={type} />,
   Position: { Left: 'left', Right: 'right', Top: 'top', Bottom: 'bottom' },
 }));
 
 type SlotProps = { nodeId: string };
 
 const nodeProps = { id: 'node-1', icon: 'Play', label: 'Send email', description: '' } as const;
+const handleParents = (root: HTMLElement) =>
+  Array.from(root.querySelectorAll('[data-handle]'), (handle) => handle.parentElement!);
 
-type TemplateProps = typeof nodeProps & { isValid?: boolean; showHandles?: boolean };
+type TemplateProps = typeof nodeProps & { isValid?: boolean; showHandles?: boolean; children?: ReactNode };
 
 // The decorator registry is module state: a fresh module graph per test keeps registrations from leaking.
 async function load() {
@@ -101,7 +103,7 @@ describe('node run status slots', () => {
     '%s renders the Status and run status slots on the canvas only',
     async (name) => {
       const { registerComponentDecorator, templates } = await load();
-      const slots = ['OptionalNodeOverlay', 'OptionalNodeCorner', 'OptionalNodeHeaderEnd'];
+      const slots = ['OptionalNodeOverlay', 'OptionalNodeCorner', 'OptionalNodeHeaderEnd', 'OptionalNodeFooter'];
       for (const slot of slots) {
         registerComponentDecorator(slot, { name: slot, content: () => <span data-testid={slot} /> });
       }
@@ -112,11 +114,78 @@ describe('node run status slots', () => {
       for (const testId of ['status', 'OptionalNodeOverlay', 'OptionalNodeCorner']) {
         expect(screen.getByTestId(testId).closest('[class*="overlay"]')).not.toBeNull();
       }
-      expect(screen.getByTestId('OptionalNodeHeaderEnd').closest('[class*="overlay"]')).toBeNull();
+      for (const testId of ['OptionalNodeHeaderEnd', 'OptionalNodeFooter']) {
+        expect(screen.getByTestId(testId).closest('[class*="overlay"]')).toBeNull();
+      }
+      expect(screen.getByTestId('OptionalNodeFooter').closest('[class*="content-container"]')).toBeNull();
       canvas.unmount();
 
       render(<Template {...nodeProps} isValid={false} showHandles={false} />);
       for (const testId of ['status', ...slots]) expect(screen.queryByTestId(testId)).toBeNull();
+    },
+  );
+
+  it.each(['WorkflowNodeTemplate', 'StartNodeTemplate', 'DecisionNodeTemplate', 'AiAgentNodeTemplate'])(
+    '%s renders no footer element between the content and the overlay while OptionalNodeFooter is empty',
+    async (name) => {
+      const { templates } = await load();
+      const Template = templates[name]!;
+
+      const { container } = render(<Template {...nodeProps} showHandles />);
+
+      const panel = container.querySelector('[class*="overlay"]')!.parentElement!;
+      expect(
+        Array.from(panel.children, (child) => child.className.match(/header-wrapper|content-container|overlay/)?.[0]),
+      ).toEqual(['header-wrapper', 'content-container', 'overlay']);
+    },
+  );
+
+  it.each(['WorkflowNodeTemplate', 'StartNodeTemplate', 'AiAgentNodeTemplate'])(
+    '%s keeps OptionalNodeFooter outside the collapsible body, so a collapsed node still shows it',
+    async (name) => {
+      const { registerComponentDecorator, templates } = await load();
+      registerComponentDecorator('OptionalNodeFooter', {
+        name: 'footer',
+        content: () => <span data-testid="footer" />,
+      });
+      const Template = templates[name]!;
+
+      const { container } = render(
+        <Template {...nodeProps} showHandles>
+          <p>Body</p>
+        </Template>,
+      );
+
+      const body = container.querySelector('[class*="content-wrapper"]')!;
+      expect(body.className).not.toMatch(/expanded/);
+      expect(body.contains(screen.getByTestId('footer'))).toBe(false);
+    },
+  );
+
+  it.each(['WorkflowNodeTemplate', 'StartNodeTemplate', 'DecisionNodeTemplate', 'AiAgentNodeTemplate'])(
+    '%s keeps its ports in the header row, unchanged, when OptionalNodeFooter shows',
+    async (name) => {
+      const { registerComponentDecorator, templates } = await load();
+      const Template = templates[name]!;
+
+      const plain = render(<Template {...nodeProps} showHandles />);
+      const parentClassesWithoutFooter = handleParents(plain.container).map((parent) => parent.className);
+      plain.unmount();
+
+      registerComponentDecorator('OptionalNodeFooter', {
+        name: 'footer',
+        content: () => <span data-testid="footer" />,
+      });
+      const { container } = render(<Template {...nodeProps} showHandles />);
+      const footer = screen.getByTestId('footer');
+
+      const parents = handleParents(container);
+      expect(parents.length).toBeGreaterThan(0);
+      expect(parents.map((parent) => parent.className)).toEqual(parentClassesWithoutFooter);
+      for (const parent of parents) {
+        expect(parent.querySelector('[class*="header-container"]')).not.toBeNull();
+        expect(parent.contains(footer)).toBe(false);
+      }
     },
   );
 });
