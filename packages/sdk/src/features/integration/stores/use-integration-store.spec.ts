@@ -75,16 +75,26 @@ describe('use-integration-store', () => {
       expect(loadData({ name: 'demo', nodes: [] })).toEqual({ isEmpty: true });
     });
 
-    it('shows the restore snackbar when the loaded data has nodes', () => {
-      loadData({ nodes: [node] });
+    it('shows the restore snackbar when restored data has nodes', () => {
+      loadData({ nodes: [node] }, { restored: true });
       expect(vi.mocked(showTranslatedSnackbar)).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'restoreDiagramSuccess' }),
       );
     });
 
-    it('applies a name alone, or an empty nodes array, without the restore snackbar', () => {
-      loadData({ name: 'demo' });
-      loadData({ name: 'demo', nodes: [] });
+    it('does not show the restore snackbar for data with nodes that was not restored', () => {
+      loadData({ nodes: [node] });
+      expect(vi.mocked(showTranslatedSnackbar)).not.toHaveBeenCalled();
+    });
+
+    it('does not show the restore snackbar for restored data when the load failed', () => {
+      loadData({ nodes: [node] }, { restored: true, loadFailed: true });
+      expect(vi.mocked(showTranslatedSnackbar)).not.toHaveBeenCalled();
+    });
+
+    it('applies a restored name alone, or an empty nodes array, without the restore snackbar', () => {
+      loadData({ name: 'demo' }, { restored: true });
+      loadData({ name: 'demo', nodes: [] }, { restored: true });
 
       expect(vi.mocked(setStoreDataFromIntegration)).toHaveBeenCalledTimes(2);
       expect(vi.mocked(showTranslatedSnackbar)).not.toHaveBeenCalled();
