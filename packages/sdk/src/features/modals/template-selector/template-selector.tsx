@@ -6,11 +6,21 @@ import styles from './template-selector.module.css';
 import { getTemplates } from '../../../data/templates';
 import { loadDiagramModel } from '../../../hooks/load-diagram-model';
 import type { DiagramModel } from '../../../node/common';
+import { useStore } from '../../../store/store';
 import { trackFutureChange } from '../../changes-tracker/stores/use-changes-tracker-store';
 import { closeModal } from '../stores/use-modal-store';
 import { Tile } from './components/tile';
 
-function selectTemplate(model?: DiagramModel) {
+function selectTemplate(model?: DiagramModel, templateName?: string) {
+  // Read-only can switch on while the modal is open: AI Studio sets it when a run starts.
+  if (useStore.getState().isReadOnly) {
+    closeModal();
+    return;
+  }
+
+  if (templateName) {
+    trackFutureChange('selectTemplate', { templateName });
+  }
   loadDiagramModel(model);
   closeModal();
 }
@@ -33,10 +43,7 @@ export function TemplateSelector() {
               key={id}
               title={name}
               subTitle={`${value.diagram.nodes.length} nodes`}
-              onClick={() => {
-                trackFutureChange('selectTemplate', { templateName: name });
-                selectTemplate(value);
-              }}
+              onClick={() => selectTemplate(value, name)}
             />
           ))}
           <Tile icon="CornersOut" title={t('templateSelector.emptyCanvas')} outlined={true} onClick={selectTemplate} />

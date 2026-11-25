@@ -162,7 +162,8 @@ Design decisions a reader of the code should know:
   template selector, Import has no way to open around the action: the built-in menu item calls
   `openImport` too. Read-only can still switch on while the modal is open (AI Studio sets it when a
   run starts), so `ImportModal` checks again before it imports, as the canvas Add tool modal does.
-  Settings is still unguarded; an app that needs read-only to be airtight hides it explicitly:
+  `TemplateSelector` checks again on pick for the same reason: a template picked after Run would
+  otherwise replace the diagram under the running workflow. Settings is still unguarded; an app that needs read-only to be airtight hides it explicitly:
   `builtInControls={{ settings: canEdit }}`.
 
 - **`EditorRuntime` is a render boundary, not inlined into `RootShell`.** `useAutoSave` subscribes
