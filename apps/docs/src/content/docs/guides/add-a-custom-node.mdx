@@ -282,7 +282,7 @@ The same template renders the canvas node, the palette thumbnail and the drag gh
 A custom template gets no validation badge and no [run status slots](/guides/build-a-plugin/#available-slots) unless it renders them. The built-in templates do it like this, on canvas nodes only (the palette passes `showHandles={false}`):
 
 ```tsx
-import { NodeOverlaySlots, OptionalNodeHeaderEnd } from '@workflowbuilder/sdk';
+import { NodeOverlaySlots, OptionalNodeFooter, OptionalNodeHeaderEnd } from '@workflowbuilder/sdk';
 
 // `id` and `isValid` come from WorkflowBuilderNodeTemplateProps too.
 const isCanvasNode = showHandles;
@@ -292,6 +292,9 @@ const isCanvasNode = showHandles;
     {/* NodeIcon, NodeDescription */}
     {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
   </NodePanel.Header>
+  <NodePanel.Footer isVisible={isCanvasNode}>
+    <OptionalNodeFooter nodeId={id} />
+  </NodePanel.Footer>
   <NodePanel.Overlay isVisible={isCanvasNode}>
     <NodeOverlaySlots nodeId={id} isValid={isValid} />
   </NodePanel.Overlay>

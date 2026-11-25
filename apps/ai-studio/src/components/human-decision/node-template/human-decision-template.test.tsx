@@ -15,6 +15,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
     [
       ['OptionalNodeContent', 'content'],
       ['OptionalNodeHeaderEnd', 'header-end'],
+      ['OptionalNodeFooter', 'footer'],
     ].map(([component, name]) => [
       component,
       ({ nodeId, children }: { nodeId: string; children?: ReactNode }) => (
@@ -261,16 +262,45 @@ describe('HumanDecisionNodeTemplate', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
     );
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
     expect(decideButton()).toBeUndefined();
 
     parkOnHuman1();
-    expect(container.textContent).toContain('Waiting for decision');
-    expect(decideButton()).toBeDefined();
+    expect(container.textContent).toContain('Decision needed');
+    expect(decideButton()?.closest('[data-slot="footer"][data-node-id="human-1"]')).not.toBeNull();
 
     act(() => applyEvent(nodeEvent('node_completed', 'human-1')));
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
     expect(decideButton()).toBeUndefined();
+  });
+
+  it('clears the wait and Decide on Reset', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+    expect(decideButton()).toBeDefined();
+
+    act(() => resetExecution());
+
+    expect(container.textContent).not.toContain('Decision needed');
+    expect(decideButton()).toBeUndefined();
+  });
+
+  it('keeps each action port in its content row while the wait shows in the footer', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+
+    const footer = container.querySelector('[data-slot="footer"]');
+    expect(footer?.contains(decideButton()!)).toBe(true);
+    const sources = handles(container, 'source');
+    expect(sources.map((handle) => handle.parentElement?.textContent)).toEqual(['Approve', 'Reject']);
+    for (const handle of sources) {
+      expect(handle.closest('[data-slot="content"]')).not.toBeNull();
+      expect(footer?.contains(handle)).toBe(false);
+    }
   });
 
   it('keeps the wait off while the run is cancelling, since the backend refuses a decision then', () => {
@@ -280,7 +310,7 @@ describe('HumanDecisionNodeTemplate', () => {
 
     act(() => applySnapshot(snapshotFrame('cancelling')));
 
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
   });
 
   it('names Decide after its node, and a press on it does not drag the node', () => {
