@@ -18,20 +18,26 @@ a path that TypeScript does not check. This page walks through both.
 
 ## Date and time values
 
-A `date` or `datetime` picked in the editor is stored as zone-less wall time: the day and
-clock as written, the same for every viewer and for the worker. 3.0.0 stored an instant
-instead.
+A `date`, `datetime` or `time` picked in the editor is stored as zone-less wall time: the
+day and clock as written, the same for every viewer. 3.0.0 stored an instant instead.
 
 | Type       | 3.0.0 stored                                                   | 4.0 stores         |
 | ---------- | -------------------------------------------------------------- | ------------------ |
 | `date`     | `YYYY-MM-DDTHH:mm:ss.sssZ`, the author's midnight moved to UTC | `YYYY-MM-DD`       |
 | `datetime` | `YYYY-MM-DDTHH:mm:ss.sssZ`, the picked clock moved to UTC      | `YYYY-MM-DDTHH:mm` |
-| `time`     | not available                                                  | `HH:mm:00+00:00`   |
+| `time`     | not available                                                  | `HH:mm`            |
 
-The `+00:00` on `time` is nominal: JSON Schema `format: 'time'` requires an offset, and the
-editor never applies it. A date picker has no clock, so an instant lands on another day in
-another zone; with wall time the author, every reader and the worker see the same day and
-clock.
+A date picker has no clock, so an instant lands on another day in another zone; with wall
+time the author and every reader see the same day and clock. Values that come from outside
+a workflow (an upstream output declared as `format: 'date-time'`) keep their zone and stay
+instants. When a condition compares a set value with an instant, the worker reads the set
+value in the workflow zone, which is UTC for now. A bare time that arrives with a zone is
+compared as the clock written in it, without conversion.
+
+Declare the properties these pickers write as `type: 'date'`, `type: 'datetime'` or
+`type: 'time'` in the node schema, inside nested objects too. The SDK validates them itself;
+`type: 'string'` with `format: 'date'` or `format: 'time'` is standard JSON Schema and
+rejects the stored shapes.
 
 ### Who is affected
 

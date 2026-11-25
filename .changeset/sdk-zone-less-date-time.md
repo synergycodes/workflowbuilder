@@ -2,7 +2,9 @@
 '@workflowbuilder/sdk': major
 ---
 
-`date` and `datetime` values picked in the editor are stored as zone-less wall time, `YYYY-MM-DD` and `YYYY-MM-DDTHH:mm`, and mean that day and clock for every viewer and for the worker; the new `time` type is stored as `HH:mm:00+00:00`, where the offset is nominal. 3.0.0 stored UTC instants written by `toISOString()`.
+`date`, `datetime` and the new `time` values picked in the editor are stored as zone-less wall time, `YYYY-MM-DD`, `YYYY-MM-DDTHH:mm` and `HH:mm`, and mean that day and clock for every viewer. Values from outside carry a zone and are instants; the worker reads a set value in the workflow zone, UTC for now, when it compares the two. A bare time that arrives with a zone is compared as the clock written in it, without conversion. 3.0.0 stored UTC instants written by `toISOString()`.
+
+Node schemas declare these properties as `type: 'date'`, `type: 'datetime'` or `type: 'time'`, also inside nested objects; the SDK validates them itself. Replace `type: 'string', format: 'date'` / `format: 'time'` on picker-bound properties.
 
 Breaking changes:
 

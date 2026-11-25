@@ -56,7 +56,7 @@ describe('findLegacyDateTimeValues', () => {
         condition('2024-01-15', LEGACY),
         condition('2024-01-15'),
         condition('2024-01-15T09:07'),
-        condition('09:07:00+00:00'),
+        condition('09:07'),
         condition('{{global.deadline}}'),
       ],
     });

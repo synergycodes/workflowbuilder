@@ -18,7 +18,7 @@ import type Ajv from 'ajv';
 import type { ErrorObject } from 'ajv';
 
 import { combineValidators } from './utils/combine-validators';
-import { getIsCustomType, getValidationForCustomTypes } from './workflow-builder-validator-for-custom-types';
+import { getValidationForCustomTypes, splitCustomTypes } from './workflow-builder-validator-for-custom-types';
 
 /**
  * Matches Ajv's ValidateFunction interface:
@@ -91,46 +91,10 @@ const getValidator = (object: object): Validator => {
   const schema = object as Schema;
   const properties = Object.entries(schema?.properties || {});
   const nullableProperties = new Set(properties.filter(([, value]) => allowsNull(value)).map(([key]) => key));
+  const { standardSchema, customFields } = splitCustomTypes(schema);
 
-  const { standardSchema, hasCustomSchema, customSchema } = properties.reduce(
-    (
-      stack: {
-        standardSchema: Exclude<Schema['properties'], undefined>;
-        customSchema: Exclude<Schema['properties'], undefined>;
-        hasCustomSchema: boolean;
-      },
-      [key, value],
-    ) => {
-      const isCustomProperty = typeof value !== 'boolean' && getIsCustomType(value.type);
-
-      if (isCustomProperty) {
-        stack.customSchema[key] = value;
-        stack.hasCustomSchema = true;
-      } else {
-        stack.standardSchema[key] = value;
-      }
-
-      return stack;
-    },
-    {
-      standardSchema: {},
-      customSchema: {},
-      hasCustomSchema: false,
-    },
-  );
-
-  const standardValidator = new Validator(
-    {
-      ...schema,
-      properties: {
-        ...standardSchema,
-      },
-    },
-    '7',
-    false,
-  );
-
-  const validationCustomTypes = hasCustomSchema ? getValidationForCustomTypes(customSchema) : undefined;
+  const standardValidator = new Validator(standardSchema, '7', false);
+  const validationCustomTypes = customFields.length > 0 ? getValidationForCustomTypes(customFields) : undefined;
 
   return combineValidators({ standardValidator, validationCustomTypes, nullableProperties });
 };

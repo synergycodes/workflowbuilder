@@ -2,7 +2,7 @@
 
 ### Proposed by: Szymon Tondowski
 
-### Date: 02.11.2026 (recorded 03.11.2026)
+### Date: 02.11.2026 (recorded 03.11.2026, `time` shape and worker comparison revised 25.11.2026)
 
 ## Context
 
@@ -19,13 +19,23 @@ On that route a datetime typed as 15.01.2024 09:07 in Warsaw is stored as `2024-
 
 A picked value is wall time and carries no zone. `2020-10-31` is that day for everyone, `09:07` is that clock for everyone, `2020-10-31T09:07` is both. What is in the picker is what is stored, what is stored is what every reader sees, with no conversion in either direction.
 
+The model in three sentences, shared with the worker:
+
+1. A value set in the editor (`date`, `time`, `datetime`) is stored without a zone, exactly as set: `2026-01-15`, `09:00`, `2026-01-15T09:00`.
+2. A value from outside carries a zone (`...Z`) and is an instant; only those are described by the standard `format: 'date-time'`.
+3. A set value compared with an instant is read in the workflow zone, which is UTC for now; two set values are compared directly.
+
+Known limitation: a bare time that arrives with a zone (`09:00:00+02:00`) is compared as the clock written in it, without conversion.
+
 Stored shapes:
 
-| Type       | Saved              | Note                                                                                                                                                                                                        |
-| ---------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `date`     | `YYYY-MM-DD`       |                                                                                                                                                                                                             |
-| `datetime` | `YYYY-MM-DDTHH:mm` | No seconds, no offset.                                                                                                                                                                                      |
-| `time`     | `HH:mm:00+00:00`   | The suffix is nominal: JSON Schema `format: 'time'` (RFC 3339 full-time, used by the demo trigger schema) requires an offset. Readers strip it with `getTimeHHmm` and never apply it. It does not mean UTC. |
+| Type       | Saved              | Note                   |
+| ---------- | ------------------ | ---------------------- |
+| `date`     | `YYYY-MM-DD`       |                        |
+| `datetime` | `YYYY-MM-DDTHH:mm` | No seconds, no offset. |
+| `time`     | `HH:mm`            | No seconds, no offset. |
+
+A node schema declares these properties as `type: 'date'`, `type: 'datetime'` or `type: 'time'`, at any object depth; the SDK validator checks them itself (`validation/workflow-builder-validator/variable-references-and-date-types.decision-log.md` § 2). An earlier draft stored `time` as `HH:mm:00+00:00` to pass JSON Schema `format: 'time'`; the suffix meant nothing and `@cfworker/json-schema` only asks for seconds, not an offset, so the shape was dropped before it shipped.
 
 `utils/time-iso.ts` is the only code that reads or writes these shapes. Strings are sliced by position, `Date` objects are read with the local getters (`getFullYear`, `getHours`, ...), and `getDateIfValid` builds a `Date` from the written parts instead of `new Date(string)`. `toISOString()` is not used. A value that arrives with seconds or an offset (an upstream output such as `2024-01-15T09:07:30Z`) is read as the clock written in it; the offset is dropped, not applied.
 
@@ -42,8 +52,7 @@ The `DatePicker` in `@workflowbuilder/ui` holds the same line on its side: `date
 ## Consequences
 
 - Any code that touches these values goes through `time-iso.ts`. Never `toISOString()`, `new Date('YYYY-MM-DD')` or `Date.parse` on them. The file header states the rule.
-- The `+00:00` on `time` misleads any reader that treats it as RFC 3339. Nothing in the repo does; an export that converts it to an instant would be off by the viewer's offset.
-- Known gap: `compareInstants` in `decision.ts` orders bare `HH:mm` by seconds of the day (against another clock or the clock inside a datetime), but `date` and `datetime` still go through `new Date(value).getTime()`. Same-shape comparisons agree, but a bare date parses as UTC midnight and a `YYYY-MM-DDTHH:mm` as local, so `date` against `datetime` is off by the worker's offset unless the worker runs in UTC, and nothing pins its zone (no `TZ` in `deploy/`). Direction: parse both sides from their parts, as `getDateIfValid` does. (follow-up: zone-less-date-compare-in-worker)
+- The worker compares them through `compareDateTime` in `@workflow-builder/execution-core`, which reads a zone-less value from its digits with `Date.UTC` and never calls `new Date(text)`, so the result does not depend on the worker's zone. A bare time compares by clock, a bare date by day, anything else by moment. `compare-date-time.non-utc.test.ts` runs the cases under `Europe/Warsaw`, because CI runs in UTC and would not catch a regression.
 - 3.0.0 instants (`toISOString()` output in condition values and `date` / `datetime` global defaults) are not converted: the author's zone is unknown. The store warns once per load (`store/slices/diagram-slice/utils/legacy-date-time-values.ts`) and the 4.0 upgrade guide § Date and time values holds the consumer steps. (migration: zone-less-date-time)
 - Validation of these types is a separate decision: `validation/workflow-builder-validator/variable-references-and-date-types.decision-log.md` § 2.
 
@@ -51,11 +60,11 @@ The `DatePicker` in `@workflowbuilder/ui` holds the same line on its side: `date
 
 Nothing asks for one today. When a consumer does (a schedule that must fire at 09:00 Warsaw time, a deadline shared across offices), extend the model, do not reinterpret it:
 
-- Keep the stored shapes. Add the zone as a separate field holding an IANA name (`Europe/Warsaw`), never an offset inside the string: an offset is one snapshot, the name survives DST.
-- A value without a zone keeps meaning wall time, so existing workflows need no migration.
-- The worker converts at the point of use (comparison, scheduling) with `Intl.DateTimeFormat` or `date-fns-tz`; the UI keeps showing the written digits with the zone as a label next to them.
+- Keep the stored shapes. Add the workflow zone as one field holding an IANA name (`Europe/Warsaw`) with the default `UTC`, never an offset inside the string: an offset is one snapshot, the name survives DST. That is an additive change and a minor release.
+- A value without a zone keeps meaning wall time in the workflow zone, so existing workflows need no migration.
+- The worker converts at the point of use (comparison, scheduling) with `Intl.DateTimeFormat` or `date-fns-tz`; the UI keeps showing the written digits with the zone as a label next to them. With the zone configurable, three cases appear that UTC never raises: DST transitions, outside values without a zone, and clocks with an explicit zone.
 - Where the zone comes from is open: a per-field picker, or a workflow-level default captured at save time. Decide when the consumer appears.
 
 ## Status
 
-Accepted, with the decision executor gap open.
+Accepted.

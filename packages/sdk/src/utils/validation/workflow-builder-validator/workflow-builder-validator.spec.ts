@@ -80,8 +80,53 @@ describe('workflowBuilderValidator date, datetime and time types', () => {
   it('should accept a date string, a clock for time, and a variable reference', () => {
     expect(check(whenSchema('date'), { note: '2024-01-15' }).valid).toBe(true);
     expect(check(whenSchema('datetime'), { note: '2024-01-15T09:07' }).valid).toBe(true);
-    expect(check(whenSchema('time'), { note: '09:07:00+00:00' }).valid).toBe(true);
+    expect(check(whenSchema('time'), { note: '09:07' }).valid).toBe(true);
     expect(check(whenSchema('time'), { note: '{{global.deadline}}' }).valid).toBe(true);
+  });
+
+  it('should check a date, datetime or time property inside a nested object', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        schedule: {
+          type: 'object',
+          properties: {
+            starts: { type: 'object', properties: { date: { type: 'date' }, time: { type: 'time' } } },
+            label: { type: 'string' },
+          },
+          required: ['label'],
+        },
+      },
+    };
+
+    expect(check(schema, { schedule: { starts: { date: '2024-01-15', time: '09:07' }, label: 'x' } }).valid).toBe(true);
+    expect(check(schema, { schedule: { starts: { date: '{{global.deadline}}', time: '' }, label: 'x' } }).valid).toBe(
+      true,
+    );
+    expect(check(schema, { schedule: { starts: {}, label: 'x' } }).valid).toBe(true);
+    expect(check(schema, { schedule: { starts: { date: '2024-01-15' }, label: '' } })).toEqual({
+      valid: false,
+      keywords: ['properties', 'required'],
+    });
+
+    const validate = workflowBuilderValidator.compile(schema);
+
+    expect(validate({ schedule: { starts: { date: '2024-01-15', time: '25:99' }, label: 'x' } })).toBe(false);
+    expect(validate.errors).toEqual([
+      expect.objectContaining({ instancePath: '/schedule/starts/time', keyword: 'type' }),
+    ]);
+  });
+
+  it('should report a required nested date that is missing through the standard required keyword', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        schedule: { type: 'object', properties: { date: { type: 'date' } }, required: ['date'] },
+      },
+    };
+
+    expect(check(schema, { schedule: {} }).keywords).toEqual(['properties', 'required']);
+    expect(check(schema, { schedule: { date: '2024-01-15' } }).valid).toBe(true);
   });
 
   it('should report a value that is not a date and name the property', () => {

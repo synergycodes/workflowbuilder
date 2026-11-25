@@ -8,8 +8,6 @@ import {
   type StringFieldValidationSchema,
 } from './node-validation-schema';
 
-export type PrimitiveFieldType = 'string' | 'number' | 'boolean';
-
 export type ItemOption = {
   label: string;
   value: string;
@@ -52,6 +50,11 @@ type DateFieldSchema = BaseFieldSchema & {
   type: 'string';
 };
 
+/** Picker-written wall time (`YYYY-MM-DD`, `YYYY-MM-DDTHH:mm`, `HH:mm`); validated by the SDK, not by JSON Schema. */
+type DateTimeFieldSchema = BaseFieldSchema & {
+  type: 'date' | 'datetime' | 'time';
+};
+
 type StringFieldSchema = BaseFieldSchema & StringFieldValidationSchema;
 
 type NumberFieldSchema = BaseFieldSchema & NumberFieldValidationSchema;
@@ -64,7 +67,12 @@ export type PrimitiveFieldSchema = (StringFieldSchema | NumberFieldSchema | Bool
   options?: Option[];
 };
 
-export type FieldSchema = PrimitiveFieldSchema | ArrayFieldSchema | ObjectFieldSchema | DateFieldSchema;
+export type FieldSchema =
+  | PrimitiveFieldSchema
+  | ArrayFieldSchema
+  | ObjectFieldSchema
+  | DateFieldSchema
+  | DateTimeFieldSchema;
 
 export type FlatError = {
   keyword: string;

@@ -6,13 +6,7 @@ import type { VariableTypePrimitive } from '@workflow-builder/types/variables/va
 
 import styles from './dynamic-typed-input.module.css';
 
-import {
-  getDateIfValid,
-  getDateTimeISO,
-  getDateYYYYMMDD,
-  getTimeHHmm,
-  getTimeHHmmISO,
-} from '../../../../utils/time-iso';
+import { getDateIfValid, getDateTimeISO, getDateYYYYMMDD, getTimeHHmm } from '../../../../utils/time-iso';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
 import { variableTypeInfoByType } from '../../constants';
 import { getBooleanStringIfPossible } from '../../utils/get-boolean-if-possible';
@@ -178,7 +172,7 @@ export function DynamicTypedInput({
       <TimeInput
         className={clsx(styles['date-picker'], className)}
         value={getTimeHHmm(value)}
-        onCommit={(time) => commit(getTimeHHmmISO(time) ?? '')}
+        onCommit={(time) => commit(time ?? '')}
         placeholder={placeholder || 'HH:mm'}
         suffixIcon={endAdornment}
         disabled={disabled}

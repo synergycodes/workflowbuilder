@@ -38,7 +38,9 @@ Known limits:
 
 `workflow-builder-validator.ts` splits every property whose `type` is `date` or `datetime` out of the schema before `@cfworker/json-schema` sees it, so the standard validator never fails them. `required` stays in the standard schema, so a missing required date still fails there. The split-out properties go to `workflow-builder-validator-for-custom-types.ts`, whose contract is: a value passes as a string that `getIsValidDate` parses (`new Date(value)` is a real date) or as a single variable reference per § 1.
 
-`time` (02.11.2026) joins the split under the same contract; its value passes when `getTimeHHmm` reads a clock from it (the input saves `HH:mm:00+00:00`, a bare `HH:mm` passes too), since `new Date('09:07')` is invalid.
+`time` (02.11.2026) joins the split under the same contract; its value passes when `getTimeHHmm` reads a clock from it (the input saves `HH:mm`), since `new Date('09:07')` is invalid.
+
+Since 25.11.2026 the split walks nested objects too (`splitCustomTypes`), like the blank-text rule does, because the demo trigger declares its `starts.time` / `ends.date` under `timeSchedule`. A custom-typed property is addressed by its path from the form root and reported as a `type` error at `#/<path>`; array items stay with their controls.
 
 Why these values carry no zone, and what each stored shape means: `utils/time-iso.decision-log.md`.
 

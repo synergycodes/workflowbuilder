@@ -78,19 +78,56 @@ describe('executeDecision', () => {
     expect(executeDecision(node, context()).nextPort).toBe('before');
   });
 
-  it('reads the same clock as equal whether or not it carries the stored seconds and offset', () => {
+  it('reads the same clock as equal whether or not it carries seconds and a zone', () => {
     const node = decisionNode([
       {
         sourceHandle: 'different',
-        conditions: [{ x: '09:07', y: '09:07:00+00:00', comparisonOperator: 'isNotEqual' }],
+        conditions: [{ x: '09:07', y: '09:07:00Z', comparisonOperator: 'isNotEqual' }],
       },
       {
         sourceHandle: 'same',
-        conditions: [{ x: '09:07', y: '09:07:00+00:00', comparisonOperator: 'isEqual' }],
+        conditions: [{ x: '09:07', y: '09:07:00Z', comparisonOperator: 'isEqual' }],
       },
     ]);
 
     expect(executeDecision(node, context()).nextPort).toBe('same');
+  });
+
+  it('reads a set datetime in the workflow zone, so it equals the matching upstream instant', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'different',
+        conditions: [{ x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isNotEqual' }],
+      },
+      {
+        sourceHandle: 'same',
+        conditions: [
+          { x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isEqual' },
+          { x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isBefore', logicalOperator: 'AND' },
+          { x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isAfter', logicalOperator: 'AND' },
+        ],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('same');
+  });
+
+  it('compares a set date against a datetime by day', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'earlier',
+        conditions: [{ x: '2024-01-15T00:30', y: '2024-01-15', comparisonOperator: 'isBefore' }],
+      },
+    ]);
+    const other = decisionNode([
+      {
+        sourceHandle: 'sameDay',
+        conditions: [{ x: '2024-01-15', y: '2024-01-15T23:59:00Z', comparisonOperator: 'isEqual' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('earlier');
+    expect(executeDecision(other, context()).nextPort).toBe('sameDay');
   });
 
   it('compares text that only starts like a clock as plain text', () => {

@@ -1,13 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-  getDateIfValid,
-  getDateTimeISO,
-  getDateYYYYMMDD,
-  getIsLegacyInstantString,
-  getTimeHHmm,
-  getTimeHHmmISO,
-} from './time-iso';
+import { getDateIfValid, getDateTimeISO, getDateYYYYMMDD, getIsLegacyInstantString, getTimeHHmm } from './time-iso';
 
 // Both sides of the date line: UTC+14 and UTC-11. Node re-reads process.env.TZ at runtime.
 const zones = ['UTC', 'Pacific/Kiritimati', 'Pacific/Pago_Pago', 'Europe/Warsaw', 'America/Los_Angeles'];
@@ -87,10 +80,10 @@ describe('getTimeHHmm', () => {
     expect(getTimeHHmm('09:07:30Z')).toBe('09:07');
   });
 
-  it.each(zones)('should drop the seconds and offset getTimeHHmmISO writes in %s', (zone) => {
+  it.each(zones)('should drop the seconds and offset of an upstream output in %s', (zone) => {
     process.env.TZ = zone;
 
-    expect(getTimeHHmm('09:07:00+00:00')).toBe('09:07');
+    expect(getTimeHHmm('09:07:00Z')).toBe('09:07');
     expect(getTimeHHmm('23:59:00+00:00')).toBe('23:59');
     expect(getTimeHHmm('09:07:30+02:00')).toBe('09:07');
     expect(getTimeHHmm('2024-01-15T09:07:00+00:00')).toBe('09:07');
@@ -105,29 +98,6 @@ describe('getTimeHHmm', () => {
     expect(getTimeHHmm('12:')).toBeUndefined();
     expect(getTimeHHmm('')).toBeUndefined();
     expect(getTimeHHmm()).toBeUndefined();
-  });
-});
-
-describe('getTimeHHmmISO', () => {
-  it.each(zones)('should append :00+00:00 to the wall clock in %s', (zone) => {
-    process.env.TZ = zone;
-
-    expect(getTimeHHmmISO('09:07')).toBe('09:07:00+00:00');
-    expect(getTimeHHmmISO('23:59')).toBe('23:59:00+00:00');
-    expect(getTimeHHmmISO(new Date(2024, 0, 15, 9, 7))).toBe('09:07:00+00:00');
-    expect(getTimeHHmmISO('2024-01-15T09:07')).toBe('09:07:00+00:00');
-  });
-
-  it('should keep an already suffixed value stable', () => {
-    expect(getTimeHHmmISO('09:07:00+00:00')).toBe('09:07:00+00:00');
-    expect(getTimeHHmmISO('09:07:30Z')).toBe('09:07:00+00:00');
-  });
-
-  it('should return undefined when there is no clock', () => {
-    expect(getTimeHHmmISO('2024-01-15')).toBeUndefined();
-    expect(getTimeHHmmISO('99:99')).toBeUndefined();
-    expect(getTimeHHmmISO('')).toBeUndefined();
-    expect(getTimeHHmmISO()).toBeUndefined();
   });
 });
 
@@ -226,6 +196,6 @@ describe('getIsLegacyInstantString', () => {
 
     expect(getIsLegacyInstantString(getDateYYYYMMDD(date))).toBe(false);
     expect(getIsLegacyInstantString(getDateTimeISO(date, date))).toBe(false);
-    expect(getIsLegacyInstantString(getTimeHHmmISO(date))).toBe(false);
+    expect(getIsLegacyInstantString(getTimeHHmm(date))).toBe(false);
   });
 });

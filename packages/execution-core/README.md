@@ -62,7 +62,8 @@ src/
 │   ├── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
 │   └── versioning.port.ts        # isPatched() — implemented by the Temporal adapter via patched()
 ├── registry/                # NodeExecutorRegistry<TNode> mapped type + resolveExecutor<TNode>
-└── templates/               # Variable/expression interpolation (`{{nodes.x.output}}`)
+├── templates/               # Variable/expression interpolation (`{{nodes.x.output}}`)
+└── compare-date-time.ts     # One rule for isBefore / isAfter / isEqual / isNotEqual on date and time strings
 ```
 
 Concrete executors and node configs live in the worker package that consumes them — see [`apps/execution-worker`](../../apps/execution-worker) for the AI Studio reference setup (`ai-studio/trigger`, `ai-studio/ai-agent`, `ai-studio/decision`) which builds against this core.
@@ -238,6 +239,17 @@ The strict default is deliberate: a typo in a prompt template should fail the ru
 Both failures are thrown as `PermanentNodeExecutionError` (codes `template_malformed` and `template_unresolved`), so the engine does not retry the node: a retried node receives the same context, and a reference that failed once fails identically every time.
 
 Authors typing references in the workflow builder UI: see the [variable picker guide](https://www.workflowbuilder.io/docs/guides/use-variable-picker/).
+
+## Date and time comparison
+
+`compareDateTime(left, right, operator)` (in `src/compare-date-time.ts`) is the one rule for `isBefore`, `isAfter`, `isEqual` and `isNotEqual` on date and time strings, so every executor that compares them (the decision executor in `apps/execution-worker`, an API step in a fork) orders them the same way. It never calls `new Date(text)`:
+
+- A value set in the editor is zone-less wall time (`2026-01-15`, `09:00`, `2026-01-15T09:00`) and is read from its digits with `Date.UTC`: the workflow zone, which is UTC for now, regardless of the zone the worker runs in.
+- A value with a zone (`2026-01-15T09:00:00Z`, an upstream output declared as `format: 'date-time'`) is an instant and is read as such.
+- A bare time compares by clock, against another clock or the clock inside a datetime. A bare date compares by day. Everything else compares by moment. `isBefore` and `isAfter` are inclusive.
+- The result is `undefined` when either side is not a date or time, or when a clock meets a bare date; the caller then compares the pair the way it would any text.
+
+Known limitation: a bare time that arrives with a zone (`09:00:00+02:00`) is compared as the clock written in it. `compare-date-time.non-utc.test.ts` pins `TZ=Europe/Warsaw`, because CI runs in UTC and would not notice a local-time reading creeping back in. Why the model: `packages/sdk/src/utils/time-iso.decision-log.md`.
 
 ## Adding a new workflow engine
 

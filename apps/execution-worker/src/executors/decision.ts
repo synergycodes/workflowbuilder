@@ -1,5 +1,10 @@
 // Decision executor — picks the first matching branch.
-import { type ExecutionContext, PermanentNodeExecutionError, resolveTemplate } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  PermanentNodeExecutionError,
+  compareDateTime,
+  resolveTemplate,
+} from '@workflow-builder/execution-core';
 
 import type { DecisionBranchCondition, DecisionNode } from '../domain/ai-studio-nodes';
 
@@ -39,52 +44,16 @@ function branchMatches(conditions: DecisionBranchCondition[], context: Execution
   return result;
 }
 
-const bareTimePattern = /^\d{2}:\d{2}/;
-const clockPattern = /^(?:\d{4}-\d{2}-\d{2}T)?(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?$/;
-
-function getSecondsOfDay(value: string): number | undefined {
-  const match = clockPattern.exec(value);
-
-  return match ? Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3] ?? 0) : undefined;
-}
-
-/**
- * A bare `HH:mm[:ss]` has no day, so it compares by clock: against another clock or the one inside a datetime.
- * `09:07` and `09:07:00+00:00` (the editor's stored shape) are the same clock. Undefined when neither side is a
- * clock, or when a side only starts like one (`10:30 standup`), so the caller compares it as it would any text.
- */
-function compareClocks(left: string, right: string, compare: (a: number, b: number) => boolean): boolean | undefined {
-  const leftTrimmed = left.trim();
-  const rightTrimmed = right.trim();
-
-  if (!bareTimePattern.test(leftTrimmed) && !bareTimePattern.test(rightTrimmed)) {
-    return undefined;
-  }
-
-  const leftSeconds = getSecondsOfDay(leftTrimmed);
-  const rightSeconds = getSecondsOfDay(rightTrimmed);
-
-  if (leftSeconds === undefined || rightSeconds === undefined) {
-    return undefined;
-  }
-
-  return compare(leftSeconds, rightSeconds);
-}
-
-function compareInstants(left: string, right: string, compare: (a: number, b: number) => boolean): boolean {
-  return compareClocks(left, right, compare) ?? compare(new Date(left).getTime(), new Date(right).getTime());
-}
-
 function evaluateCondition(condition: DecisionBranchCondition, context: ExecutionContext): boolean {
   const left = resolveTemplate(condition.x, context);
   const right = resolveTemplate(condition.y, context);
 
   switch (condition.comparisonOperator) {
     case 'isEqual': {
-      return compareClocks(left, right, (a, b) => a === b) ?? left === right;
+      return compareDateTime(left, right, 'isEqual') ?? left === right;
     }
     case 'isNotEqual': {
-      return compareClocks(left, right, (a, b) => a !== b) ?? left !== right;
+      return compareDateTime(left, right, 'isNotEqual') ?? left !== right;
     }
     case 'isContaining': {
       return left.toLowerCase().includes(right.toLowerCase());
@@ -93,10 +62,10 @@ function evaluateCondition(condition: DecisionBranchCondition, context: Executio
       return !left.toLowerCase().includes(right.toLowerCase());
     }
     case 'isBefore': {
-      return compareInstants(left, right, (a, b) => a <= b);
+      return compareDateTime(left, right, 'isBefore') ?? false;
     }
     case 'isAfter': {
-      return compareInstants(left, right, (a, b) => a >= b);
+      return compareDateTime(left, right, 'isAfter') ?? false;
     }
     case 'isGreaterThan': {
       return Number(left) > Number(right);

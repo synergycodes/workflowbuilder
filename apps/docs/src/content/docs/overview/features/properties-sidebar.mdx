@@ -34,15 +34,15 @@ For complete examples, see the [node schema definitions](https://github.com/syne
 
 ## Supported field types
 
-| Field type         | Schema type                                   | Description                                                                    |
-| ------------------ | --------------------------------------------- | ------------------------------------------------------------------------------ |
-| Text input         | `{ type: 'string' }`                          | Single-line string field. Use `format: 'textarea'` in UI Schema for multi-line |
-| Dropdown           | `{ type: 'string', enum: [...] }`             | Select from a predefined list of options                                       |
-| Checkbox           | `{ type: 'boolean' }`                         | Boolean toggle                                                                 |
-| Numeric            | `{ type: 'number' }` or `{ type: 'integer' }` | Number input with optional `minimum`/`maximum` constraints                     |
-| Date / Time picker | `{ type: 'string', format: 'date' }`          | Date and time selection                                                        |
-| Rich text editor   | `{ type: 'string' }` with UI Schema control   | WYSIWYG editor for formatted content                                           |
-| Accordion          | UI Schema layout                              | Collapsible group of related fields using `GroupLayout` in UI Schema           |
+| Field type         | Schema type                                   | Description                                                                       |
+| ------------------ | --------------------------------------------- | --------------------------------------------------------------------------------- |
+| Text input         | `{ type: 'string' }`                          | Single-line string field. Use `format: 'textarea'` in UI Schema for multi-line    |
+| Dropdown           | `{ type: 'string', enum: [...] }`             | Select from a predefined list of options                                          |
+| Checkbox           | `{ type: 'boolean' }`                         | Boolean toggle                                                                    |
+| Numeric            | `{ type: 'number' }` or `{ type: 'integer' }` | Number input with optional `minimum`/`maximum` constraints                        |
+| Date / Time picker | `{ type: 'date' }`, `'datetime'`, `'time'`    | Wall-time value (`YYYY-MM-DD`, `YYYY-MM-DDTHH:mm`, `HH:mm`) via `VariableDynamic` |
+| Rich text editor   | `{ type: 'string' }` with UI Schema control   | WYSIWYG editor for formatted content                                              |
+| Accordion          | UI Schema layout                              | Collapsible group of related fields using `GroupLayout` in UI Schema              |
 
 For a comprehensive guide on all available controls, layouts, and how to create custom renderers, see the [form generation guide](https://github.com/synergycodes/workflowbuilder/blob/master/packages/sdk/src/features/json-form/form-generation.md) in the source repository.
 

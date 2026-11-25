@@ -159,13 +159,13 @@ Multi-line variant of `VariableText`. Same `{{...}}` placeholder behaviour.
 
 Typed input that lets the user **either type a literal value or pick a single upstream variable**. A toggle button in the field switches between the two modes: the variable mode shows a select listing only upstream outputs compatible with `variableType`, the manual mode shows a widget picked from `variableType`:
 
-| `variableType`         | Manual widget                       | Compatible upstream types                      | Saved value                                          |
-| ---------------------- | ----------------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
-| `'string'`             | Text input with inline `{{` picker  | `string`, `number`, `date`, `datetime`, `time` | trimmed `string`, or `undefined` when empty          |
-| `'number'`             | Text input with numeric validation  | `number`                                       | `number`, or `undefined` when not a valid number     |
-| `'boolean'`            | True / False select                 | `boolean`                                      | `boolean`, or `undefined` when unset                 |
-| `'date'`, `'datetime'` | Date picker (+ time for `datetime`) | `date`, `datetime`                             | `YYYY-MM-DD` / `YYYY-MM-DDTHH:mm` `string`           |
-| `'time'`               | `HH:mm` input                       | `time`, `datetime`                             | `HH:mm:00+00:00` `string`, or `undefined` when empty |
+| `variableType`         | Manual widget                       | Compatible upstream types                      | Saved value                                      |
+| ---------------------- | ----------------------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| `'string'`             | Text input with inline `{{` picker  | `string`, `number`, `date`, `datetime`, `time` | trimmed `string`, or `undefined` when empty      |
+| `'number'`             | Text input with numeric validation  | `number`                                       | `number`, or `undefined` when not a valid number |
+| `'boolean'`            | True / False select                 | `boolean`                                      | `boolean`, or `undefined` when unset             |
+| `'date'`, `'datetime'` | Date picker (+ time for `datetime`) | `date`, `datetime`                             | `YYYY-MM-DD` / `YYYY-MM-DDTHH:mm` `string`       |
+| `'time'`               | `HH:mm` input                       | `time`, `datetime`                             | `HH:mm` `string`, or `undefined` when empty      |
 
 Compatibility is deliberately wider than an exact type match. A `'string'` field accepts any primitive that can be rendered as text, so a number or a date output can be picked where text is expected; the reference is still stored as a `string` and the value resolves to its text form at execution. `'date'` and `'datetime'` accept each other, and `'time'` also accepts a `datetime` output. `'number'` and `'boolean'` accept only their own type.
 

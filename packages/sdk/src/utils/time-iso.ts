@@ -12,10 +12,7 @@ type DateLike = Date | number | string;
 
 export type DateYYYYMMDD = `${number}-${number}-${number}`;
 export type TimeHHmm = `${number}:${number}`;
-export type TimeHHmmISO = `${TimeHHmm}:00+00:00`;
 export type DateTimeISO = `${DateYYYYMMDD}T${TimeHHmm}`;
-
-const TIME_ISO_SUFFIX = ':00+00:00';
 
 const DATE_LENGTH = 'YYYY-MM-DD'.length;
 const TIME_LENGTH = 'HH:mm'.length;
@@ -80,7 +77,7 @@ export const getDateYYYYMMDD = (dateLike?: DateLike | null): DateYYYYMMDD | unde
 
 /**
  * `HH:mm` from a Date, a `HH:mm[:ss...]` string, or `YYYY-MM-DDTHH:mm...`.
- * Seconds and any `Z` / `+00:00` suffix (as `getTimeHHmmISO` writes) are dropped, never applied.
+ * Seconds and any `Z` / offset suffix (an upstream output such as `09:07:30Z`) are dropped, never applied.
  * A bare `YYYY-MM-DD` and any other string carry no clock, so they yield undefined rather than `00:00`.
  */
 export const getTimeHHmm = (dateLike?: DateLike | null): TimeHHmm | undefined => {
@@ -99,16 +96,6 @@ export const getTimeHHmm = (dateLike?: DateLike | null): TimeHHmm | undefined =>
   const date = getDateIfValid(dateLike);
 
   return date ? (format(date, 'HH:mm') as TimeHHmm) : undefined;
-};
-
-/**
- * `HH:mm:00+00:00`: the clock of `getTimeHHmm` in the RFC 3339 shape JSON Schema `format: 'time'` requires.
- * The offset is nominal, the clock stays wall time; readers strip it through `getTimeHHmm`.
- */
-export const getTimeHHmmISO = (dateLike?: DateLike | null): TimeHHmmISO | undefined => {
-  const timeHHmm = getTimeHHmm(dateLike);
-
-  return timeHHmm ? `${timeHHmm}${TIME_ISO_SUFFIX}` : undefined;
 };
 
 /** `YYYY-MM-DDTHH:mm`: the day of `date` with the clock of `time` (`HH:mm` or anything that carries one). */

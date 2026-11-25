@@ -52,13 +52,13 @@ describe('DynamicTypedInput time', () => {
 
     fireEvent.change(input, { target: { value: '12:30' } });
 
-    expect(onSave).toHaveBeenCalledWith('12:30:00+00:00');
+    expect(onSave).toHaveBeenCalledWith('12:30');
     expect(input.value).toBe('12:30');
     expect(document.activeElement).toBe(input);
   });
 
   it('shows the saved clock and clears it when the field is emptied', () => {
-    const { input, onSave } = renderHarness({ type: 'time', initialValue: '12:30:00+00:00' });
+    const { input, onSave } = renderHarness({ type: 'time', initialValue: '12:30' });
 
     expect(input.value).toBe('12:30');
 
@@ -70,7 +70,7 @@ describe('DynamicTypedInput time', () => {
   });
 
   it('clears a saved clock when the field is left with a partial time', () => {
-    const { input, onSave } = renderHarness({ type: 'time', initialValue: '12:30:00+00:00' });
+    const { input, onSave } = renderHarness({ type: 'time', initialValue: '12:30' });
 
     fireEvent.change(input, { target: { value: '12:3' } });
     fireEvent.blur(input);
@@ -92,11 +92,11 @@ describe('DynamicTypedInput time', () => {
   it('shows a value changed from outside in the same element', () => {
     const onChange = vi.fn();
     const { getByPlaceholderText, rerender } = render(
-      <DynamicTypedInput type="time" value="12:30:00+00:00" onChange={onChange} suggestionGroupsForType={[]} />,
+      <DynamicTypedInput type="time" value="12:30" onChange={onChange} suggestionGroupsForType={[]} />,
     );
     const input = getByPlaceholderText('HH:mm') as HTMLInputElement;
 
-    rerender(<DynamicTypedInput type="time" value="08:00:00+00:00" onChange={onChange} suggestionGroupsForType={[]} />);
+    rerender(<DynamicTypedInput type="time" value="08:00" onChange={onChange} suggestionGroupsForType={[]} />);
 
     expect(getByPlaceholderText('HH:mm')).toBe(input);
     expect(input.value).toBe('08:00');
