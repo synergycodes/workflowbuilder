@@ -41,7 +41,7 @@ export function DecisionWaitingSnackbar() {
     }
     const shownWaits: string[] = JSON.parse(waitKeysJson);
     const sharedOptions = {
-      variant: 'info',
+      tone: 'info',
       autoHideDuration: null,
       onClose: () => setDismissedWaits((dismissed) => new Set([...dismissed, ...shownWaits])),
     } as const;

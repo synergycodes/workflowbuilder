@@ -4,15 +4,17 @@ import clsx from 'clsx';
 import styles from './status.module.css';
 
 /**
+ * Tone of a `Status` indicator. `critical` marks a validation problem.
+ *
  * @category Status
  */
-export type ValidationStatus = 'invalid';
+export type StatusTone = 'critical';
 
 export type StatusProps = {
   /**
-   * The validation status to display.
+   * The tone to display; without it the component renders nothing.
    */
-  status?: ValidationStatus;
+  tone?: StatusTone;
   /**
    * Custom class name for the component.
    */
@@ -22,10 +24,10 @@ export type StatusProps = {
 /**
  * A component that displays a visual indicator based on validation status.
  */
-export function Status({ status, className }: StatusProps) {
-  if (status === 'invalid') {
+export function Status({ tone, className }: StatusProps) {
+  if (tone === 'critical') {
     return (
-      <span className={clsx(styles['status-container'], styles['status-container--invalid'], className)}>
+      <span className={clsx(styles['status-container'], styles['status-container--critical'], className)}>
         <ExclamationMark />
       </span>
     );

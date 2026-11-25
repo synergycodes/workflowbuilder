@@ -60,7 +60,7 @@
       border-color: var(--wb-public-snackbar-success-border);
     }
 
-    &.error {
+    &.critical {
       background: var(--wb-public-snackbar-error-background);
       border-color: var(--wb-public-snackbar-error-border);
     }

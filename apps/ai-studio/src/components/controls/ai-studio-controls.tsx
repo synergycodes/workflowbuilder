@@ -48,7 +48,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
       await executeFromCanvas(nodes, edges, triggerPayload, workflowId);
     } catch (error) {
       console.error('Execution failed:', error);
-      addNotice(`The run did not start: ${error instanceof Error ? error.message : String(error)}.`, 'error');
+      addNotice(`The run did not start: ${error instanceof Error ? error.message : String(error)}.`, 'critical');
     } finally {
       setIsStarting(false);
     }

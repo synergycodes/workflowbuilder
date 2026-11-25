@@ -1,5 +1,3 @@
-import { SnackbarType } from '@workflowbuilder/ui';
-
 import type { OnSaveParams } from '../../../types/integration';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 
@@ -10,7 +8,7 @@ export function showSnackbarSaveSuccessIfNeeded(savingParams?: OnSaveParams) {
 
   showTranslatedSnackbar({
     title: 'saveDiagramSuccess',
-    variant: SnackbarType.SUCCESS,
+    tone: 'success',
   });
 }
 
@@ -21,6 +19,6 @@ export function showSnackbarSaveErrorIfNeeded(savingParams?: OnSaveParams) {
 
   showTranslatedSnackbar({
     title: 'saveDiagramError',
-    variant: SnackbarType.ERROR,
+    tone: 'critical',
   });
 }

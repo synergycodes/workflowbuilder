@@ -1,4 +1,3 @@
-import { SnackbarType } from '@workflowbuilder/ui';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
@@ -39,7 +38,7 @@ export function loadData(
   if (!isEmpty && !loadFailed) {
     showTranslatedSnackbar({
       title: 'restoreDiagramSuccess',
-      variant: SnackbarType.SUCCESS,
+      tone: 'success',
     });
   }
 

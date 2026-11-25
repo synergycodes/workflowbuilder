@@ -1,4 +1,4 @@
-import { Snackbar, type SnackbarVariant } from '@workflowbuilder/ui';
+import { Snackbar, type SnackbarTone } from '@workflowbuilder/ui';
 import { closeSnackbar as closeNotistackSnackbar, enqueueSnackbar } from 'notistack';
 
 const AUTO_HIDE_DURATION_TIME = 3000;
@@ -16,8 +16,8 @@ export type ShowSnackbarOptions = {
    * again does nothing. Without a key, every call shows a new snackbar.
    */
   key?: string;
-  /** Visual style of the `@workflowbuilder/ui` Snackbar. */
-  variant: SnackbarVariant;
+  /** Meaning of the message, which sets the colours of the `@workflowbuilder/ui` Snackbar. */
+  tone: SnackbarTone;
   /** Shown as given: translate it before passing it in. */
   title: string;
   /** Shown as given, below the title. */
@@ -44,7 +44,7 @@ export type ShowSnackbarOptions = {
  * @example
  * ```ts
  * useEffect(() => {
- *   const key = showSnackbar({ variant: 'info', title: 'Waiting for a decision', autoHideDuration: null });
+ *   const key = showSnackbar({ tone: 'info', title: 'Waiting for a decision', autoHideDuration: null });
  *   return () => closeSnackbar(key);
  * }, []);
  * ```
@@ -53,7 +53,7 @@ export type ShowSnackbarOptions = {
  */
 export function showSnackbar({
   key,
-  variant,
+  tone,
   title,
   subtitle,
   buttonLabel,
@@ -77,7 +77,7 @@ export function showSnackbar({
     content: (id) => (
       <Snackbar
         title={title}
-        variant={variant}
+        tone={tone}
         subtitle={subtitle}
         buttonLabel={buttonLabel}
         onButtonClick={

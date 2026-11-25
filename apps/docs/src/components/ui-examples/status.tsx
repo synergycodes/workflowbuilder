@@ -12,7 +12,7 @@ export function StatusExample() {
           <NodeDescription label="Send email" description="Missing recipient" />
         </NodePanel.Header>
         <NodePanel.Overlay>
-          <Status status="invalid" />
+          <Status tone="critical" />
         </NodePanel.Overlay>
       </NodePanel.Root>
     </ComponentPreview>

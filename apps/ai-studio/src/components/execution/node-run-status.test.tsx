@@ -30,7 +30,7 @@ describe('node run status decorators', () => {
           <OptionalNodeHeaderEnd nodeId="node-1" />
           <OptionalNodeOverlay nodeId="node-1" />
           <OptionalNodeCorner nodeId="node-1">
-            <Status status="invalid" />
+            <Status tone="critical" />
           </OptionalNodeCorner>
         </>,
       ),
@@ -49,14 +49,14 @@ describe('node run status decorators', () => {
     [...canvasNode.querySelectorAll<HTMLElement>('[data-tone]')].find((element) => element.textContent);
 
   it('keeps the validation badge and draws nothing while the node has no run status', () => {
-    expect(query('[class*="status-container--invalid"]')).not.toBeNull();
+    expect(query('[class*="status-container--critical"]')).not.toBeNull();
     expect(query('[data-tone]')).toBeNull();
   });
 
   it('keeps the validation badge on an idle node', () => {
     setStatus('idle');
 
-    expect(query('[class*="status-container--invalid"]')).not.toBeNull();
+    expect(query('[class*="status-container--critical"]')).not.toBeNull();
     expect(query('[data-tone]')).toBeNull();
   });
 

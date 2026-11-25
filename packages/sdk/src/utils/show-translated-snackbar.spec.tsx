@@ -33,8 +33,8 @@ const timesShown = (text: string) => (document.body.textContent ?? '').split(tex
 describe('showTranslatedSnackbar', () => {
   it('shows a repeated SDK message once while it is on screen', () => {
     act(() => {
-      showTranslatedSnackbar({ variant: 'warning', title: 'cantEditReadOnlyMode' });
-      showTranslatedSnackbar({ variant: 'warning', title: 'cantEditReadOnlyMode' });
+      showTranslatedSnackbar({ tone: 'warning', title: 'cantEditReadOnlyMode' });
+      showTranslatedSnackbar({ tone: 'warning', title: 'cantEditReadOnlyMode' });
     });
 
     expect(timesShown(i18n.t('snackbar.cantEditReadOnlyMode'))).toBe(1);

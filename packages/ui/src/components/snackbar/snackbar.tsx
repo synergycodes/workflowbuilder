@@ -6,13 +6,13 @@ import styles from './snackbar.module.css';
 import { ActionButtons } from './components/action-buttons';
 import { Icon } from './components/icon';
 import { Message } from './components/message';
-import { SnackbarVariant } from './types';
+import type { SnackbarTone } from './types';
 
 export type SnackbarProps = {
   /**
-   * Visual style variant of the snackbar
+   * Meaning of the message, which sets its colours, icon colour and action button style
    */
-  variant: SnackbarVariant;
+  tone: SnackbarTone;
   /**
    * Main message displayed in the snackbar
    */
@@ -42,12 +42,12 @@ export type SnackbarProps = {
  * dismissal is driven through `onClose`.
  */
 export const Snackbar = forwardRef<HTMLDivElement, SnackbarProps>(
-  ({ variant, title, subtitle, buttonLabel, onButtonClick, onClose }, ref) => (
-    <div ref={ref} role="status" aria-live="polite" className={clsx(styles['container'], styles[variant])}>
+  ({ tone, title, subtitle, buttonLabel, onButtonClick, onClose }, ref) => (
+    <div ref={ref} role="status" aria-live="polite" className={clsx(styles['container'], styles[tone])}>
       <div className={styles['content']}>
-        <Icon isCentered={!subtitle} variant={variant} />
+        <Icon isCentered={!subtitle} tone={tone} />
         <Message title={title} subtitle={subtitle} />
-        <ActionButtons variant={variant} buttonLabel={buttonLabel} onButtonClick={onButtonClick} onClose={onClose} />
+        <ActionButtons tone={tone} buttonLabel={buttonLabel} onButtonClick={onButtonClick} onClose={onClose} />
       </div>
     </div>
   ),

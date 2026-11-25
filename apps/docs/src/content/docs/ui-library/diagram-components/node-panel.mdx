@@ -62,7 +62,7 @@ function WorkflowNode({ id, icon, label, description, selected, isValid, showHan
         </NodePanel.Content>
 
         <NodePanel.Overlay visible={showHandles}>
-          <Status status={isValid === false ? 'invalid' : undefined} />
+          <Status tone={isValid === false ? 'critical' : undefined} />
         </NodePanel.Overlay>
 
         <NodePanel.Handles visible={showHandles} alignment="center">

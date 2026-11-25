@@ -7,8 +7,8 @@ import CssVariablesTable from '../../../../components/api/css-variables-table.as
 import PropsTable from '../../../../components/api/props-table.astro';
 import { SnackbarExample } from '../../../../components/ui-examples/snackbar';
 
-A `Snackbar` displays a brief message about an app process. It comes in several
-variants - success, error, warning, info and default - and can show a secondary
+A `Snackbar` displays a brief message about an app process. Its `tone` is one of
+`default`, `info`, `success`, `warning` and `critical`, and it can show a secondary
 subtitle, an action button, and a close button.
 
 The component is purely presentational: it renders inline where you place it,
@@ -24,7 +24,7 @@ behavior, mount it in your own portal/queue and drive dismissal from the
 import { Snackbar } from '@workflowbuilder/ui';
 
 function Example() {
-  return <Snackbar variant="success" title="Saved" subtitle="Your changes were saved." onClose={() => {}} />;
+  return <Snackbar tone="success" title="Saved" subtitle="Your changes were saved." onClose={() => {}} />;
 }
 ```
 

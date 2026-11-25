@@ -46,7 +46,7 @@ export function NodeOverlaySlots({ nodeId, isValid }: { nodeId: string; isValid?
     <>
       <OptionalNodeOverlay nodeId={nodeId} />
       <OptionalNodeCorner nodeId={nodeId}>
-        <Status status={isValid === false ? 'invalid' : undefined} />
+        <Status tone={isValid === false ? 'critical' : undefined} />
       </OptionalNodeCorner>
     </>
   );

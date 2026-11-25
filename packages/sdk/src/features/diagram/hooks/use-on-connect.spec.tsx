@@ -2,20 +2,14 @@
 // the connection handlers must be inert and warn the user; in editable mode they
 // must forward to the store and track the change.
 //
-// `@workflowbuilder/ui` is mocked because the hook imports `SnackbarType`
-// from it, and the package's JS carries a CSS side-effect import vitest's
-// node-side transformer can't process. `show-translated-snackbar` is mocked so the user
-// feedback can be asserted without rendering the snackbar stack.
+// `show-translated-snackbar` is mocked so the user feedback can be asserted
+// without rendering the snackbar stack.
 import { renderHook } from '@testing-library/react';
 import type { Connection } from '@xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetWorkflowStore, useStore } from '../../../store/store';
 import { useConnect } from './use-on-connect';
-
-vi.mock('@workflowbuilder/ui', () => ({
-  SnackbarType: { SUCCESS: 'success', WARNING: 'warning', ERROR: 'error', INFO: 'info' },
-}));
 
 const { showTranslatedSnackbar } = vi.hoisted(() => ({ showTranslatedSnackbar: vi.fn() }));
 vi.mock('../../../utils/show-translated-snackbar', () => ({ showTranslatedSnackbar }));
@@ -47,7 +41,7 @@ describe('useConnect — read-only mode', () => {
 
     expect(onConnectAction).not.toHaveBeenCalled();
     expect(trackFutureChange).not.toHaveBeenCalled();
-    expect(showTranslatedSnackbar).toHaveBeenCalledWith({ title: 'cantEditReadOnlyMode', variant: 'warning' });
+    expect(showTranslatedSnackbar).toHaveBeenCalledWith({ title: 'cantEditReadOnlyMode', tone: 'warning' });
   });
 
   it('onConnectStart does not flag a connection as being dragged', () => {

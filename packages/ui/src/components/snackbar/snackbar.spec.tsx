@@ -23,7 +23,7 @@ function closeButton() {
 
 it('shows the close button when onClose is set and calls it', () => {
   const onClose = vi.fn();
-  act(() => root.render(<Snackbar variant="info" title="Saved" onClose={onClose} />));
+  act(() => root.render(<Snackbar tone="info" title="Saved" onClose={onClose} />));
 
   act(() => (closeButton() as HTMLButtonElement).click());
 
@@ -31,7 +31,15 @@ it('shows the close button when onClose is set and calls it', () => {
 });
 
 it('shows no close button without onClose', () => {
-  act(() => root.render(<Snackbar variant="info" title="Saved" />));
+  act(() => root.render(<Snackbar tone="info" title="Saved" />));
 
   expect(closeButton()).toBeNull();
+});
+
+it('styles tone="critical" with the critical container, icon and action button', () => {
+  act(() => root.render(<Snackbar tone="critical" title="Failed" buttonLabel="Retry" onButtonClick={() => {}} />));
+
+  expect(container.firstElementChild!.className).toMatch(/critical/);
+  expect(container.querySelector('svg')!.getAttribute('class')).toMatch(/critical/);
+  expect(container.querySelector('button')!.className).toMatch(/critical/);
 });

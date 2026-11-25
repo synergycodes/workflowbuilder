@@ -6,6 +6,6 @@ import { closeSnackbar, showSnackbar } from './show-snackbar';
 describe('snackbars before an editor mounts', () => {
   it('show nothing and do not throw', () => {
     expect(() => closeSnackbar('any')).not.toThrow();
-    expect(() => showSnackbar({ variant: 'info', title: 'Early' })).not.toThrow();
+    expect(() => showSnackbar({ tone: 'info', title: 'Early' })).not.toThrow();
   });
 });

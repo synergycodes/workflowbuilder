@@ -7,9 +7,9 @@ import CssVariablesTable from '../../../../components/api/css-variables-table.as
 import PropsTable from '../../../../components/api/props-table.astro';
 import { StatusExample } from '../../../../components/ui-examples/status';
 
-A `Status` displays a small visual indicator based on a validation status. When
-the status is `invalid` it renders a circular badge with an exclamation mark on
-the node's top-right corner; otherwise it renders nothing.
+A `Status` displays a small visual indicator based on a validation status. With
+`tone="critical"` it renders a circular badge with an exclamation mark on the
+node's top-right corner; otherwise it renders nothing.
 
 <StatusExample client:visible />
 
@@ -31,7 +31,7 @@ function Example({ icon, isValid }: { icon: ReactNode; isValid: boolean }) {
         <NodeDescription label="Send email" description="Missing recipient" />
       </NodePanel.Header>
       <NodePanel.Overlay>
-        <Status status={isValid ? undefined : 'invalid'} />
+        <Status tone={isValid ? undefined : 'critical'} />
       </NodePanel.Overlay>
     </NodePanel.Root>
   );
