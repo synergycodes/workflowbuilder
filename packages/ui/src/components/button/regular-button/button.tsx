@@ -19,7 +19,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
   const {
     children,
     className,
-    isLoading = false,
+    loading = false,
     onClick,
     prefixIcon,
     shape = 'default',
@@ -30,10 +30,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
   } = props;
 
   const isIconOnly = shape !== 'default';
-  const hiddenContentClassName = clsx({ [loaderStyles['hide-content']]: isLoading });
+  const hiddenContentClassName = clsx({ [loaderStyles['hide-content']]: loading });
 
   function handleClick(event: MouseEvent<HTMLButtonElement>) {
-    if (isLoading) {
+    if (loading) {
       event.preventDefault();
       return;
     }
@@ -44,8 +44,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
     <BaseButton
       ref={ref}
       className={className}
-      aria-busy={isLoading || undefined}
-      aria-disabled={isLoading || undefined}
+      aria-busy={loading || undefined}
+      aria-disabled={loading || undefined}
       onClick={handleClick}
       styles={clsx(
         variantStyles[variant],
@@ -53,7 +53,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
         iconSizeStyles[size],
         borderRadiusStyles[shape === 'round' ? 'round' : size],
         isIconOnly ? iconPaddingStyles[size] : [fontSizeStyles[size], gapStyles[size], paddingStyles[size]],
-        { [loaderStyles['disable-events']]: isLoading },
+        { [loaderStyles['disable-events']]: loading },
       )}
       {...rest}
     >
@@ -70,7 +70,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) =>
           )}
         </>
       )}
-      {isLoading && <span className={loaderStyles['dot-flashing']} />}
+      {loading && <span className={loaderStyles['dot-flashing']} />}
     </BaseButton>
   );
 });

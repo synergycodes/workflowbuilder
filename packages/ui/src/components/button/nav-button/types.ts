@@ -40,7 +40,7 @@ export type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
   /** @default 'square' */
   shape?: NavButtonShape;
   /** Renders the button in its selected state. */
-  isSelected?: boolean;
+  selected?: boolean;
 };
 
 /**

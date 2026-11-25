@@ -87,11 +87,14 @@ export function showSnackbar({
             closeNotistackSnackbar(id);
           })
         }
-        close={close}
-        onClose={() => {
-          onClose?.();
-          closeNotistackSnackbar(id);
-        }}
+        onClose={
+          close
+            ? () => {
+                onClose?.();
+                closeNotistackSnackbar(id);
+              }
+            : undefined
+        }
       />
     ),
   });

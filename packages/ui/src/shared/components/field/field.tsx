@@ -16,26 +16,26 @@ type FieldProps = {
   disabled?: boolean;
   helperText?: ReactNode;
   id?: string;
-  isRequired?: boolean;
   label?: ReactNode;
+  required?: boolean;
   state: FieldState;
 };
 
-export function Field({ ariaDescribedBy, children, disabled, helperText, id, isRequired, label, state }: FieldProps) {
+export function Field({ ariaDescribedBy, children, disabled, helperText, id, label, required, state }: FieldProps) {
   const generatedId = useId();
   const hasLabel = label !== undefined && label !== null && typeof label !== 'boolean';
   const hasHelper = helperText !== undefined && helperText !== null && typeof helperText !== 'boolean';
   const controlId = id ?? generatedId;
   const helperId = hasHelper ? `${controlId}-helper` : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(' ') || undefined;
-  const control = children({ controlId, describedBy, required: isRequired || undefined });
+  const control = children({ controlId, describedBy, required: required || undefined });
 
   return (
     <div className={styles['field']} data-state={state} data-disabled={disabled || undefined}>
       {hasLabel && (
         <label className={styles['label']} htmlFor={controlId}>
           {label}
-          {isRequired && (
+          {required && (
             <span className={styles['required']} aria-hidden="true">
               *
             </span>

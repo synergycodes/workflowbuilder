@@ -27,7 +27,6 @@ function trigger(props: Partial<DatePickerProps>) {
 describe('DatePicker trigger state', () => {
   it.each([
     [{}, 'default', false],
-    [{ error: true }, 'critical', true],
     [{ state: 'critical' as const }, 'critical', true],
     [{ state: 'read-only' as const }, 'read-only', false],
     [{ readOnly: true }, 'read-only', false],
@@ -35,5 +34,21 @@ describe('DatePicker trigger state', () => {
     const button = trigger(props);
     expect(button.dataset['state']).toBe(dataState);
     expect(/container--error/.test(button.className)).toBe(hasError);
+  });
+});
+
+describe('DatePicker required', () => {
+  it('marks the label and the trigger', () => {
+    const button = trigger({ label: 'Due date', required: true });
+
+    expect(container.querySelector('label')?.textContent).toBe('Due date*');
+    expect(button.getAttribute('aria-required')).toBe('true');
+  });
+
+  it('leaves both unmarked without required', () => {
+    const button = trigger({ label: 'Due date' });
+
+    expect(container.querySelector('label')?.textContent).toBe('Due date');
+    expect(button.hasAttribute('aria-required')).toBe(false);
   });
 });

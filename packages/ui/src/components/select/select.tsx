@@ -37,11 +37,6 @@ export type SelectBaseProps = {
    */
   items: SelectItem[];
   /**
-   * Whether the select has an error
-   * @default false
-   */
-  error?: boolean;
-  /**
    * The controlled value of the select.
    */
   value?: SelectValueType;
@@ -62,7 +57,7 @@ export type SelectBaseProps = {
    */
   name?: string;
   /**
-   * Whether the user must choose a value before submitting a form.
+   * Whether the user must choose a value before submitting a form. Also adds the required marker next to the label.
    */
   required?: boolean;
   /**
@@ -79,10 +74,6 @@ export type SelectBaseProps = {
    */
   state?: FieldState;
   /**
-   * Adds the required marker next to the label.
-   */
-  isRequired?: boolean;
-  /**
    * Identifies the control; a generated id is used when omitted.
    */
   id?: string;
@@ -96,7 +87,6 @@ export function Select({
   size = 'medium',
   items,
   placeholder,
-  error = false,
   value,
   defaultValue,
   onChange,
@@ -106,14 +96,12 @@ export function Select({
   label,
   helperText,
   state = 'default',
-  isRequired,
   id,
 }: SelectBaseProps) {
-  const fieldState: FieldState = error ? 'critical' : state;
   const triggerClassName = clsx(
     selectButtonStyles['container'],
     {
-      [selectButtonStyles['container--error']]: fieldState === 'critical',
+      [selectButtonStyles['container--error']]: state === 'critical',
     },
     inputFontStyles[size],
     fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
@@ -121,14 +109,7 @@ export function Select({
   );
 
   return (
-    <Field
-      id={id}
-      label={label}
-      helperText={helperText}
-      isRequired={isRequired ?? required}
-      state={fieldState}
-      disabled={disabled}
-    >
+    <Field id={id} label={label} helperText={helperText} required={required} state={state} disabled={disabled}>
       {({ controlId, describedBy, required: isFieldRequired }) => (
         <div className={style['container']}>
           <SelectBase.Root
@@ -145,7 +126,7 @@ export function Select({
               id={controlId}
               aria-describedby={describedBy}
               aria-required={isFieldRequired}
-              aria-invalid={fieldState === 'critical' || undefined}
+              aria-invalid={state === 'critical' || undefined}
               className={triggerClassName}
               render={<SelectButton />}
             >

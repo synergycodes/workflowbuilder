@@ -38,6 +38,11 @@ it('renders round from shape', () => {
   expect(renderedClasses(<NavButton shape="round">Round</NavButton>)).toContain('round');
 });
 
+it('renders selected from selected', () => {
+  expect(renderedClasses(<NavButton selected>Home</NavButton>)).toContain('selected');
+  expect(renderedClasses(<NavButton>Home</NavButton>)).not.toContain('selected');
+});
+
 it('renders plain from variant and keeps the shape', () => {
   const classes = renderedClasses(<NavButton aria-label="Home" variant="plain" prefixIcon={<svg />} />);
 

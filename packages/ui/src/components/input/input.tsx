@@ -23,7 +23,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     clearLabel = 'Clear input',
     label,
     helperText,
-    isRequired,
     className,
     disabled,
     readOnly,
@@ -37,14 +36,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ) {
   const isReadOnly = !disabled && (state === 'read-only' || readOnly === true);
   const fieldState = disabled && state === 'read-only' ? 'default' : isReadOnly ? 'read-only' : state;
-  const isNativeRequired = required || isRequired;
 
   return (
     <Field
       id={id}
       label={label}
       helperText={helperText}
-      isRequired={isNativeRequired}
+      required={required}
       state={fieldState}
       disabled={disabled}
       ariaDescribedBy={ariaDescribedBy}
@@ -69,7 +67,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             id={controlId}
             disabled={disabled}
             readOnly={isReadOnly}
-            required={isNativeRequired}
+            required={required}
             aria-describedby={describedBy}
             aria-invalid={fieldState === 'critical' ? true : ariaInvalid}
             className={clsx(inputStyles['input'], inputFontStyles[size])}

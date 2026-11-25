@@ -81,7 +81,7 @@ export const AiAgentNodeTemplate = memo(
             {isCanvasNode && <Collapsible.Button />}
             {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
-          <NodePanel.Content className={styles['content']} isVisible={isCanvasNode}>
+          <NodePanel.Content className={styles['content']} visible={isCanvasNode}>
             <Collapsible.Content>
               <div className={styles['collapsible-content']}>
                 <SettingInfo
@@ -111,10 +111,10 @@ export const AiAgentNodeTemplate = memo(
           <NodePanel.Footer isVisible={isCanvasNode}>
             <OptionalNodeFooter nodeId={id} />
           </NodePanel.Footer>
-          <NodePanel.Overlay isVisible={isCanvasNode}>
+          <NodePanel.Overlay visible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
-          <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
+          <NodePanel.Handles visible={isCanvasNode} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
           </NodePanel.Handles>

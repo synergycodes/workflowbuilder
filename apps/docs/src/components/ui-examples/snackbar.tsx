@@ -5,7 +5,7 @@ import { ComponentPreview } from './component-preview';
 export function SnackbarExample() {
   return (
     <ComponentPreview>
-      <Snackbar variant="info" title="Heads up" subtitle="Your changes were saved." close onClose={() => {}} />
+      <Snackbar variant="info" title="Heads up" subtitle="Your changes were saved." onClose={() => {}} />
     </ComponentPreview>
   );
 }

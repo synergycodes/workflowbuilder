@@ -11,11 +11,10 @@ type ActionButtonsProps = {
   variant: string;
   buttonLabel?: string;
   onButtonClick?: () => void;
-  close: boolean;
   onClose?: () => void;
 };
 
-export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onClose }: ActionButtonsProps) {
+export function ActionButtons({ variant, buttonLabel, onButtonClick, onClose }: ActionButtonsProps) {
   const buttonTypeMap: Record<string, ButtonVariant> = {
     [SnackbarType.DEFAULT]: 'primary',
     [SnackbarType.ERROR]: 'critical',
@@ -33,9 +32,7 @@ export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onCl
           {buttonLabel}
         </Button>
       )}
-      {close && onClose && (
-        <NavButton aria-label="Close" size="s" variant="plain" onClick={onClose} prefixIcon={<X />} />
-      )}
+      {onClose && <NavButton aria-label="Close" size="s" variant="plain" onClick={onClose} prefixIcon={<X />} />}
     </div>
   );
 }

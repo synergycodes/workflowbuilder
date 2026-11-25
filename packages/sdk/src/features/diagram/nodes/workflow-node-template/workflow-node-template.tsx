@@ -98,7 +98,7 @@ const WorkflowNodeTemplateComponent = memo(
             {!!children && <Collapsible.Button />}
             {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
-          <NodePanel.Content isVisible={isCanvasNode} className={styles['content']}>
+          <NodePanel.Content visible={isCanvasNode} className={styles['content']}>
             <OptionalNodeContent nodeId={id}>
               <Collapsible.Content>
                 <div className={styles['collapsible']}>{children}</div>
@@ -108,10 +108,10 @@ const WorkflowNodeTemplateComponent = memo(
           <NodePanel.Footer isVisible={isCanvasNode}>
             <OptionalNodeFooter nodeId={id} />
           </NodePanel.Footer>
-          <NodePanel.Overlay isVisible={isCanvasNode}>
+          <NodePanel.Overlay visible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
-          <NodePanel.Handles isVisible={showHandles} alignment={handlesAlignment}>
+          <NodePanel.Handles visible={showHandles} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
           </NodePanel.Handles>

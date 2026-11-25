@@ -96,9 +96,9 @@ export type DatePickerProps = {
    */
   state?: FieldState;
   /**
-   * Adds the required marker next to the label.
+   * Adds the required marker next to the label and sets `aria-required` on the trigger.
    */
-  isRequired?: boolean;
+  required?: boolean;
 
   /**
    * Format string used to render the selected date(s) in the trigger.
@@ -139,10 +139,4 @@ export type DatePickerProps = {
    * Controlled selected value. When set, the picker becomes controlled.
    */
   value?: Date | [Date, Date] | Date[] | string;
-  /**
-   * Render the trigger in an error state.
-   *
-   * @default false
-   */
-  error?: boolean;
 };

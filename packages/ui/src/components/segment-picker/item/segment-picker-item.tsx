@@ -42,7 +42,7 @@ export function Item({
     <NavButton
       aria-pressed={isSelected}
       className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], itemShapeStyles[variant], className)}
-      isSelected={isSelected}
+      selected={isSelected}
       onClick={(event: MouseEvent<HTMLButtonElement>) => {
         onSelect(event, value);
         onClick?.(event);

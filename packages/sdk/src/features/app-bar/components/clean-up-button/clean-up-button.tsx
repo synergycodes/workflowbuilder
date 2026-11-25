@@ -36,7 +36,7 @@ export function CleanUpButton() {
         size="xs"
         className={styles['main']}
         disabled={isDisabled}
-        isSelected={isPending}
+        selected={isPending}
         aria-busy={isPending}
         aria-label={label}
         tooltip={label}

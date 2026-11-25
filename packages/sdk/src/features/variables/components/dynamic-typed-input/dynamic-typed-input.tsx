@@ -102,7 +102,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['container--select']}>
         <Select
-          error={isError}
+          state={isError ? 'critical' : 'default'}
           className={className}
           value={value}
           items={itemsForBoolean}
@@ -119,7 +119,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['date-with-reset-container']}>
         <DatePicker
-          error={isError}
+          state={isError ? 'critical' : 'default'}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={getDateIfValid(value)}
@@ -143,7 +143,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['row']}>
         <DatePicker
-          error={isError}
+          state={isError ? 'critical' : 'default'}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={date}

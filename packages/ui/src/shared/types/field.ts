@@ -34,5 +34,4 @@ export type FieldControlProps = {
   clearLabel?: string;
   label?: ReactNode;
   helperText?: ReactNode;
-  isRequired?: boolean;
 };

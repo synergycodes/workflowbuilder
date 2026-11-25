@@ -25,11 +25,26 @@ function triggerClass(props: Partial<SelectBaseProps>) {
 
 describe('Select trigger error border', () => {
   it.each([
-    [{ error: true }, true],
     [{ state: 'critical' as const }, true],
     [{ state: 'success' as const }, false],
     [{}, false],
   ])('%o draws the error border: %s', (props, expected) => {
     expect(/container--error/.test(triggerClass(props))).toBe(expected);
+  });
+});
+
+describe('Select required', () => {
+  it('marks the label and the trigger', () => {
+    triggerClass({ label: 'Mode', required: true });
+
+    expect(container.querySelector('label')?.textContent).toBe('Mode*');
+    expect(container.querySelector('button')?.getAttribute('aria-required')).toBe('true');
+  });
+
+  it('leaves both unmarked without required', () => {
+    triggerClass({ label: 'Mode' });
+
+    expect(container.querySelector('label')?.textContent).toBe('Mode');
+    expect(container.querySelector('button')?.hasAttribute('aria-required')).toBe(false);
   });
 });

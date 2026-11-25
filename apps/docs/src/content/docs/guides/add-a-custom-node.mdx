@@ -249,7 +249,7 @@ export const MyNodeTemplate = memo(
           <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
           <NodeDescription label={label} description={description} disabled={disabled} />
         </NodePanel.Header>
-        <NodePanel.Handles isVisible={showHandles}>
+        <NodePanel.Handles visible={showHandles}>
           <Handle id={handleTargetTopId} type="target" position={Position.Top} />
           <Handle id={handleTargetLeftId} type="target" position={Position.Left} />
           <Handle id={handleSourceBottomId} type="source" position={Position.Bottom} />
@@ -295,7 +295,7 @@ const isCanvasNode = showHandles;
   <NodePanel.Footer isVisible={isCanvasNode}>
     <OptionalNodeFooter nodeId={id} />
   </NodePanel.Footer>
-  <NodePanel.Overlay isVisible={isCanvasNode}>
+  <NodePanel.Overlay visible={isCanvasNode}>
     <NodeOverlaySlots nodeId={id} isValid={isValid} />
   </NodePanel.Overlay>
   {/* NodePanel.Handles */}

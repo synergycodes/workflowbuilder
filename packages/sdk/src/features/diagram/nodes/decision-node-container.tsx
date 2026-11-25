@@ -31,7 +31,7 @@ export const DecisionNodeContainer = memo(({ id, data, selected }: Props) => {
   const connectionBeingDragged = useStore((store) => store.connectionBeingDragged);
 
   return (
-    <NodeAsPortWrapper isConnecting={!!connectionBeingDragged} targetPortPosition={handleTargetPosition}>
+    <NodeAsPortWrapper connecting={!!connectionBeingDragged} targetPortPosition={handleTargetPosition}>
       <DecisionNodeTemplate
         id={id}
         selected={selected}

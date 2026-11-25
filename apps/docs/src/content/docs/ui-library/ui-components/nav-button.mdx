@@ -12,7 +12,7 @@ and `suffixIcon` props. Omit `children` and provide `prefixIcon` for an icon-onl
 button. Use `shape` to select a square or round button; icon-only buttons also
 support the no-background `plain` variant.
 
-The `isSelected` prop renders the persistent Pressed state, including while the
+The `selected` prop renders the persistent Pressed state, including while the
 button is hovered. The mouse-down `:active` state uses a separate Active token.
 
 <NavButtonExample client:visible />
@@ -25,7 +25,7 @@ import { NavButton } from '@workflowbuilder/ui';
 
 function Example() {
   return (
-    <NavButton isSelected prefixIcon={<House />}>
+    <NavButton selected prefixIcon={<House />}>
       Overview
     </NavButton>
   );

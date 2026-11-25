@@ -30,12 +30,7 @@ export type SnackbarProps = {
    */
   onButtonClick?: () => void;
   /**
-   * Whether to show the close button
-   * @default false
-   */
-  close?: boolean;
-  /**
-   * Callback fired when the snackbar is closed
+   * Callback fired when the close button is clicked. The close button is shown only when it is set.
    */
   onClose?: () => void;
 };
@@ -44,21 +39,15 @@ export type SnackbarProps = {
  * A Snackbar component that displays brief messages about app processes.
  * Purely presentational: it does not position or auto-dismiss itself - placement
  * and lifetime (e.g. an auto-hide timer) are the consumer's responsibility, and
- * dismissal is driven through `close` / `onClose`.
+ * dismissal is driven through `onClose`.
  */
 export const Snackbar = forwardRef<HTMLDivElement, SnackbarProps>(
-  ({ variant, title, subtitle, buttonLabel, onButtonClick, close = false, onClose }, ref) => (
+  ({ variant, title, subtitle, buttonLabel, onButtonClick, onClose }, ref) => (
     <div ref={ref} role="status" aria-live="polite" className={clsx(styles['container'], styles[variant])}>
       <div className={styles['content']}>
         <Icon isCentered={!subtitle} variant={variant} />
         <Message title={title} subtitle={subtitle} />
-        <ActionButtons
-          variant={variant}
-          buttonLabel={buttonLabel}
-          onButtonClick={onButtonClick}
-          close={close}
-          onClose={onClose}
-        />
+        <ActionButtons variant={variant} buttonLabel={buttonLabel} onButtonClick={onButtonClick} onClose={onClose} />
       </div>
     </div>
   ),

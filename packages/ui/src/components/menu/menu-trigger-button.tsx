@@ -23,6 +23,6 @@ export const MenuTriggerButton = forwardRef<HTMLButtonElement, MenuTriggerButton
   ({ children, ...props }, ref) => {
     const isOpen = useContext(MenuOpenContext);
 
-    return <NavButton ref={ref} isSelected={isOpen} prefixIcon={children} {...props} />;
+    return <NavButton ref={ref} selected={isOpen} prefixIcon={children} {...props} />;
   },
 );

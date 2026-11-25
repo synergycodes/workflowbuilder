@@ -5,18 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 type ButtonMockProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   prefixIcon?: ReactNode;
-  isSelected?: boolean;
+  selected?: boolean;
   tooltip?: string;
   size?: string;
 };
 
-function ButtonMock({
-  prefixIcon: _prefixIcon,
-  isSelected: _isSelected,
-  tooltip,
-  size: _size,
-  ...props
-}: ButtonMockProps) {
+function ButtonMock({ prefixIcon: _prefixIcon, selected: _selected, tooltip, size: _size, ...props }: ButtonMockProps) {
   return <button data-tooltip={tooltip} {...props} />;
 }
 

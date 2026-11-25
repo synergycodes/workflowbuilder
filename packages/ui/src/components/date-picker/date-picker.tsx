@@ -32,7 +32,6 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     type = 'default',
     value,
     defaultValue,
-    error = false,
     disabled,
     readOnly,
     onChange,
@@ -45,7 +44,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     label,
     helperText,
     state = 'default',
-    isRequired,
+    required,
   },
   ref,
 ) {
@@ -92,14 +91,12 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     return matchers.length === 0 ? undefined : matchers;
   }, [minDate, maxDate]);
 
-  const fieldState = error ? 'critical' : state;
-
   const triggerClassName = clsx(
     inputFontStyles[inputSize],
     fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[inputSize]],
     styles['container'],
     {
-      [styles['container--error']]: fieldState === 'critical',
+      [styles['container--error']]: state === 'critical',
       [styles['container--placeholder']]: triggerLabel === null,
     },
     className,
@@ -175,8 +172,8 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
   );
 
   return (
-    <Field id={id} label={label} helperText={helperText} isRequired={isRequired} state={fieldState} disabled={disabled}>
-      {({ controlId, describedBy, required }) => (
+    <Field id={id} label={label} helperText={helperText} required={required} state={state} disabled={disabled}>
+      {({ controlId, describedBy, required: fieldRequired }) => (
         <Popover.Root
           open={disabled || readOnly ? false : open}
           onOpenChange={(nextOpen) => {
@@ -191,14 +188,14 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
             ref={ref}
             id={controlId}
             aria-describedby={describedBy}
-            aria-required={required}
+            aria-required={fieldRequired}
             type="button"
             disabled={disabled}
             aria-label={ariaLabel}
             aria-labelledby={ariaLabelledby}
             aria-readonly={readOnly || undefined}
-            aria-invalid={fieldState === 'critical' || undefined}
-            data-state={readOnly ? 'read-only' : fieldState}
+            aria-invalid={state === 'critical' || undefined}
+            data-state={readOnly ? 'read-only' : state}
             className={triggerClassName}
           >
             <span className={styles['trigger-label']}>{triggerLabel ?? placeholder}</span>

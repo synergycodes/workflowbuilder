@@ -17,7 +17,7 @@ export type UseEdgeStyleParams = {
    * When true, applies the hover color unless the edge is selected, temporary, disabled or has a `runState`.
    * @default false
    */
-  isHovered?: boolean;
+  hovered?: boolean;
 
   /**
    * Where the edge stands in an execution run. When set, hover and selection no longer change the color;
@@ -70,7 +70,7 @@ function runStrokeVariable(runState: EdgeRunState, tone: EdgeRunToneName | undef
  */
 export function useEdgeStyle({
   state = 'default',
-  isHovered = false,
+  hovered = false,
   runState,
   tone,
   lineType = 'solid',
@@ -83,14 +83,14 @@ export function useEdgeStyle({
           ? runStrokeVariable(runState, tone)
           : state === 'selected' || state === 'temporary'
             ? '--wb-public-edge-color-select'
-            : isHovered
+            : hovered
               ? '--wb-public-edge-color-hover'
               : '--wb-public-edge-color';
 
     const style: EdgeStyle = {
       stroke: `var(${strokeCssVariable})`,
       strokeWidth: 'var(--wb-public-edge-stroke-width)',
-      transition: isHovered && !runState ? 'none' : 'stroke var(--wb-public-transition)',
+      transition: hovered && !runState ? 'none' : 'stroke var(--wb-public-transition)',
     };
 
     if (runState === 'running') {
@@ -101,5 +101,5 @@ export function useEdgeStyle({
     }
 
     return style;
-  }, [state, isHovered, runState, tone, lineType]);
+  }, [state, hovered, runState, tone, lineType]);
 }

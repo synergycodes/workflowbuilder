@@ -13,7 +13,7 @@ export function NavButtonExample() {
             Round
           </NavButton>
           <NavButton aria-label="Plain" variant="plain" prefixIcon={<House />} />
-          <NavButton isSelected prefixIcon={<House />} suffixIcon={<ArrowRight />}>
+          <NavButton selected prefixIcon={<House />} suffixIcon={<ArrowRight />}>
             Selected
           </NavButton>
         </ComponentPreview.Row>

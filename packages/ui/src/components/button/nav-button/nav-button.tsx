@@ -10,7 +10,7 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
   const {
     children,
     className,
-    isSelected = false,
+    selected = false,
     prefixIcon,
     shape = 'square',
     size = 'm',
@@ -28,7 +28,7 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
       styles={clsx(styles['nav-button'], styles[size], styles[shape], {
         [styles['plain']]: variant === 'plain',
         [styles['icon-only']]: isIconOnly,
-        [styles['selected']]: isSelected,
+        [styles['selected']]: selected,
       })}
       {...props}
     >

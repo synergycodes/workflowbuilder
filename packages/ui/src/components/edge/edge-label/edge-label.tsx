@@ -11,7 +11,7 @@ export type EdgeLabelProps = {
    * @default 'medium'
    */
   size?: EdgeLabelSize;
-  isHovered?: boolean;
+  hovered?: boolean;
   /**
    * Determines the layout style for the EdgeLabel based on its content:
    *
@@ -47,7 +47,7 @@ type EdgeLabelType = 'text' | 'icon' | 'compound';
  * as its absolute positioning removes it from the normal document flow.
  */
 export const EdgeLabel = forwardRef<HTMLDivElement, PropsWithChildren<EdgeLabelProps & HTMLAttributes<HTMLDivElement>>>(
-  ({ children, size = 'medium', isHovered, state = 'default', type = 'text', className, ...rest }, ref) => {
+  ({ children, size = 'medium', hovered, state = 'default', type = 'text', className, ...rest }, ref) => {
     return (
       <div
         ref={ref}
@@ -58,7 +58,7 @@ export const EdgeLabel = forwardRef<HTMLDivElement, PropsWithChildren<EdgeLabelP
           sizeStyles[type],
           sizeStyles[size],
           {
-            [styles['hovered']]: isHovered,
+            [styles['hovered']]: hovered,
           },
           className,
         )}

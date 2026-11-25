@@ -27,7 +27,7 @@ export function ButtonExample() {
         <ComponentPreview.Row>
           <Button shape="square" prefixIcon={<Plus />} aria-label="Add" />
           <Button shape="round" prefixIcon={<X />} aria-label="Close" />
-          <Button isLoading>Loading</Button>
+          <Button loading>Loading</Button>
         </ComponentPreview.Row>
       </ComponentPreview.Stack>
     </ComponentPreview>

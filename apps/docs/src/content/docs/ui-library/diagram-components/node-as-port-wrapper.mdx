@@ -14,7 +14,7 @@ node's full size - the wrapped node must render such a handle, or the wrapper
 does nothing. Connections still complete on the handle; only its hit area
 grows.
 
-It only applies while both `isConnecting` is `true` and the node is hovered,
+It only applies while both `connecting` is `true` and the node is hovered,
 so it stays inert during normal interaction. Pass the position the incoming
 connection should attach to via `targetPortPosition`, and nudge the hit area
 with the optional `offset`. The wrapper adds no visual highlight of its own -
@@ -32,11 +32,11 @@ import { NodeAsPortWrapper } from '@workflowbuilder/ui';
 import type { NodeProps } from '@xyflow/react';
 
 function NodeContainer({ id, data, selected }: NodeProps) {
-  const isConnecting = useStore((store) => !!store.connectionBeingDragged);
+  const connecting = useStore((store) => !!store.connectionBeingDragged);
   const targetPortPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
 
   return (
-    <NodeAsPortWrapper isConnecting={isConnecting} targetPortPosition={targetPortPosition}>
+    <NodeAsPortWrapper connecting={connecting} targetPortPosition={targetPortPosition}>
       <WorkflowNodeTemplate id={id} data={data} selected={selected} /* ... */ />
     </NodeAsPortWrapper>
   );

@@ -22,7 +22,7 @@ export const NodeContainer = memo(({ id, data, selected }: Props) => {
   const connectionBeingDragged = useStore((store) => store.connectionBeingDragged);
 
   return (
-    <NodeAsPortWrapper isConnecting={!!connectionBeingDragged} targetPortPosition={handleTargetPosition}>
+    <NodeAsPortWrapper connecting={!!connectionBeingDragged} targetPortPosition={handleTargetPosition}>
       <WorkflowNodeTemplate
         id={id}
         selected={selected}

@@ -73,7 +73,7 @@ export const DecisionNodeTemplate = memo(
           <NodeDescription label={label} description={description} disabled={disabled} />
           {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
         </NodePanel.Header>
-        <NodePanel.Content isVisible={isCanvasNode}>
+        <NodePanel.Content visible={isCanvasNode}>
           <OptionalNodeContent nodeId={id}>
             <BranchesContainer
               layoutDirection={layoutDirection}
@@ -85,10 +85,10 @@ export const DecisionNodeTemplate = memo(
         <NodePanel.Footer isVisible={isCanvasNode}>
           <OptionalNodeFooter nodeId={id} />
         </NodePanel.Footer>
-        <NodePanel.Overlay isVisible={isCanvasNode}>
+        <NodePanel.Overlay visible={isCanvasNode}>
           <NodeOverlaySlots nodeId={id} isValid={isValid} />
         </NodePanel.Overlay>
-        <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
+        <NodePanel.Handles visible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
         </NodePanel.Handles>
       </NodePanel.Root>

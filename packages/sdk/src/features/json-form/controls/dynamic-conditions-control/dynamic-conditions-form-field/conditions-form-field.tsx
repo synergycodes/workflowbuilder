@@ -119,7 +119,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
               value: operator,
             }))}
             onChange={(_, value) => handleChange('comparisonOperator', value)}
-            error={shouldShowValidation && errors.comparisonOperator}
+            state={shouldShowValidation && errors.comparisonOperator ? 'critical' : 'default'}
           />
           <DynamicTypedVariableOrInput
             className={styles['input']}
