@@ -62,4 +62,7 @@ function trackFutureChangeFunction(changeName: string, params?: object) {
  *
  * @category Store
  */
-export const trackFutureChange = withOptionalFunctionPlugins(trackFutureChangeFunction, 'trackFutureChange');
+export const trackFutureChange: (changeName: string, params?: object) => void = withOptionalFunctionPlugins(
+  trackFutureChangeFunction,
+  'trackFutureChange',
+);
