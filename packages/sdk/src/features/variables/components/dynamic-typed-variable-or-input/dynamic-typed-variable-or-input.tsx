@@ -59,7 +59,6 @@ export function DynamicTypedVariableOrInput({
         hasError={isError}
         endAdornment={
           <NavButton
-            aria-label={t('variables.typeValue')}
             tooltip={t('variables.typeValue')}
             onClick={handleToggleMode}
             prefixIcon={<Icon name="PencilSimple" />}
@@ -83,7 +82,6 @@ export function DynamicTypedVariableOrInput({
       endAdornment={
         suggestionGroupsForType.length > 0 ? (
           <NavButton
-            aria-label={t('variables.pickVariable')}
             tooltip={t('variables.pickVariable')}
             onClick={handleToggleMode}
             prefixIcon={<Icon name="BracketsCurly" />}

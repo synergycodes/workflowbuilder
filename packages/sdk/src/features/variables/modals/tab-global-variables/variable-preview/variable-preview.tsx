@@ -30,7 +30,6 @@ export function VariablePreview({ id, onEdit, onRemove }: Props) {
         <div className={styles['actions']}>
           {onEdit && (
             <NavButton
-              aria-label={t('common.edit')}
               tooltip={t('common.edit')}
               onClick={onEdit}
               size="xs"
@@ -38,13 +37,7 @@ export function VariablePreview({ id, onEdit, onRemove }: Props) {
             />
           )}
           {onRemove && (
-            <NavButton
-              aria-label={t('common.remove')}
-              tooltip={t('common.remove')}
-              onClick={onRemove}
-              size="xs"
-              prefixIcon={<Icon name="Trash" />}
-            />
+            <NavButton tooltip={t('common.remove')} onClick={onRemove} size="xs" prefixIcon={<Icon name="Trash" />} />
           )}
         </div>
       </div>

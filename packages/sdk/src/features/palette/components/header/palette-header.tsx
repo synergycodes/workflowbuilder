@@ -23,7 +23,6 @@ export function PaletteHeader({ onClick, isPaletteOpen }: PaletteHeaderProps) {
         <span className="wb-text-title-m-emphasized">{t('palette.nodesLibrary')}</span>
         {isPaletteToggleVisible && (
           <NavButton
-            aria-label={isPaletteOpen ? t('tooltips.closePalette') : t('tooltips.openPalette')}
             size="s"
             onClick={onClick}
             tooltip={isPaletteOpen ? t('tooltips.closePalette') : t('tooltips.openPalette')}

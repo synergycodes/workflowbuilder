@@ -13,7 +13,6 @@ export function ButtonsUndoRedo() {
   return (
     <>
       <NavButton
-        aria-label={t('plugins.undoRedo.undo')}
         size="s"
         onClick={undo}
         disabled={!canUndo || isReadOnly}
@@ -21,7 +20,6 @@ export function ButtonsUndoRedo() {
         prefixIcon={<Icon name="ArrowUUpLeft" />}
       />
       <NavButton
-        aria-label={t('plugins.undoRedo.redo')}
         size="s"
         onClick={redo}
         disabled={!canRedo || isReadOnly}

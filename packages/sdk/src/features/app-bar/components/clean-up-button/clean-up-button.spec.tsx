@@ -17,7 +17,8 @@ function ButtonMock({
   size: _size,
   ...props
 }: ButtonMockProps) {
-  return <button data-tooltip={tooltip} {...props} />;
+  // Like the real NavButton: the tooltip names an icon-only button that has no aria-label.
+  return <button data-tooltip={tooltip} aria-label={tooltip} {...props} />;
 }
 
 let menuItems: MenuItemProps[] = [];

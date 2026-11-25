@@ -96,7 +96,6 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
         {isDoneOrStuck && !isStarting && (
           <NavButton
             size="s"
-            aria-label={resetTooltip}
             onClick={reset}
             tooltip={resetTooltip}
             prefixIcon={<Icon name="ArrowCounterClockwise" />}

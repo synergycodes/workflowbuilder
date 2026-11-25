@@ -48,7 +48,6 @@ export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePr
       )}
       {isPropertiesPanelToggleVisible && (
         <NavButton
-          aria-label={toggleLabel}
           size="s"
           onClick={onTogglePropertiesBar}
           tooltip={toggleLabel}

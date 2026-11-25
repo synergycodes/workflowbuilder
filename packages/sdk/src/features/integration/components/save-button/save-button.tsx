@@ -12,7 +12,6 @@ export function SaveButton() {
 
   return (
     <NavButton
-      aria-label={t('tooltips.save')}
       size="s"
       onClick={() => void save()}
       tooltip={t('tooltips.save')}
