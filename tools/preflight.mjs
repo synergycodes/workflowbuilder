@@ -18,7 +18,7 @@ const PKG = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 // A check returns { name, status, detail }. Status semantics:
 //   'pass' — satisfied
 //   'warn' — not satisfied but does not block readiness (optional .env,
-//            any port occupied, Docker absent for Path A). Vite / Hono /
+//            any port occupied, Docker absent for Path B). Vite / Hono /
 //            docker-compose surface the precise error at boot if the port
 //            is actually held by a foreign process.
 //   'fail' — blocks readiness; the script exits 1. Reserved for missing
@@ -119,7 +119,7 @@ async function checkDocker() {
   const { code } = await runCmd('docker', ['info']);
   return code === 0
     ? { name: 'docker', status: 'pass', detail: 'running' }
-    : { name: 'docker', status: 'warn', detail: 'not running (only needed for Path B)' };
+    : { name: 'docker', status: 'warn', detail: 'not running (only needed for Path C)' };
 }
 
 // App ports may be held by the user's own running dev server, another local
