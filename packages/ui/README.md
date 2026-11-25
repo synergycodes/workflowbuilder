@@ -118,6 +118,33 @@ Default `@workflowbuilder/ui` order:
 @layer ui.base, ui.component;
 ```
 
+## Prop naming
+
+Every component follows the same rules, so a prop name means the same thing wherever it appears. New components follow them too.
+
+**Sizes.** The prop is always `size`, on one scale: `xxxs | xxs | xs | s | m | l | xl` (`SIZES`, `Size`). A component's size type lists only the steps it styles, e.g. `ItemSize` is `s | m | l` and `SelectorSize` is `xs | s | m`. `m` is the standard step and the default, with two exceptions that keep the design's default: `Avatar` defaults to `xl` and `NodeFooter` to `s`. A component with a standard and an enlarged form, such as `Modal`, takes `m | l`.
+
+**Booleans.** A boolean prop names the state bare, as HTML and Base UI do: `disabled`, `readOnly`, `required`, `checked`, `open`, `selected`, `loading`, `hovered`, `visible`, `dimmed`. No prop starts with `is` or `has`. One state has one prop: `required` both marks the label and sets the native attribute.
+
+**Open state.** `open` controls it, `defaultOpen` sets where an uncontrolled component starts, and `onOpenChange(open)` reports a change (`Accordion`, `Collapsible`, `Tooltip`). `Modal` keeps `open` with `onClose`.
+
+**Value handlers.** A control that passes a native input through keeps the native `onChange(event)` (`Input`, `TextArea`, `Checkbox`, `Radio`). A control that reports a value calls `onValueChange(value, event)` (`Select`, `SegmentPicker`; `DatePicker` passes the value alone). A toggle calls `onCheckedChange(checked, event)` (`Switch`, `IconSwitch`).
+
+**Tone.** What a message means is `tone`, with the design system's values `default | info | success | warning | critical`; each component takes the ones it styles (`Snackbar` all five, `Status` only `critical`). A form field's validation and editing state stays `state`, and a button's style stays `variant`. Value sets are string unions with an `as const` array, e.g. `SNACKBAR_TONES`, not enums.
+
+**Shape.** `shape` is geometry and `variant` is style. Shape values are shared, `default | square | round`, and each component takes the ones it styles (`Button`, `NavButton`, `SegmentPicker`). The two combine: `<NavButton shape="round" variant="plain">` is a transparent round button.
+
+**Base UI names.** A prop handed straight to Base UI keeps Base UI's name and type.
+
+**CSS variables keep their names.** The `--wb-public-*` variables are not renamed to follow these rules, so a few still carry an older word for a value:
+
+| Variable                                                           | Styles                              |
+| ------------------------------------------------------------------ | ----------------------------------- |
+| `--wb-public-checkbox-size-extra-small` (and the other size words) | `size="xs"` (and the matching code) |
+| `--wb-public-snackbar-error-*`                                     | `Snackbar tone="critical"`          |
+| `--wb-public-status-invalid-*`                                     | `Status tone="critical"`            |
+| `--wb-public-segment-picker-circle-border-radius`                  | `SegmentPicker shape="round"`       |
+
 # 🛠️ Development
 
 Run these from the monorepo root.
