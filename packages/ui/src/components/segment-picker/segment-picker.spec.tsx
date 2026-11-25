@@ -68,7 +68,7 @@ it('keeps selection internal while composing the consumer click handler', () => 
 it('marks the container and items with the secondary variant', () => {
   act(() => {
     root.render(
-      <SegmentPicker defaultValue="a" size="extra-small" variant="secondary">
+      <SegmentPicker defaultValue="a" size="xs" variant="secondary">
         <SegmentPicker.Item value="a">First</SegmentPicker.Item>
         <SegmentPicker.Item value="b">Second</SegmentPicker.Item>
       </SegmentPicker>,

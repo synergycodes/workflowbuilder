@@ -21,13 +21,7 @@ type Props = {
  *
  * @category Components
  */
-export function FormControlWithLabel({
-  label,
-  className,
-  required,
-  size = 'medium',
-  children,
-}: PropsWithChildren<Props>) {
+export function FormControlWithLabel({ label, className, required, size = 'm', children }: PropsWithChildren<Props>) {
   return (
     <div className={clsx(styles['container'], { [className || '']: className })}>
       <Label label={label} required={required} size={size} />

@@ -23,7 +23,7 @@ export type MenuProps = {
 
   /**
    * Size variant for the menu items.
-   * @default 'medium'
+   * @default 'm'
    */
   size?: ItemSize;
 
@@ -66,7 +66,7 @@ export type MenuProps = {
 };
 
 const MenuRoot = memo(
-  ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange, footer }: MenuProps) => {
+  ({ items, size = 'm', placement = 'bottom-end', children, open, offset, onOpenChange, footer }: MenuProps) => {
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
     const isOpen = open ?? uncontrolledOpen;
     const { side, align } = placementToSideAlign(placement);

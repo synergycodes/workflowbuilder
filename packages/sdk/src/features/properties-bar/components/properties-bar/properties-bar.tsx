@@ -50,7 +50,7 @@ function PropertiesBarComponent(props: WorkflowBuilderPropertiesPanelProps) {
   const segmentPicker = {
     when: () => isExpanded && !!selection?.node && selection.node.type === 'node' && hasCustomItems,
     component: () => (
-      <SegmentPicker size="xxx-small" value={selectedTab} onValueChange={(value) => onTabChange(value)}>
+      <SegmentPicker size="xxxs" value={selectedTab} onValueChange={(value) => onTabChange(value)}>
         {[
           <SegmentPicker.Item key="properties" value="properties">
             {t('propertiesBar.label')}

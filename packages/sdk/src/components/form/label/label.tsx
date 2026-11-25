@@ -15,7 +15,7 @@ type LabelProps = {
   variant?: LabelVariant;
 };
 
-export function Label({ label, required, size = 'medium', variant = 'default' }: LabelProps) {
+export function Label({ label, required, size = 'm', variant = 'default' }: LabelProps) {
   const translateIfPossible = useTranslateIfPossible();
 
   return (

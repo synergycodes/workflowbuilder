@@ -36,10 +36,10 @@ export type DatePickerValue = Date | [Date, Date] | Date[] | string | null | und
  */
 export type DatePickerProps = {
   /**
-   * Size variant of the trigger input.
-   * @default 'medium'
+   * Size of the trigger input.
+   * @default 'm'
    */
-  inputSize?: ItemSize;
+  size?: ItemSize;
   /**
    * Disable the picker. The trigger button is not interactive and the
    * popover cannot be opened.

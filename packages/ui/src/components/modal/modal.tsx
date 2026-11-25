@@ -31,10 +31,10 @@ export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivEle
      */
     footer?: ReactNode;
     /**
-     * Size variant of the modal
-     * @default 'regular'
+     * Size of the modal
+     * @default 'm'
      */
-    size?: 'regular' | 'large';
+    size?: 'm' | 'l';
     /**
      * Variant of the footer styling
      * @default 'integrated'
@@ -66,7 +66,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
       subtitle,
       children,
       footer,
-      size = 'regular',
+      size = 'm',
       footerVariant = 'integrated',
       open,
       onClose,

@@ -14,7 +14,7 @@ export function ToggleDarkMode({ className = appBarStyles['overflow-control'] }:
 
   return (
     <SegmentPicker
-      size="extra-small"
+      size="xs"
       variant="secondary"
       className={className}
       value={theme}

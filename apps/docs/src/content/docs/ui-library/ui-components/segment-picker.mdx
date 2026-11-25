@@ -44,7 +44,7 @@ editing mode or a theme switch.
 import { Moon, SunDim } from '@phosphor-icons/react';
 import { SegmentPicker } from '@workflowbuilder/ui';
 
-<SegmentPicker size="extra-small" variant="secondary" value={theme} onValueChange={(next) => setTheme(next)}>
+<SegmentPicker size="xs" variant="secondary" value={theme} onValueChange={(next) => setTheme(next)}>
   <SegmentPicker.Item value="light" aria-label="Light" prefixIcon={<SunDim />} />
   <SegmentPicker.Item value="dark" aria-label="Dark" prefixIcon={<Moon />} />
 </SegmentPicker>;

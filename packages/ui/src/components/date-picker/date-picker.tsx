@@ -1,6 +1,5 @@
 import { Popover } from '@base-ui/react/popover';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
-import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
@@ -26,7 +25,7 @@ import type { DatePickerProps, DatePickerType } from './types';
  */
 export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(function DatePicker(
   {
-    inputSize = 'medium',
+    size = 'm',
     valueFormat = 'DD/MM/YYYY',
     placeholder = 'dd/mm/yyyy',
     type = 'default',
@@ -92,8 +91,8 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
   }, [minDate, maxDate]);
 
   const triggerClassName = clsx(
-    inputFontStyles[inputSize],
-    fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[inputSize]],
+    inputFontStyles[size],
+    fieldControlSizeStyles[size],
     styles['container'],
     {
       [styles['container--error']]: state === 'critical',

@@ -12,7 +12,7 @@ type SwitchRootProps = Omit<
 export type BaseSwitchProps = {
   /**
    * Size of the switch component
-   * @default 'medium'
+   * @default 'm'
    */
   size?: SelectorSize;
   /**
@@ -46,7 +46,7 @@ export type BaseSwitchProps = {
  * Typically used for settings or preferences, it provides immediate visual feedback.
  */
 export function Switch({
-  size = 'medium',
+  size = 'm',
   className,
   thumbChildren,
   trackChildren,

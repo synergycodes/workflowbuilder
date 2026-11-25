@@ -23,7 +23,7 @@ export function SegmentPickerSecondaryExample() {
 
   return (
     <ComponentPreview>
-      <SegmentPicker size="extra-small" variant="secondary" value={theme} onValueChange={(next) => setTheme(next)}>
+      <SegmentPicker size="xs" variant="secondary" value={theme} onValueChange={(next) => setTheme(next)}>
         <SegmentPicker.Item value="light" aria-label="Light" prefixIcon={<SunDim />} />
         <SegmentPicker.Item value="dark" aria-label="Dark" prefixIcon={<Moon />} />
       </SegmentPicker>

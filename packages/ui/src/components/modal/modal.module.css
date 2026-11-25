@@ -162,7 +162,7 @@
     }
   }
 
-  .large {
+  .l {
     width: var(--wb-public-modal-large-width);
 
     .header {

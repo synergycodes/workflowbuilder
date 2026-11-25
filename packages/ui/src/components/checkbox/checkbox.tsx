@@ -8,7 +8,7 @@ import styles from './checkbox.module.css';
 export type CheckboxProps = {
   /**
    * The size of the checkbox
-   * @default 'medium'
+   * @default 'm'
    */
   size?: SelectorSize;
   /**
@@ -24,7 +24,7 @@ export type CheckboxProps = {
 /**
  * A customizable checkbox component that supports three states: checked, unchecked, and indeterminate. It can be used in forms or as a standalone control.
  */
-export function Checkbox({ size = 'medium', className, indeterminate, checked, onChange, ...props }: CheckboxProps) {
+export function Checkbox({ size = 'm', className, indeterminate, checked, onChange, ...props }: CheckboxProps) {
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     onChange?.(event);
   }

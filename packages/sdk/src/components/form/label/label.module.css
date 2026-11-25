@@ -30,12 +30,12 @@
     }
   }
 
-  .large {
+  .l {
     composes: wb-text-body-s from global;
   }
 
-  .medium,
-  .small {
+  .m,
+  .s {
     composes: wb-text-label-s from global;
   }
   .title {

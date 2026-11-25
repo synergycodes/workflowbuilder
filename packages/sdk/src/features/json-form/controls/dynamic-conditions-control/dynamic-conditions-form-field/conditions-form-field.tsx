@@ -77,7 +77,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
         <div className={styles['segment-picker-container']}>
           <SegmentPicker
             className={styles['segment-picker']}
-            size="xx-small"
+            size="xxs"
             value={condition.logicalOperator || 'AND'}
             onValueChange={(value) => handleChange('logicalOperator', value)}
           >

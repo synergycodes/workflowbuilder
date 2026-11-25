@@ -9,7 +9,7 @@
 }
 
 @layer ui.component {
-  .medium {
+  .m {
     width: var(--wb-public-radio-size-medium);
     height: var(--wb-public-radio-size-medium);
 
@@ -19,7 +19,7 @@
     }
   }
 
-  .small {
+  .s {
     width: var(--wb-public-radio-size-small);
     height: var(--wb-public-radio-size-small);
 
@@ -29,7 +29,7 @@
     }
   }
 
-  .extra-small {
+  .xs {
     width: var(--wb-public-radio-size-extra-small);
     height: var(--wb-public-radio-size-extra-small);
 

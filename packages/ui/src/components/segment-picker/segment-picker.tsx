@@ -1,4 +1,4 @@
-import type { NavButtonShape, NavButtonSize } from '@ui/components/button/nav-button/types';
+import type { NavButtonShape } from '@ui/components/button/nav-button/types';
 import type { Size } from '@ui/shared/types/size';
 import clsx from 'clsx';
 import {
@@ -18,16 +18,6 @@ import type { SegmentPickerShape, SegmentPickerVariant } from './types';
 import { SegmentPickerContext } from './utils/context';
 import { getValidShape } from './utils/get-valid-shape';
 
-const NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE: Record<Size, NavButtonSize> = {
-  'extra-large': 'xl',
-  large: 'l',
-  medium: 'm',
-  small: 's',
-  'extra-small': 'xs',
-  'xx-small': 'xxs',
-  'xxx-small': 'xxxs',
-};
-
 const NAV_BUTTON_SHAPE_BY_SEGMENT_PICKER_SHAPE: Record<SegmentPickerShape, NavButtonShape> = {
   default: 'square',
   round: 'round',
@@ -35,7 +25,7 @@ const NAV_BUTTON_SHAPE_BY_SEGMENT_PICKER_SHAPE: Record<SegmentPickerShape, NavBu
 
 export type SegmentPickerPropsBase = {
   children: ReactElement<SegmentPickerItemProps, typeof Item>[];
-  /** @default 'medium' */
+  /** @default 'm' */
   size?: Size;
   /**
    * Round is supported only when every item contains an icon without a label.
@@ -66,16 +56,7 @@ type SegmentPickerComponent = ForwardRefExoticComponent<SegmentPickerProps & Ref
 
 export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
   (
-    {
-      children,
-      value,
-      defaultValue,
-      size = 'medium',
-      shape = 'default',
-      variant = 'primary',
-      className,
-      onValueChange,
-    },
+    { children, value, defaultValue, size = 'm', shape = 'default', variant = 'primary', className, onValueChange },
     ref,
   ) => {
     const validShape = getValidShape(shape, children);
@@ -97,7 +78,7 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
         value={{
           selectedValue,
           onSelect: handleSelect,
-          size: NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE[size],
+          size,
           shape: validShape,
           variant,
           navShape: NAV_BUTTON_SHAPE_BY_SEGMENT_PICKER_SHAPE[validShape],

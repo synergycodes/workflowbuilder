@@ -13,7 +13,7 @@
 }
 
 @layer ui.base {
-  .medium {
+  .m {
     --switch-thumb-size-medium: calc(
       var(--wb-public-switch-height-medium) - 2 * var(--wb-public-switch-thumb-padding-medium)
     );
@@ -39,7 +39,7 @@
     }
   }
 
-  .small {
+  .s {
     --switch-thumb-size-small: calc(
       var(--wb-public-switch-height-small) - 2 * var(--wb-public-switch-thumb-padding-small)
     );
@@ -65,7 +65,7 @@
     }
   }
 
-  .extra-small {
+  .xs {
     --switch-thumb-size-extra-small: calc(
       var(--wb-public-switch-height-extra-small) - 2 * var(--wb-public-switch-thumb-padding-extra-small)
     );

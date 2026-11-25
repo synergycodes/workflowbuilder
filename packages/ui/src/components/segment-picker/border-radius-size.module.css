@@ -9,31 +9,31 @@
 }
 
 @layer ui.component {
-  .extra-large {
+  .xl {
     border-radius: var(--wb-public-segment-picker-border-radius-extra-large);
   }
 
-  .large {
+  .l {
     border-radius: var(--wb-public-segment-picker-border-radius-large);
   }
 
-  .medium {
+  .m {
     border-radius: var(--wb-public-segment-picker-border-radius-medium);
   }
 
-  .small {
+  .s {
     border-radius: var(--wb-public-segment-picker-border-radius-small);
   }
 
-  .extra-small {
+  .xs {
     border-radius: var(--wb-public-segment-picker-border-radius-extra-small);
   }
 
-  .xx-small {
+  .xxs {
     border-radius: var(--wb-public-segment-picker-border-radius-xx-small);
   }
 
-  .xxx-small {
+  .xxxs {
     border-radius: var(--wb-public-segment-picker-border-radius-xxx-small);
   }
 }

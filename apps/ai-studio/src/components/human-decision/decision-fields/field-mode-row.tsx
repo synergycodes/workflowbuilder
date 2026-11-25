@@ -31,7 +31,7 @@ export function FieldModeRow({ row, mode, disabled, onPick }: Props) {
       </span>
       <span className={styles['select']}>
         <Select
-          size="small"
+          size="s"
           items={MODE_ITEMS}
           value={mode}
           disabled={disabled}

@@ -39,7 +39,7 @@ export function DeleteConfirmation({ nodes, edges, onShouldShowAgainChange }: De
         />
       </span>
       <div className={styles['checkbox-wrapper']}>
-        <Checkbox id="dont-show-again-checkbox" size="small" checked={isChecked} onChange={handleChange} />
+        <Checkbox id="dont-show-again-checkbox" size="s" checked={isChecked} onChange={handleChange} />
         <label htmlFor="dont-show-again-checkbox">{t('deleteConfirmation.dontShowMeThisAgain')}</label>
       </div>
     </div>

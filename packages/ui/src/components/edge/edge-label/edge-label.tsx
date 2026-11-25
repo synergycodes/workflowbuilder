@@ -8,7 +8,7 @@ import { EdgeLabelSize, EdgeState } from '../types';
 
 export type EdgeLabelProps = {
   /**
-   * @default 'medium'
+   * @default 'm'
    */
   size?: EdgeLabelSize;
   hovered?: boolean;
@@ -47,7 +47,7 @@ type EdgeLabelType = 'text' | 'icon' | 'compound';
  * as its absolute positioning removes it from the normal document flow.
  */
 export const EdgeLabel = forwardRef<HTMLDivElement, PropsWithChildren<EdgeLabelProps & HTMLAttributes<HTMLDivElement>>>(
-  ({ children, size = 'medium', hovered, state = 'default', type = 'text', className, ...rest }, ref) => {
+  ({ children, size = 'm', hovered, state = 'default', type = 'text', className, ...rest }, ref) => {
     return (
       <div
         ref={ref}

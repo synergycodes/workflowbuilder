@@ -1,5 +1,4 @@
 import { Select as SelectBase } from '@base-ui/react/select';
-import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
 import type { ReactNode, SyntheticEvent } from 'react';
 
@@ -25,7 +24,7 @@ export type SelectBaseProps = {
   className?: string;
   /**
    * Size of the select input
-   * @default 'medium'
+   * @default 'm'
    */
   size?: ItemSize;
   /**
@@ -84,7 +83,7 @@ export type SelectBaseProps = {
  */
 export function Select({
   className,
-  size = 'medium',
+  size = 'm',
   items,
   placeholder,
   value,
@@ -104,7 +103,7 @@ export function Select({
       [selectButtonStyles['container--error']]: state === 'critical',
     },
     inputFontStyles[size],
-    fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
+    fieldControlSizeStyles[size],
     className,
   );
 

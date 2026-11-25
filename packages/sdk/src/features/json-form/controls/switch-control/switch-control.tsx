@@ -14,7 +14,7 @@ function SwitchControl(props: SwitchControlProps) {
 
   return (
     <ControlWrapper {...props}>
-      <Switch disabled={isDisabled} size="medium" checked={data ?? false} onCheckedChange={onCheckedChange} />
+      <Switch disabled={isDisabled} size="m" checked={data ?? false} onCheckedChange={onCheckedChange} />
     </ControlWrapper>
   );
 }

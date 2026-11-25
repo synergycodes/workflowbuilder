@@ -12,7 +12,7 @@ export function ToggleReadyOnlyMode() {
 
   return (
     <SegmentPicker
-      size="extra-small"
+      size="xs"
       variant="secondary"
       value={isReadOnly ? 'read-only' : 'edit'}
       onValueChange={(value) => setReadOnly(value === 'read-only')}

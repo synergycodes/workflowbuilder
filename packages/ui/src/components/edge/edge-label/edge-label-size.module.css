@@ -45,7 +45,7 @@
 }
 
 @layer ui.component {
-  .medium {
+  .m {
     border-radius: var(--wb-public-edge-label-medium-border-radius);
     composes: wb-text-label-m from global;
 
@@ -55,7 +55,7 @@
     }
   }
 
-  .small {
+  .s {
     border-radius: var(--wb-public-edge-label-small-border-radius);
     composes: wb-text-label-m from global;
 
@@ -65,7 +65,7 @@
     }
   }
 
-  .extra-small {
+  .xs {
     border-radius: var(--wb-public-edge-label-extra-small-border-radius);
     composes: wb-text-label-s from global;
 
@@ -76,43 +76,43 @@
   }
 
   .text {
-    &.medium {
+    &.m {
       padding: var(--wb-public-edge-label-medium-label-padding);
     }
 
-    &.small {
+    &.s {
       padding: var(--wb-public-edge-label-small-label-padding);
     }
 
-    &.extra-small {
+    &.xs {
       padding: var(--wb-public-edge-label-extra-small-label-padding);
     }
   }
 
   .icon {
-    &.medium {
+    &.m {
       padding: var(--wb-public-edge-label-medium-icon-padding);
     }
 
-    &.small {
+    &.s {
       padding: var(--wb-public-edge-label-small-icon-padding);
     }
 
-    &.extra-small {
+    &.xs {
       padding: var(--wb-public-edge-label-extra-small-icon-padding);
     }
   }
 
   .compound {
-    &.medium {
+    &.m {
       padding: var(--wb-public-edge-label-medium-content-padding);
     }
 
-    &.small {
+    &.s {
       padding: var(--wb-public-edge-label-small-content-padding);
     }
 
-    &.extra-small {
+    &.xs {
       padding: var(--wb-public-edge-label-extra-small-content-padding);
     }
   }

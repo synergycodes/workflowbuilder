@@ -43,21 +43,21 @@
     color: var(--wb-public-checkbox-icon-color);
     line-height: 0;
 
-    &.medium {
+    &.m {
       svg {
         width: var(--wb-public-checkbox-icon-size-medium);
         height: var(--wb-public-checkbox-icon-size-medium);
       }
     }
 
-    &.small {
+    &.s {
       svg {
         width: var(--wb-public-checkbox-icon-size-small);
         height: var(--wb-public-checkbox-icon-size-small);
       }
     }
 
-    &.extra-small {
+    &.xs {
       svg {
         width: var(--wb-public-checkbox-icon-size-extra-small);
         height: var(--wb-public-checkbox-icon-size-extra-small);
@@ -111,19 +111,19 @@
       outline: none;
     }
 
-    &.medium {
+    &.m {
       width: var(--wb-public-checkbox-size-medium);
       height: var(--wb-public-checkbox-size-medium);
       border-radius: var(--wb-public-checkbox-border-radius-medium);
     }
 
-    &.small {
+    &.s {
       width: var(--wb-public-checkbox-size-small);
       height: var(--wb-public-checkbox-size-small);
       border-radius: var(--wb-public-checkbox-border-radius-small);
     }
 
-    &.extra-small {
+    &.xs {
       width: var(--wb-public-checkbox-size-extra-small);
       height: var(--wb-public-checkbox-size-extra-small);
       border-radius: var(--wb-public-checkbox-border-radius-extra-small);

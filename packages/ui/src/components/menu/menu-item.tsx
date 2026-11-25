@@ -1,5 +1,6 @@
 import { Menu as MenuBase } from '@base-ui/react/menu';
 import { Check } from '@phosphor-icons/react';
+import type { ItemSize } from '@ui/shared/types/item-size';
 import clsx from 'clsx';
 
 import listItemSize from '@ui/shared/styles/list-item-size.module.css';
@@ -10,6 +11,8 @@ import { MenuItemProps } from './types';
 type Props = MenuItemProps & {
   /** Render as a radio item; set by `Menu` when the item list carries a selection. */
   radio?: boolean;
+  /** Set by `Menu` from its own `size`. */
+  size?: ItemSize;
 };
 
 // `selected` and `id` are consumed by `Menu` (radio group value, row key); they are
@@ -22,7 +25,7 @@ export function MenuItem({
   tone = 'default',
   selected: _selected,
   radio,
-  size = 'medium',
+  size = 'm',
   onClick,
 }: Props) {
   const className = clsx(listItemStyles['list-item'], listItemSize[size], {

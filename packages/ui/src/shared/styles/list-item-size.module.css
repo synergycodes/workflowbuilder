@@ -8,19 +8,19 @@
 }
 
 @layer ui.component {
-  .large {
+  .l {
     composes: wb-text-label-l from global;
     padding: var(--wb-public-list-item-padding-large);
     gap: var(--wb-public-list-item-gap-large);
   }
 
-  .medium {
+  .m {
     composes: wb-text-label-m from global;
     padding: var(--wb-public-list-item-padding-medium);
     gap: var(--wb-public-list-item-gap-medium);
   }
 
-  .small {
+  .s {
     composes: wb-text-label-m from global;
     padding: var(--wb-public-list-item-padding-small);
     gap: var(--wb-public-list-item-gap-small);
