@@ -108,7 +108,7 @@ export const AiAgentNodeTemplate = memo(
               })}
             </ToolInfo>
           </NodePanel.Content>
-          <NodePanel.Footer isVisible={isCanvasNode}>
+          <NodePanel.Footer visible={isCanvasNode}>
             <OptionalNodeFooter nodeId={id} />
           </NodePanel.Footer>
           <NodePanel.Overlay visible={isCanvasNode}>

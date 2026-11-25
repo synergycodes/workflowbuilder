@@ -80,7 +80,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
               )}
             </OptionalNodeContent>
           </NodePanel.Content>
-          <NodePanel.Footer isVisible={isCanvasNode}>
+          <NodePanel.Footer visible={isCanvasNode}>
             <OptionalNodeFooter nodeId={id}>
               <DecisionWaitingFooter nodeId={id} nodeLabel={label} />
             </OptionalNodeFooter>

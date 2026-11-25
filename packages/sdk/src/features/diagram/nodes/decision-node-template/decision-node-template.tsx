@@ -82,7 +82,7 @@ export const DecisionNodeTemplate = memo(
             />
           </OptionalNodeContent>
         </NodePanel.Content>
-        <NodePanel.Footer isVisible={isCanvasNode}>
+        <NodePanel.Footer visible={isCanvasNode}>
           <OptionalNodeFooter nodeId={id} />
         </NodePanel.Footer>
         <NodePanel.Overlay visible={isCanvasNode}>

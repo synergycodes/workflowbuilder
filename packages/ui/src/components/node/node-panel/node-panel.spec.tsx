@@ -130,10 +130,10 @@ describe('NodePanel.Footer', () => {
     expect(shell.querySelector('[data-testid="footer"]')).not.toBeNull();
   });
 
-  it('renders nothing when isVisible is false', () => {
+  it('renders nothing when visible is false', () => {
     const shell = render(
       <NodePanel.Root selected={false}>
-        <NodePanel.Footer isVisible={false}>
+        <NodePanel.Footer visible={false}>
           <span data-testid="footer" />
         </NodePanel.Footer>
       </NodePanel.Root>,

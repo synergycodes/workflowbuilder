@@ -21,7 +21,7 @@ child triggers a runtime warning, and each slot may appear at most once.
 - `NodePanel.Footer` - the place below the content for a
   [`NodeFooter`](/ui-library/diagram-components/node-footer/). It renders its children as they are,
   after `Content` but not inside it, so it stays visible when the content is hidden. Can be toggled
-  with `isVisible`.
+  with `visible`.
 - `NodePanel.Handles` - container for React Flow connection `Handle`s. Supports
   `visible` and an `alignment` of `'center'` or `'header'`.
 - `NodePanel.Overlay` - a layer stretched over the whole node, drawn above the
@@ -91,7 +91,7 @@ block of absolutely positioned content, and the handles sit above the `Overlay`.
 | `NodePanel.Root`    | `selected: boolean`, `disabled?: boolean`, `className?`, `children?`                                | Outer wrapper. Lays out header + handles, then content, footer and overlay; applies selected and disabled styling.      |
 | `NodePanel.Header`  | `className?`, `children?`                                                                           | Header row. At most one per `Root`.                                                                                     |
 | `NodePanel.Content` | `visible?` (default `true`), `className?`, `children?`                                              | Main body. Renders nothing when `visible` is `false`. At most one per `Root`.                                           |
-| `NodePanel.Footer`  | `isVisible?` (default `true`), `children?`                                                          | Below the content. Renders nothing when `isVisible` is `false`. At most one per `Root`.                                 |
+| `NodePanel.Footer`  | `visible?` (default `true`), `children?`                                                            | Below the content. Renders nothing when `visible` is `false`. At most one per `Root`.                                   |
 | `NodePanel.Handles` | `visible?` (default `true`), `alignment?` (`'center' \| 'header'`, default `'center'`), `children?` | Container for connection handles. At most one per `Root`.                                                               |
 | `NodePanel.Overlay` | `visible?` (default `true`), `className?`, `children?`                                              | Layer over the whole node, above header and content. Renders nothing when `visible` is `false`. At most one per `Root`. |
 

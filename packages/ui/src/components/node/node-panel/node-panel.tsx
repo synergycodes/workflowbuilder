@@ -63,8 +63,8 @@ const Content = memo(function Content({
 });
 
 /** A sibling of Content, so it stays visible when the content is hidden or collapsed. */
-const Footer = memo(function Footer({ children, isVisible = true }: PropsWithChildren<{ isVisible?: boolean }>) {
-  return <>{isVisible && children}</>;
+const Footer = memo(function Footer({ children, visible = true }: PropsWithChildren<{ visible?: boolean }>) {
+  return <>{visible && children}</>;
 });
 
 const Handles = memo(function Handles({
