@@ -40,12 +40,12 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
 vi.mock('@workflowbuilder/ui', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/ui')>();
   // jsdom cannot drive Base UI's portal; a native select with the same props stands in.
-  function NativeSelect({ items, value, onChange, disabled }: ComponentProps<typeof Select>) {
+  function NativeSelect({ items, value, onValueChange, disabled }: ComponentProps<typeof Select>) {
     return (
       <select
         value={value === null || value === undefined ? '' : String(value)}
         disabled={disabled}
-        onChange={(changeEvent) => onChange?.(changeEvent, changeEvent.target.value)}
+        onChange={(changeEvent) => onValueChange?.(changeEvent.target.value, changeEvent)}
       >
         {items.map((item) =>
           item.type === 'separator' ? null : (

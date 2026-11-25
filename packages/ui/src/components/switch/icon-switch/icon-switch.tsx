@@ -25,14 +25,14 @@ export function IconSwitch({
   className,
   checked,
   variant = 'primary',
-  onChange,
+  onCheckedChange,
   ...props
 }: IconSwitchProps) {
   return (
     <Switch
       checked={checked}
       className={clsx(styles['container'], className)}
-      onChange={onChange}
+      onCheckedChange={onCheckedChange}
       trackChildren={
         <div className={styles['track']}>
           <div className={styles['icon']}>{icon}</div>

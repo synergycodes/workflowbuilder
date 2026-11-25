@@ -6,7 +6,7 @@ import switchStyles from './switch.module.css';
 
 type SwitchRootProps = Omit<
   React.ComponentProps<typeof SwitchBase.Root>,
-  'onCheckedChange' | 'render' | 'children' | 'className'
+  'onCheckedChange' | 'onChange' | 'render' | 'children' | 'className'
 >;
 
 export type BaseSwitchProps = {
@@ -38,7 +38,7 @@ export type BaseSwitchProps = {
   /**
    * Callback function when the switch state changes
    */
-  onChange?: (checked: boolean, event: Event) => void;
+  onCheckedChange?: (checked: boolean, event: Event) => void;
 } & SwitchRootProps;
 
 /**
@@ -50,11 +50,11 @@ export function Switch({
   className,
   thumbChildren,
   trackChildren,
-  onChange,
+  onCheckedChange,
   ...props
 }: BaseSwitchProps) {
   function handleCheckedChange(checked: boolean, eventDetails: { event: Event }) {
-    onChange?.(checked, eventDetails.event);
+    onCheckedChange?.(checked, eventDetails.event);
   }
 
   return (

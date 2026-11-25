@@ -106,7 +106,7 @@ export function DynamicTypedInput({
           className={className}
           value={value}
           items={itemsForBoolean}
-          onChange={(_event, value) => onChange(value as string)}
+          onValueChange={(value) => onChange(value as string)}
           placeholder={placeholder}
           disabled={disabled}
         />
@@ -123,7 +123,7 @@ export function DynamicTypedInput({
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={getDateIfValid(value)}
-          onChange={(value) => {
+          onValueChange={(value) => {
             const date = setDateWithTimeFromTime(value as Date, timeForRawDates);
 
             onChange(date.toISOString());
@@ -147,7 +147,7 @@ export function DynamicTypedInput({
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={date}
-          onChange={(value) => {
+          onValueChange={(value) => {
             const date = setDateWithTimeFromTime(value as Date, timeForRawDates);
             onChange(date.toISOString());
             setTime(getTimeFromDateIfValid(date.toISOString()));

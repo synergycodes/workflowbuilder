@@ -52,3 +52,17 @@ describe('DatePicker required', () => {
     expect(button.hasAttribute('aria-required')).toBe(false);
   });
 });
+
+it('reports the picked date through onValueChange', () => {
+  const onValueChange = vi.fn();
+  const button = trigger({ defaultValue: new Date(2026, 10, 10), onValueChange });
+
+  act(() => button.click());
+  const day = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(
+    (candidate) => candidate.textContent === '12',
+  )!;
+  act(() => day.click());
+
+  expect(onValueChange).toHaveBeenCalledOnce();
+  expect(onValueChange.mock.calls[0]?.[0]).toEqual(new Date(2026, 10, 12));
+});

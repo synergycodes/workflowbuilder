@@ -57,7 +57,7 @@ export type DatePickerProps = {
    * - `range`   -> `[from, to]` once both dates are selected, otherwise `null`
    * - `multiple`-> the array of selected `Date`s (empty array allowed)
    */
-  onChange?: (value: Date | [Date, Date] | Date[] | null) => void;
+  onValueChange?: (value: Date | [Date, Date] | Date[] | null) => void;
   /**
    * The earliest selectable date (inclusive).
    */

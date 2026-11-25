@@ -18,7 +18,7 @@ export function ToggleDarkMode({ className = appBarStyles['overflow-control'] }:
       variant="secondary"
       className={className}
       value={theme}
-      onChange={(_event, value) => setTheme(value === 'dark' ? 'dark' : 'light')}
+      onValueChange={(value) => setTheme(value === 'dark' ? 'dark' : 'light')}
     >
       <SegmentPicker.Item
         value="light"

@@ -27,9 +27,7 @@ const ITEMS: SelectItem[] = [
 
 function Example() {
   const [model, setModel] = useState<string | number | null>('opus');
-  return (
-    <Select items={ITEMS} value={model} placeholder="Choose a model" onChange={(_event, next) => setModel(next)} />
-  );
+  return <Select items={ITEMS} value={model} placeholder="Choose a model" onValueChange={(next) => setModel(next)} />;
 }
 ```
 

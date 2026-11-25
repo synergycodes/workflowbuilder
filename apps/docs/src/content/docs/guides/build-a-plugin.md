@@ -247,7 +247,9 @@ import { IconSwitch } from '@workflowbuilder/ui';
 function ThemeSwitch() {
   const { theme } = useWorkflowBuilderState();
   const { toggleTheme } = useWorkflowBuilderActions();
-  return <IconSwitch checked={theme === 'dark'} onChange={toggleTheme} icon={<Sun />} IconChecked={<MoonStars />} />;
+  return (
+    <IconSwitch checked={theme === 'dark'} onCheckedChange={toggleTheme} icon={<Sun />} IconChecked={<MoonStars />} />
+  );
 }
 ```
 

@@ -15,7 +15,7 @@ export function ToggleReadyOnlyMode() {
       size="extra-small"
       variant="secondary"
       value={isReadOnly ? 'read-only' : 'edit'}
-      onChange={(_event, value) => setReadOnly(value === 'read-only')}
+      onValueChange={(value) => setReadOnly(value === 'read-only')}
     >
       <SegmentPicker.Item
         value="edit"

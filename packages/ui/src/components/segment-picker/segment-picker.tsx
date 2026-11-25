@@ -45,7 +45,7 @@ export type SegmentPickerPropsBase = {
   /** @default 'primary' */
   variant?: SegmentPickerVariant;
   className?: string;
-  onChange?: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
+  onValueChange?: (value: string, event: MouseEvent<HTMLButtonElement>) => void;
 };
 
 export type ControlledSegmentPickerProps = {
@@ -66,7 +66,16 @@ type SegmentPickerComponent = ForwardRefExoticComponent<SegmentPickerProps & Ref
 
 export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
   (
-    { children, value, defaultValue, size = 'medium', shape = 'default', variant = 'primary', className, onChange },
+    {
+      children,
+      value,
+      defaultValue,
+      size = 'medium',
+      shape = 'default',
+      variant = 'primary',
+      className,
+      onValueChange,
+    },
     ref,
   ) => {
     const validShape = getValidShape(shape, children);
@@ -74,13 +83,13 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
     const [internalValue, setInternalValue] = useState<string | undefined>(defaultValue);
     const selectedValue = isControlled ? value : internalValue;
 
-    const handleSelect = (event: MouseEvent<HTMLButtonElement>, newValue: string) => {
+    const handleSelect = (newValue: string, event: MouseEvent<HTMLButtonElement>) => {
       if (newValue === selectedValue) return;
 
       if (!isControlled) {
         setInternalValue(newValue);
       }
-      onChange?.(event, newValue);
+      onValueChange?.(newValue, event);
     };
 
     return (

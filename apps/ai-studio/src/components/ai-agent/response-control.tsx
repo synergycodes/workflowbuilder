@@ -18,14 +18,14 @@ export function ResponseControl({ data, handleChange, path, enabled, label }: Co
   const current = responseOptionOf(data);
 
   // Base UI reports a click on the selected item as a change.
-  const onChange: SelectBaseProps['onChange'] = (_event, value) => {
+  const onValueChange: SelectBaseProps['onValueChange'] = (value) => {
     if (value === current) return;
     handleChange(path, outputSchemaFor(value));
   };
 
   return (
     <FormControlWithLabel label={label}>
-      <Select value={current} items={items} disabled={!enabled} onChange={onChange} />
+      <Select value={current} items={items} disabled={!enabled} onValueChange={onValueChange} />
     </FormControlWithLabel>
   );
 }

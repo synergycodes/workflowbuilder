@@ -44,7 +44,7 @@ export function Item({
       className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], itemShapeStyles[variant], className)}
       selected={isSelected}
       onClick={(event: MouseEvent<HTMLButtonElement>) => {
-        onSelect(event, value);
+        onSelect(value, event);
         onClick?.(event);
       }}
       prefixIcon={prefixIcon}

@@ -9,7 +9,7 @@ export function SwitchExample() {
 
   return (
     <ComponentPreview>
-      <Switch checked={checked} onChange={(next) => setChecked(next)} />
+      <Switch checked={checked} onCheckedChange={(next) => setChecked(next)} />
     </ComponentPreview>
   );
 }
@@ -19,7 +19,12 @@ export function IconSwitchExample() {
 
   return (
     <ComponentPreview>
-      <IconSwitch checked={checked} icon={<Sun />} IconChecked={<Moon />} onChange={(next) => setChecked(next)} />
+      <IconSwitch
+        checked={checked}
+        icon={<Sun />}
+        IconChecked={<Moon />}
+        onCheckedChange={(next) => setChecked(next)}
+      />
     </ComponentPreview>
   );
 }

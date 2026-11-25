@@ -79,7 +79,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             className={styles['segment-picker']}
             size="xx-small"
             value={condition.logicalOperator || 'AND'}
-            onChange={(_, value) => handleChange('logicalOperator', value)}
+            onValueChange={(value) => handleChange('logicalOperator', value)}
           >
             <SegmentPicker.Item value="AND">{t('conditions.compare.all')}</SegmentPicker.Item>
             <SegmentPicker.Item value="OR">{t('conditions.compare.one')}</SegmentPicker.Item>
@@ -118,7 +118,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
               label: t(`conditions.compare.${operator}`) as string,
               value: operator,
             }))}
-            onChange={(_, value) => handleChange('comparisonOperator', value)}
+            onValueChange={(value) => handleChange('comparisonOperator', value)}
             state={shouldShowValidation && errors.comparisonOperator ? 'critical' : 'default'}
           />
           <DynamicTypedVariableOrInput

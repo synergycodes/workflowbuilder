@@ -34,7 +34,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     defaultValue,
     disabled,
     readOnly,
-    onChange,
+    onValueChange,
     minDate,
     maxDate,
     id,
@@ -70,9 +70,9 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
       if (!isControlled) {
         setInternalValue(next);
       }
-      onChange?.(next);
+      onValueChange?.(next);
     },
-    [isControlled, onChange],
+    [isControlled, onValueChange],
   );
 
   // react-day-picker does not derive the visible month from `selected`.

@@ -36,7 +36,7 @@ export function FieldModeRow({ row, mode, disabled, onPick }: Props) {
           value={mode}
           disabled={disabled}
           // Base UI reports a click on the selected item as a change.
-          onChange={(_event, value) => {
+          onValueChange={(value) => {
             if (isFieldMode(value) && value !== mode) onPick(value);
           }}
         />

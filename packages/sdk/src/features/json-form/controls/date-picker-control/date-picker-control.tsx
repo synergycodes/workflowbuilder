@@ -8,13 +8,13 @@ function DatePickerControl(props: DatePickerControlProps) {
   const { data, handleChange, path, enabled, uischema } = props;
   const isDisabled = !enabled || uischema.disabled === true;
 
-  const onChange: DatePickerProps['onChange'] = (value) => {
+  const onValueChange: DatePickerProps['onValueChange'] = (value) => {
     handleChange(path, value?.toString());
   };
 
   return (
     <ControlWrapper {...props}>
-      <DatePicker value={data} onChange={onChange} disabled={isDisabled} />
+      <DatePicker value={data} onValueChange={onValueChange} disabled={isDisabled} />
     </ControlWrapper>
   );
 }

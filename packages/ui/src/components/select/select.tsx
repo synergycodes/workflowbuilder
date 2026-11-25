@@ -47,7 +47,7 @@ export type SelectBaseProps = {
   /**
    * Callback fired when the value of the select changes.
    */
-  onChange?: (event: SyntheticEvent | Event | null, value: SelectValueType) => void;
+  onValueChange?: (value: SelectValueType, event: SyntheticEvent | Event | null) => void;
   /**
    * Whether the select is disabled.
    */
@@ -89,7 +89,7 @@ export function Select({
   placeholder,
   value,
   defaultValue,
-  onChange,
+  onValueChange,
   disabled,
   name,
   required,
@@ -119,7 +119,7 @@ export function Select({
             name={name}
             required={required}
             onValueChange={(nextValue, eventDetails) => {
-              onChange?.(eventDetails.event ?? null, nextValue as SelectValueType);
+              onValueChange?.(nextValue as SelectValueType, eventDetails.event ?? null);
             }}
           >
             <SelectBase.Trigger

@@ -53,7 +53,7 @@ export function AddAiToolFormContent({ onSubmit, data }: ContentProps) {
           items={toolItems}
           placeholder="Select Tool..."
           value={formData.tool}
-          onChange={(_, value) => updateFormField('tool', String(value ?? ''))}
+          onValueChange={(value) => updateFormField('tool', String(value ?? ''))}
         />
       </FormControlWithLabel>
       <FormControlWithLabel label="Tool Description">

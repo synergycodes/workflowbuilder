@@ -34,13 +34,13 @@ it('preserves element children inside the label', () => {
 });
 
 it('keeps selection internal while composing the consumer click handler', () => {
-  const onChange = vi.fn();
+  const onValueChange = vi.fn();
   const onSelectedClick = vi.fn();
   const onNextClick = vi.fn();
 
   act(() => {
     root.render(
-      <SegmentPicker defaultValue="a" onChange={onChange}>
+      <SegmentPicker defaultValue="a" onValueChange={onValueChange}>
         <SegmentPicker.Item value="a" onClick={onSelectedClick}>
           First
         </SegmentPicker.Item>
@@ -55,13 +55,14 @@ it('keeps selection internal while composing the consumer click handler', () => 
   act(() => buttons[0]?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 
   expect(onSelectedClick).toHaveBeenCalledOnce();
-  expect(onChange).not.toHaveBeenCalled();
+  expect(onValueChange).not.toHaveBeenCalled();
 
   act(() => buttons[1]?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 
   expect(onNextClick).toHaveBeenCalledOnce();
-  expect(onChange).toHaveBeenCalledOnce();
-  expect(onChange.mock.calls[0]?.[1]).toBe('b');
+  expect(onValueChange).toHaveBeenCalledOnce();
+  expect(onValueChange.mock.calls[0]?.[0]).toBe('b');
+  expect(onValueChange.mock.calls[0]?.[1]).toHaveProperty('currentTarget');
 });
 
 it('marks the container and items with the secondary variant', () => {

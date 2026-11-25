@@ -5,7 +5,7 @@ import type { SegmentPickerShape, SegmentPickerVariant } from '../types';
 
 type SegmentPickerContextType = {
   selectedValue: string | undefined;
-  onSelect: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
+  onSelect: (value: string, event: MouseEvent<HTMLButtonElement>) => void;
   size: NavButtonSize;
   shape: SegmentPickerShape;
   variant: SegmentPickerVariant;

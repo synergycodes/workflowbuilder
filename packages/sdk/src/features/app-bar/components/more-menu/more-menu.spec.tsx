@@ -33,8 +33,8 @@ vi.mock('@workflowbuilder/ui', () => ({
     },
   ),
   SegmentPicker: Object.assign(
-    ({ children, value, onChange }: { children: ReactNode; value: string; onChange: () => void }) => (
-      <div role="group" data-value={value} onClick={onChange}>
+    ({ children, value, onValueChange }: { children: ReactNode; value: string; onValueChange: () => void }) => (
+      <div role="group" data-value={value} onClick={onValueChange}>
         {children}
       </div>
     ),

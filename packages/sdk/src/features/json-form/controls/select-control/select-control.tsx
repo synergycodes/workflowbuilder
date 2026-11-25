@@ -20,7 +20,7 @@ function SelectControl(props: SelectControlProps) {
         },
   );
 
-  const onChange: SelectBaseProps['onChange'] = (_event, value) => {
+  const onValueChange: SelectBaseProps['onValueChange'] = (value) => {
     handleChange(path, value);
   };
 
@@ -30,7 +30,7 @@ function SelectControl(props: SelectControlProps) {
         value={data ?? null}
         items={items ?? []}
         disabled={isDisabled}
-        onChange={onChange}
+        onValueChange={onValueChange}
         placeholder={schema.placeholder}
       />
     </ControlWrapper>
