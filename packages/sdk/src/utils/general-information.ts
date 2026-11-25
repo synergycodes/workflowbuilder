@@ -38,7 +38,6 @@ export const globalControls: UISchemaElement[] = [
   {
     type: 'MessageOnError',
     scope: '#/properties/missingPreviousVariable',
-    text: 'plugins.validation.missingDependency',
   },
 ];
 
