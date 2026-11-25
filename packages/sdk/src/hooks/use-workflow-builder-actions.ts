@@ -61,7 +61,7 @@ export type WorkflowBuilderActions = {
   /**
    * Replace the diagram in the editor with `model`: its nodes, edges, name and layout
    * direction. The same as picking it in the built-in template selector: nodes snap to the
-   * grid, the change is recorded for undo, and the view fits the new diagram if the canvas has
+   * canvas grid (`reactFlowProps.snapGrid`), the change is recorded for undo, and the view fits the new diagram if the canvas has
    * mounted; before that, the canvas's own first fit applies (`reactFlowProps.fitView`).
    * Global variables are kept.
    */

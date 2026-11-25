@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { setReactFlowProps } from '../data/react-flow-config';
 import { trackFutureChange } from '../features/changes-tracker/stores/use-changes-tracker-store';
 import type { DiagramModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
@@ -37,6 +38,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.mocked(trackFutureChange).mockReset();
+  setReactFlowProps(null);
 });
 
 describe('loadDiagramModel', () => {
@@ -71,6 +73,22 @@ describe('loadDiagramModel', () => {
       { x: 108, y: 54 },
       { x: 108, y: 54 },
     ]);
+  });
+
+  it("snaps to the canvas grid the host set through reactFlowProps' snapGrid", () => {
+    setReactFlowProps({ snapGrid: [20, 20] });
+
+    loadDiagramModel(makeModel([makeNode('off', 103, 47)]));
+
+    expect(useStore.getState().nodes[0].position).toEqual({ x: 100, y: 40 });
+  });
+
+  it("leaves positions alone when the host turned reactFlowProps' snapToGrid off", () => {
+    setReactFlowProps({ snapToGrid: false });
+
+    loadDiagramModel(makeModel([makeNode('off', 103, 47)]));
+
+    expect(useStore.getState().nodes[0].position).toEqual({ x: 103, y: 47 });
   });
 
   it('does not change the model it was given', () => {
