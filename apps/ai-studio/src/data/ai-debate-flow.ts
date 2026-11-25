@@ -7,7 +7,7 @@ const diagram: DiagramModel = {
       {
         id: 'trigger-1',
         type: 'start-node',
-        position: { x: 0, y: 300 },
+        position: { x: 0, y: 286 },
         data: {
           segments: [],
           isStartNode: true,
@@ -25,7 +25,7 @@ const diagram: DiagramModel = {
       {
         id: 'optimist-1',
         type: 'node',
-        position: { x: 400, y: 120 },
+        position: { x: 396, y: 110 },
         data: {
           segments: [],
           properties: {
@@ -43,7 +43,7 @@ why now. Be persuasive but honest, no hype.`,
       {
         id: 'skeptic-1',
         type: 'node',
-        position: { x: 400, y: 480 },
+        position: { x: 396, y: 462 },
         data: {
           segments: [],
           properties: {
@@ -61,7 +61,7 @@ hidden costs, what could go wrong. Surface the objections others gloss over.`,
       {
         id: 'verdict-1',
         type: 'node',
-        position: { x: 820, y: 300 },
+        position: { x: 814, y: 286 },
         data: {
           segments: [],
           properties: {
@@ -90,7 +90,7 @@ Be decisive.`,
       {
         id: 'visualize-1',
         type: 'node',
-        position: { x: 1240, y: 300 },
+        position: { x: 1232, y: 286 },
         data: {
           segments: [],
           properties: {

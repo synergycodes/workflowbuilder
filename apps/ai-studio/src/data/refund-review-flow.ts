@@ -49,7 +49,7 @@ const diagram: DiagramModel = {
       {
         id: 'trigger-1',
         type: 'start-node',
-        position: { x: 0, y: 300 },
+        position: { x: 0, y: 308 },
         data: {
           segments: [],
           isStartNode: true,
@@ -71,7 +71,7 @@ Head of Ops, Brightwave`,
       {
         id: 'draft-1',
         type: 'node',
-        position: { x: 350, y: 300 },
+        position: { x: 352, y: 308 },
         data: {
           segments: [],
           properties: {
@@ -92,7 +92,7 @@ preventing a repeat. Keep your reasoning about the policy for the team, not for 
       {
         id: 'review-1',
         type: reviewNodeType,
-        position: { x: 700, y: 300 },
+        position: { x: 704, y: 308 },
         data: {
           segments: [],
           properties: {
@@ -107,7 +107,7 @@ preventing a repeat. Keep your reasoning about the policy for the team, not for 
       {
         id: 'escalate-1',
         type: 'node',
-        position: { x: 1100, y: 470 },
+        position: { x: 1100, y: 484 },
         data: {
           segments: [],
           properties: {
@@ -133,7 +133,7 @@ the team.`,
       {
         id: 'senior-1',
         type: humanDecisionNodeType,
-        position: { x: 1450, y: 470 },
+        position: { x: 1452, y: 484 },
         data: {
           segments: [],
           properties: {
@@ -148,7 +148,7 @@ the team.`,
       {
         id: 'send-1',
         type: 'node',
-        position: { x: 1800, y: 100 },
+        position: { x: 1804, y: 110 },
         data: {
           segments: [],
           properties: {
@@ -175,7 +175,7 @@ Answer with the message alone.`,
       {
         id: 'done-1',
         type: 'node',
-        position: { x: 2150, y: 100 },
+        position: { x: 2156, y: 110 },
         data: {
           segments: [],
           properties: {
@@ -190,7 +190,7 @@ Answer with the message alone.`,
       {
         id: 'rejected-1',
         type: 'node',
-        position: { x: 1100, y: 780 },
+        position: { x: 1100, y: 792 },
         data: {
           segments: [],
           properties: {
@@ -205,7 +205,7 @@ Answer with the message alone.`,
       {
         id: 'rejected-2',
         type: 'node',
-        position: { x: 1800, y: 700 },
+        position: { x: 1804, y: 704 },
         data: {
           segments: [],
           properties: {

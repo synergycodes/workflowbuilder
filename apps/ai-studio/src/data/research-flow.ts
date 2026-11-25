@@ -7,7 +7,7 @@ const diagram: DiagramModel = {
       {
         id: 'trigger-1',
         type: 'start-node',
-        position: { x: 0, y: 300 },
+        position: { x: 0, y: 308 },
         data: {
           segments: [],
           isStartNode: true,
@@ -24,7 +24,7 @@ const diagram: DiagramModel = {
       {
         id: 'research-1',
         type: 'node',
-        position: { x: 380, y: 300 },
+        position: { x: 374, y: 308 },
         data: {
           segments: [],
           properties: {
@@ -54,7 +54,7 @@ Only state things you found via search. If a claim isn't supported by a result, 
       {
         id: 'visualize-1',
         type: 'node',
-        position: { x: 760, y: 300 },
+        position: { x: 748, y: 308 },
         data: {
           segments: [],
           properties: {
