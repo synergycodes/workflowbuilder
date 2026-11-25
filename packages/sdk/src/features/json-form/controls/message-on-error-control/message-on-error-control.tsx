@@ -15,7 +15,7 @@ function MessageOnErrorControl(props: MessageOnErrorProps) {
     return null;
   }
 
-  const message = translateIfPossible(text) || errors || text;
+  const message = translateIfPossible(text) || text || errors;
 
   if (!message) {
     return null;
