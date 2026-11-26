@@ -2,13 +2,11 @@
   --wb-public-nav-button-background-color-default: var(--wb-ds-components-nav-button-bg-primary-default);
   --wb-public-nav-button-background-color-hover: var(--wb-ds-components-nav-button-bg-primary-hover);
   --wb-public-nav-button-background-color-pressed: var(--wb-ds-components-nav-button-bg-primary-pressed);
-  --wb-public-nav-button-background-color-active: var(--wb-ds-components-nav-button-bg-primary-active);
   --wb-public-nav-button-background-color-focus: var(--wb-ds-components-nav-button-bg-primary-focus);
   --wb-public-nav-button-background-color-disabled: var(--wb-ds-components-nav-button-bg-primary-disabled);
   --wb-public-nav-button-color-default: var(--wb-ds-components-nav-button-icon-primary-default);
   --wb-public-nav-button-color-hover: var(--wb-ds-components-nav-button-icon-primary-hover);
   --wb-public-nav-button-color-pressed: var(--wb-ds-components-nav-button-icon-primary-pressed);
-  --wb-public-nav-button-color-active: var(--wb-ds-components-nav-button-icon-primary-active);
   --wb-public-nav-button-color-disabled: var(--wb-ds-components-nav-button-icon-primary-disabled);
   --wb-public-nav-button-height-xl: var(--wb-ds-size-600);
   --wb-public-nav-button-height-l: calc(var(--wb-ds-size-500) + var(--wb-ds-size-25));
@@ -60,7 +58,7 @@
     --nav-button-color-default: var(--wb-public-nav-button-color-default);
     --nav-button-color-hover: var(--wb-public-nav-button-color-hover);
     --nav-button-color-selected: var(--wb-public-nav-button-color-pressed);
-    /* Held down (:active) is Pressed: Active marks a chosen item. The public -active variables stay for consumers. */
+    /* Held down (:active) is Pressed: Active marks a chosen item. */
     --nav-button-color-active: var(--wb-public-nav-button-color-pressed);
     --nav-button-color-disabled: var(--wb-public-nav-button-color-disabled);
 
