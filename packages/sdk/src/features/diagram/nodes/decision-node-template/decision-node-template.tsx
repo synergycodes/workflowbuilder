@@ -31,7 +31,6 @@ type Props = {
   /** Render the Node Disabled variant (palette entries that cannot be added). */
   disabled?: boolean;
   layoutDirection?: LayoutDirection;
-  isConnecting?: boolean;
   showHandles?: boolean;
   isValid?: boolean;
   decisionBranches?: DecisionBranch[];

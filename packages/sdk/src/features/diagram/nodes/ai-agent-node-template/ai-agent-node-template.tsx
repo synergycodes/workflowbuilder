@@ -32,7 +32,6 @@ type Props = {
   selected?: boolean;
   /** Render the Node Disabled variant (palette entries that cannot be added). */
   disabled?: boolean;
-  isConnecting?: boolean;
   showHandles?: boolean;
   chatModel?: ItemOption | undefined;
   memoryModel?: ItemOption | undefined;

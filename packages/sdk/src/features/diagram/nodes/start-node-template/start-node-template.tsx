@@ -31,7 +31,6 @@ type StartNodeTemplateProps = {
   /** Render the Node Disabled variant (palette entries that cannot be added). */
   disabled?: boolean;
   layoutDirection?: LayoutDirection;
-  isConnecting?: boolean;
   showHandles?: boolean;
   isValid?: boolean;
   children?: React.ReactNode;
