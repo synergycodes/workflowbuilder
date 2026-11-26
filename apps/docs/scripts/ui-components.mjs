@@ -18,6 +18,7 @@ export const COMPONENTS = [
   { slug: 'chip', name: 'Chip', propsType: 'ChipProps', dir: 'chip' },
   { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
   { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
+  { slug: 'icon', name: 'Icon', propsType: 'IconProps', dir: 'icon' },
   { slug: 'icon-switch', name: 'IconSwitch', propsType: 'IconSwitchProps', dir: 'switch/icon-switch' },
   {
     slug: 'input',

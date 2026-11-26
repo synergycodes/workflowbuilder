@@ -9,8 +9,7 @@ export function useRunLocksCanvas() {
   const { setReadOnly } = useWorkflowBuilderActions();
 
   // Set whenever the shown run changes; the SDK app bar's read-only switch can lift it for that run, on purpose, as the
-  // switch demonstrates the SDK. Import (follow-up: sdk-import-read-only) and the branching node's Add branch
-  // (follow-up: sdk-node-buttons-read-only) ignore read-only.
+  // switch demonstrates the SDK.
   useEffect(() => {
     setReadOnly(executionId !== undefined);
   }, [executionId, setReadOnly]);

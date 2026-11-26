@@ -1,4 +1,5 @@
-import { ExclamationMark } from '@phosphor-icons/react';
+import exclamationMarkIcon from '@iconify-icons/ph/exclamation-mark';
+import { Icon } from '@ui/components/icon';
 import clsx from 'clsx';
 
 import styles from './status.module.css';
@@ -26,7 +27,7 @@ export function Status({ status, className }: StatusProps) {
   if (status === 'invalid') {
     return (
       <span className={clsx(styles['status-container'], styles['status-container--invalid'], className)}>
-        <ExclamationMark />
+        <Icon icon={exclamationMarkIcon} />
       </span>
     );
   }

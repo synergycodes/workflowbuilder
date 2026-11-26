@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
 
@@ -163,5 +163,34 @@ describe('ProjectSelection builtInControls', () => {
 
     fireEvent.click(editableTitle);
     expect(screen.getByRole('textbox')).not.toBeNull();
+  });
+});
+
+describe('ProjectSelection in read-only mode', () => {
+  beforeEach(() => {
+    useModalStore.setState({ isOpen: false, modal: null });
+  });
+
+  it('shows Import disabled, and choosing it opens nothing', () => {
+    renderProjectSelection({});
+    act(() => useStore.setState({ isReadOnly: true }));
+
+    openProjectMenu();
+    const importItem = screen.getByRole('menuitem', { name: 'Import' });
+    expect(importItem.getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByRole('menuitem', { name: 'Export' }).getAttribute('aria-disabled')).toBeNull();
+
+    fireEvent.click(importItem);
+    expect(useModalStore.getState().isOpen).toBe(false);
+  });
+
+  it('opens the import modal from the menu while editable', () => {
+    renderProjectSelection({});
+
+    openProjectMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Import' }));
+
+    expect(useModalStore.getState().isOpen).toBe(true);
+    expect(useModalStore.getState().modal?.title).toBe(i18n.t('importExport.import'));
   });
 });

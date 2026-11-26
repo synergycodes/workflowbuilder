@@ -1,14 +1,15 @@
-import { CaretDown } from '@phosphor-icons/react';
+import caretDownIcon from '@iconify-icons/ph/caret-down';
+import filePdfIcon from '@iconify-icons/ph/file-pdf';
+import gearIcon from '@iconify-icons/ph/gear';
 import { Input, Menu, type MenuItemProps, Tooltip } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from '../../app-bar.module.css';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { Icon } from '../../../../icon/icon';
 import { useStore } from '../../../../store/store';
 import { removedPropertyWarning } from '../../../plugins-core/adapters/removed-api';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
@@ -53,13 +54,17 @@ export function ProjectSelection(props: object) {
 
   const items = useMemo(() => {
     const leadingItems: MenuItemProps[] = [
-      ...getExportImportItems({ export: isExportVisible, import: isImportVisible }, { openExport, openImport }),
+      ...getExportImportItems(
+        { export: isExportVisible, import: isImportVisible },
+        { openExport, openImport },
+        isReadOnly,
+      ),
       ...(isSaveAsPdfAvailable
-        ? [{ label: t('header.projectSelection.saveAsPdf'), icon: <Icon name="FilePdf" />, onClick: saveAsPdf }]
+        ? [{ label: t('header.projectSelection.saveAsPdf'), icon: <Icon icon={filePdfIcon} />, onClick: saveAsPdf }]
         : []),
     ];
     const settingsItems: MenuItemProps[] = isSettingsVisible
-      ? [{ label: t('common.settings'), icon: <Icon name="Gear" />, onClick: openSettings }]
+      ? [{ label: t('common.settings'), icon: <Icon icon={gearIcon} />, onClick: openSettings }]
       : [];
 
     return composeMenuItems(
@@ -73,6 +78,7 @@ export function ProjectSelection(props: object) {
   }, [
     isExportVisible,
     isImportVisible,
+    isReadOnly,
     isSettingsVisible,
     isSaveAsPdfAvailable,
     registeredItems,
@@ -129,7 +135,7 @@ export function ProjectSelection(props: object) {
               aria-label={t('tooltips.pickTheProject')}
               tooltip={t('tooltips.pickTheProject')}
             >
-              <CaretDown />
+              <Icon icon={caretDownIcon} size="inherit" />
             </Menu.TriggerButton>
           </Menu>
         </div>

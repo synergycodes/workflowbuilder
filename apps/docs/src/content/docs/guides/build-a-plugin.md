@@ -329,7 +329,7 @@ These are deliberate limits of the model, not bugs:
 - **Hiding is not blocking.** `builtInControls={{ delete: false }}` removes the button; the Delete key and `deleteSelection()` keep working. Only read-only mode blocks deletion as a whole. `reactFlowProps={{ deleteKeyCode: null }}` disables the key alone: `deleteSelection()` and a decorator's `onDeleteClick` still delete through the same confirmation.
 - **Hiding is app-wide, not per-node.** `builtInControls` hides a control for the whole app; it cannot protect one specific node from deletion. For that, set `deletable: false` on the node itself (a React Flow property), which also blocks the Delete key for that node.
 - **Hiding `paletteToggle` or `propertiesPanelToggle` leaves no way back for the user.** The palette starts collapsed, so hiding `paletteToggle` means it never opens at all unless the app calls `setPaletteOpen(true)` itself. To start with the palette open, call `actions.setPaletteOpen(true)` from [`onLoad`](/guides/configuring-the-editor/#load-behavior). Either sidebar, once collapsed, has only its own expand button (also hidden) to reopen it; an app that hides either toggle must give the user another way in, e.g. a button calling `setPaletteOpen(true)` or `setPropertiesPanelOpen(true)`.
-- **Read-only mode blocks the actions that change the persisted model**: `openTemplates`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection`, `cleanUp`. Every other action, including `save`, `openExport`, the theme and palette/panel toggles, the palette filter and the language switch, always runs. Two exceptions are not guarded today: `openImport` replaces the whole diagram and `openSettings` lets you edit the persisted global variables, and neither checks `isReadOnly`. Hide them explicitly where that matters: `builtInControls={{ import: canEdit, settings: canEdit }}`. A custom button that changes the diagram checks `isReadOnly` itself; the SDK only guards its own actions.
+- **Read-only mode blocks the actions that change the persisted model**: `openTemplates`, `openImport`, `loadWorkflow`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection`, `cleanUp`. Every other action, including `save`, `openExport`, the theme and palette/panel toggles, the palette filter and the language switch, always runs. One exception is not guarded today: `openSettings` lets you edit the persisted global variables and does not check `isReadOnly`. Hide it explicitly where that matters: `builtInControls={{ settings: canEdit }}`. A custom button that changes the diagram checks `isReadOnly` itself; the SDK only guards its own actions.
 - **Content from a node's properties form lives with the form.** It mounts only while the panel is expanded and that tab is active, and unmounts with the form; content meant to be always present belongs in the app tree instead.
 - **An empty area, or a menu with no items, disappears**, and a collapsed sidebar shows only its title and the expand button; its own header content and menu disappear with the rest.
 - **Two `…Content` components in the same area both render; nothing merges them.** Two buttons added from two different places both show up, in mount order.
@@ -418,3 +418,25 @@ registerPluginTranslation({
 ```
 
 Equivalent to passing `translations` via `<WorkflowBuilder.Root jsonForm={{ translations }} />`. Use whichever is more convenient for your plugin's lifecycle.
+
+## Icons in a plugin
+
+A plugin whose node types, templates or select options name icons registers them in its initializer with `registerIcons`, so the app does not have to list them and removing the plugin removes its icons too. Augment `PluginIconNames` with the same set to type the names; every plugin adds its own, and they count once the app augments `Register` (see [Icons](/guides/configuring-the-editor/#icons)).
+
+```ts
+import coinsIcon from '@iconify-icons/ph/coins';
+import ticketIcon from '@iconify-icons/ph/ticket';
+import { type IconNamesOf, defineIcons, registerIcons } from '@workflowbuilder/sdk';
+
+const pricingIcons = defineIcons({ Coins: coinsIcon, Ticket: ticketIcon });
+
+declare module '@workflowbuilder/sdk' {
+  interface PluginIconNames extends IconNamesOf<typeof pricingIcons> {}
+}
+
+export function plugin(): void {
+  registerIcons(pricingIcons);
+}
+```
+
+An app icon of the same name wins over a plugin icon. Icons fixed in the plugin's components do not need registering: pass the imported data, `<Icon icon={coinsIcon} />`.

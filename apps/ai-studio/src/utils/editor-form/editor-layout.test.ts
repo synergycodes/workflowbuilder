@@ -22,22 +22,23 @@ describe('editorLayout', () => {
     });
   });
 
-  it('maps boolean to a switch and leaves integer out', () => {
+  it('maps integer to a text box and boolean to a switch', () => {
     const { elements } = editorLayout({
       type: 'object',
       properties: { count: { type: 'integer' }, urgent: { type: 'boolean' } },
     });
 
-    expect(elements.map((element) => element.type)).toEqual(['Switch']);
+    expect(elements.map((element) => element.type)).toEqual(['Text', 'Switch']);
   });
 
-  it('shows an optional string or boolean that structured output types with null, but not a nullable number', () => {
+  it('shows an optional string or boolean that structured output types with null, but not a nullable number or integer', () => {
     const { elements } = editorLayout({
       type: 'object',
       properties: {
         note: { type: ['string', 'null'] },
         urgent: { type: ['null', 'boolean'] },
         amount: { type: ['number', 'null'] },
+        count: { type: ['integer', 'null'] },
         either: { type: ['string', 'number'] },
       },
     });
@@ -68,7 +69,7 @@ describe('editableFields', () => {
       },
     };
 
-    expect([...editableFields(schema)]).toEqual(['amount', 'urgent']);
+    expect([...editableFields(schema)]).toEqual(['amount', 'count', 'urgent']);
   });
 
   it('does not take a type named after an Object.prototype member for one it shows', () => {

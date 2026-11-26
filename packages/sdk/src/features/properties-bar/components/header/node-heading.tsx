@@ -1,24 +1,22 @@
 import { NodeIcon, type NodeIconAccent } from '@workflowbuilder/ui';
 import clsx from 'clsx';
-
-import { Icon } from '@workflow-builder/icons';
+import type { ReactNode } from 'react';
 
 import styles from './node-heading.module.css';
-
-import type { IconType } from '../../../../node/common';
 
 type Props = {
   label: string;
   /** Second line under the label, for example the node type. */
   subtitle?: string;
-  icon?: IconType;
+  /** Rendered inside `NodeIcon`, which sets the glyph size: give `Icon` `size="inherit"`. */
+  icon?: ReactNode;
   accent?: NodeIconAccent;
 };
 
 export function NodeHeading({ label, subtitle, icon, accent }: Props) {
   return (
     <div className={styles['container']}>
-      {icon && <NodeIcon icon={<Icon name={icon} size="inherit" />} accent={accent} />}
+      {icon && <NodeIcon icon={icon} accent={accent} />}
       <div className={styles['text']}>
         {/* Native title until the DS Tooltip takes over; no keyboard or touch access today (follow-up: node-text-ds-tooltip). */}
         <span className={clsx('wb-text-title-s-emphasized', styles['label'])} title={label}>

@@ -21,16 +21,15 @@ import { copyUiFontAssets } from './font-assets.mjs';
 // This list is INTENTIONALLY broader than `peerDependencies`. Only the
 // libraries a consumer touches directly (react, react-dom, @xyflow/react,
 // zustand) are peers; the rest (the JsonForms packages, immer, the
-// i18next family, @base-ui/react, @phosphor-icons/react) are regular
+// i18next family, @base-ui/react) are regular
 // `dependencies` so consumers don't have to install them by hand. Keeping
 // the latter externalized (not bundled) still lets package managers dedupe
 // them to a single copy via the caret ranges — bundling would instead
 // hard-code a second copy and reintroduce the singleton hazards above. So:
 // externalize all of them, but only declare the consumer-facing ones as
 // peers.
-// @base-ui/react and @phosphor-icons/react are here even though the SDK
-// only imports @phosphor-icons/react directly — @base-ui/react is pulled
-// in transitively through the bundled @workflowbuilder/ui and would
+// @base-ui/react is here even though the SDK does not import it directly:
+// it is pulled in transitively through the bundled @workflowbuilder/ui and would
 // otherwise get inlined a second time alongside the copy @workflowbuilder/ui
 // (or the consumer app) already ships.
 // Anything not on this list (clsx, notistack, remeda, ace-builds,
@@ -48,7 +47,6 @@ const EXTERNAL_PACKAGES = [
   'immer',
   'zustand',
   '@base-ui/react',
-  '@phosphor-icons/react',
 ];
 
 const isExternalPackage = (id: string) =>
@@ -110,16 +108,22 @@ export default defineConfig(({ command }) => ({
       rollupTypes: true,
       tsconfigPath: './tsconfig.json',
       include: ['src/**/*'],
-      exclude: ['src/**/*.spec.ts', 'src/**/*.spec.tsx', 'src/__shims__/**/*'],
-      // Inline types from workspace-internal packages so external consumers
-      // don't need to install them. Both packages are bundled into the SDK's
-      // runtime (not externalized in Vite's build), so their types must be
-      // inlined too - otherwise dist/index.d.ts would reference
-      // @workflowbuilder/ui, which the SDK does not declare as a dependency.
-      bundledPackages: ['@workflow-builder/icons', '@workflowbuilder/ui'],
+      exclude: ['src/**/*.spec.ts', 'src/**/*.spec.tsx'],
+      // Inline types from @workflowbuilder/ui so external consumers don't need
+      // to install it. It is bundled into the SDK's runtime (not externalized
+      // in Vite's build), so its types must be inlined too - otherwise
+      // dist/index.d.ts would reference a package the SDK does not declare
+      // as a dependency.
+      bundledPackages: ['@workflowbuilder/ui'],
       // The one type we can't reach from source alone — the ai-tools-control
       // depends on a few @jsonforms types we export for consumer convenience.
       insertTypesEntry: true,
+      // The plugin only logs declaration errors, and a type it cannot emit then ships as an import of a missing file.
+      afterDiagnostic(diagnostics) {
+        if (diagnostics.length > 0) {
+          throw new Error(`Type declarations failed with ${diagnostics.length} error(s); see the log above.`);
+        }
+      },
     }),
   ],
   resolve: {

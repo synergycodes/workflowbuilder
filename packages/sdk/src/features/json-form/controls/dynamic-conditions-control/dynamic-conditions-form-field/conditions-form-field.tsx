@@ -1,9 +1,9 @@
+import dotsSixVerticalIcon from '@iconify-icons/ph/dots-six-vertical';
+import xIcon from '@iconify-icons/ph/x';
 import { NavButton, SegmentPicker, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { Icon } from '@workflow-builder/icons';
 
 import styles from './conditions-form-field.module.css';
 
@@ -16,6 +16,7 @@ import {
   type ComparisonOperator,
   comparisonOperatorsByPrimitiveType,
 } from '../../../../../features/variables/constants';
+import { Icon } from '../../../../../icon/icon';
 import type { VariableTypePrimitive } from '../../../../../node/node-output-schema';
 import type { DynamicCondition } from '../../../../../types/controls';
 
@@ -91,7 +92,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
           [styles['container-error']]: shouldShowValidation && (!condition.x || !condition.y),
         })}
       >
-        <NavButton onClick={() => {}} tooltip={t('tooltips.menu')} prefixIcon={<Icon name="DotsSixVertical" />} />
+        <NavButton onClick={() => {}} tooltip={t('tooltips.menu')} prefixIcon={<Icon icon={dotsSixVerticalIcon} />} />
         <div className={styles['inputs-container']}>
           <VariableText
             className={styles['input']}
@@ -125,7 +126,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             suggestionGroups={suggestionGroups}
           />
         </div>
-        <NavButton onClick={onRemove} tooltip={t('common.remove')} prefixIcon={<Icon name="X" />} />
+        <NavButton onClick={onRemove} tooltip={t('common.remove')} prefixIcon={<Icon icon={xIcon} />} />
       </div>
     </>
   );

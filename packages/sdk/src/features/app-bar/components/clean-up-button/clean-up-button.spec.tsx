@@ -23,6 +23,7 @@ function ButtonMock({
 
 let menuItems: MenuItemProps[] = [];
 vi.mock('@workflowbuilder/ui', () => ({
+  Icon: () => null,
   NavButton: ButtonMock,
   Menu: Object.assign(
     ({ items, children }: { items: MenuItemProps[]; children?: ReactNode }) => {

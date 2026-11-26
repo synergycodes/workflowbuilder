@@ -25,7 +25,16 @@ import { AiStudioControls } from './ai-studio-controls';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
-  return { ...actual, Icon: ({ name }: { name: string }) => <i data-icon={name} /> };
+  const { namedIcon } = await import('../../test/named-icon');
+  const { default: playIcon } = await import('@iconify-icons/ph/play');
+  const { default: stopIcon } = await import('@iconify-icons/ph/stop');
+  const { default: arrowCounterClockwiseIcon } = await import('@iconify-icons/ph/arrow-counter-clockwise');
+  const namesByIcon = new Map([
+    [playIcon, 'Play'],
+    [stopIcon, 'Stop'],
+    [arrowCounterClockwiseIcon, 'ArrowCounterClockwise'],
+  ]);
+  return { ...actual, Icon: namedIcon(namesByIcon) };
 });
 
 const address = vi.hoisted(() => ({ leaveRunView: vi.fn() }));

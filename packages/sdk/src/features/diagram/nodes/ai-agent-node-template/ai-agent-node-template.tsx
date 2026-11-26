@@ -4,10 +4,9 @@ import clsx from 'clsx';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './ai-agent-node-template.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
@@ -39,6 +38,7 @@ type Props = {
   selectedTools?: AiAgentTool[] | undefined;
   isValid?: boolean;
   layoutDirection?: LayoutDirection;
+  isAddDisabled?: boolean;
   onAddTool?: () => void;
 };
 
@@ -58,6 +58,7 @@ export const AiAgentNodeTemplate = memo(
     selectedTools,
     isValid,
     layoutDirection = 'RIGHT',
+    isAddDisabled = false,
     onAddTool,
   }: Props) => {
     const { t } = useTranslation();
@@ -98,7 +99,7 @@ export const AiAgentNodeTemplate = memo(
                 />
               </div>
             </Collapsible.Content>
-            <ToolInfo onAddTool={onAddTool}>
+            <ToolInfo isAddDisabled={isAddDisabled} onAddTool={onAddTool}>
               {selectedTools?.map((tool, index) => {
                 const handleId = tool.sourceHandle;
 

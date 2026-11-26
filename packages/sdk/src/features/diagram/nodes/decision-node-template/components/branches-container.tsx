@@ -12,10 +12,11 @@ import { PlaceholderButton } from '../../components/placeholder-button/placehold
 type Props = {
   decisionBranches: DecisionBranch[];
   layoutDirection?: LayoutDirection;
+  isAddDisabled?: boolean;
   onAddBranch?: () => void;
 };
 
-export function BranchesContainer({ decisionBranches, layoutDirection, onAddBranch }: Props) {
+export function BranchesContainer({ decisionBranches, layoutDirection, isAddDisabled = false, onAddBranch }: Props) {
   const { t } = useTranslation(undefined, { keyPrefix: 'decisionBranches' });
   // Branches should be displayed vertically when layout direction is horizontal (sic!)
   const isListVertical = layoutDirection === 'RIGHT';
@@ -26,7 +27,7 @@ export function BranchesContainer({ decisionBranches, layoutDirection, onAddBran
         {decisionBranches.map(({ id, sourceHandle, label }, index) => (
           <ConnectableItem key={id} label={label || t('branch', { index: index + 1 })} handleId={sourceHandle} />
         ))}
-        <PlaceholderButton label={t('addBranch')} onClick={onAddBranch} />
+        <PlaceholderButton label={t('addBranch')} onClick={onAddBranch} disabled={isAddDisabled} />
       </div>
     </NodeSection>
   );

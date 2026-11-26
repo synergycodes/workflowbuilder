@@ -1,9 +1,9 @@
+import floppyDiskIcon from '@iconify-icons/ph/floppy-disk';
 import { NavButton } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { Icon } from '../../../../icon/icon';
 import { SavingStatus } from '../saving-status/saving-status';
 
 export function SaveButton() {
@@ -18,7 +18,7 @@ export function SaveButton() {
       prefixIcon={
         <>
           <SavingStatus />
-          <Icon name="FloppyDisk" />
+          <Icon icon={floppyDiskIcon} />
         </>
       }
     />

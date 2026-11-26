@@ -1,3 +1,5 @@
+import arrowUUpLeftIcon from '@iconify-icons/ph/arrow-u-up-left';
+import arrowUUpRightIcon from '@iconify-icons/ph/arrow-u-up-right';
 import { Icon, useStore } from '@workflowbuilder/sdk';
 import { NavButton } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
@@ -17,14 +19,14 @@ export function ButtonsUndoRedo() {
         onClick={undo}
         disabled={!canUndo || isReadOnly}
         tooltip={t('plugins.undoRedo.undo')}
-        prefixIcon={<Icon name="ArrowUUpLeft" />}
+        prefixIcon={<Icon icon={arrowUUpLeftIcon} />}
       />
       <NavButton
         size="s"
         onClick={redo}
         disabled={!canRedo || isReadOnly}
         tooltip={t('plugins.undoRedo.redo')}
-        prefixIcon={<Icon name="ArrowUUpRight" />}
+        prefixIcon={<Icon icon={arrowUUpRightIcon} />}
       />
     </>
   );

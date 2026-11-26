@@ -63,12 +63,12 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
-    "@phosphor-icons/react": "catalog:",
     "react-textarea-autosize": "^8.5.6"
   },
   "devDependencies": {
     "@fontsource/inter": "^5.3.0",
     "@fontsource/poppins": "^5.3.0",
+    "@iconify-icons/ph": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "^19.1.0",
     "@workflowbuilder/ui-tokens": "workspace:*",

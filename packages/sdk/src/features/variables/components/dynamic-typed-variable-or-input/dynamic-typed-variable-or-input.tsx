@@ -1,9 +1,10 @@
+import bracketsCurlyIcon from '@iconify-icons/ph/brackets-curly';
+import pencilSimpleIcon from '@iconify-icons/ph/pencil-simple';
 import { NavButton } from '@workflowbuilder/ui';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
+import { Icon } from '../../../../icon/icon';
 import type { VariableTypePrimitive } from '../../../../node/node-output-schema';
 import { getIsSingleVariable } from '../../actions/get-is-single-variable';
 import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
@@ -61,7 +62,7 @@ export function DynamicTypedVariableOrInput({
           <NavButton
             tooltip={t('variables.typeValue')}
             onClick={handleToggleMode}
-            prefixIcon={<Icon name="PencilSimple" />}
+            prefixIcon={<Icon icon={pencilSimpleIcon} />}
             size="xs"
             variant="plain"
           />
@@ -84,7 +85,7 @@ export function DynamicTypedVariableOrInput({
           <NavButton
             tooltip={t('variables.pickVariable')}
             onClick={handleToggleMode}
-            prefixIcon={<Icon name="BracketsCurly" />}
+            prefixIcon={<Icon icon={bracketsCurlyIcon} />}
             size="xs"
             variant="plain"
           />

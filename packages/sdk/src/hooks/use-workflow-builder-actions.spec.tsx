@@ -16,6 +16,7 @@ import { EditorHeaderSaveAsPdf } from '../features/ui-extensions/components/edit
 import { EditorHeaderVersion } from '../features/ui-extensions/components/editor-header-version';
 import { renderInRoot } from '../features/ui-extensions/test-utils';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
+import type { DiagramModel } from '../node/common';
 import { useStore } from '../store/store';
 import { getTheme } from './theme';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from './use-workflow-builder-actions';
@@ -51,6 +52,16 @@ vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
 }));
 
 const changeLanguage = vi.spyOn(i18n, 'changeLanguage').mockResolvedValue((() => '') as never);
+
+const model: DiagramModel = {
+  name: 'Onboarding',
+  layoutDirection: 'DOWN',
+  diagram: {
+    nodes: [{ id: 'n1', position: { x: 0, y: 0 }, data: { type: 'action', icon: 'Plus', properties: {} } }],
+    edges: [],
+    viewport: { x: 0, y: 0, zoom: 1 },
+  },
+};
 
 function silenceConsoleError() {
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -170,6 +181,15 @@ describe('useWorkflowBuilderActions', () => {
       expect(openImportModal).toHaveBeenCalledTimes(1);
     });
 
+    it('openImport reads read-only mode when called, not when the actions are created', () => {
+      const { actions } = renderHook(useWorkflowBuilderActions);
+      useStore.setState({ isReadOnly: true });
+
+      actions.current!.openImport();
+
+      expect(openImportModal).not.toHaveBeenCalled();
+    });
+
     it('openExport delegates to openExportModal', () => {
       const { actions } = renderHook(useWorkflowBuilderActions);
 
@@ -197,6 +217,31 @@ describe('useWorkflowBuilderActions', () => {
       actions.current!.openTemplates();
 
       expect(useModalStore.getState().isOpen).toBe(false);
+    });
+  });
+
+  describe('loadWorkflow', () => {
+    it('replaces the diagram in the editor', () => {
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.loadWorkflow(model);
+
+      const { nodes, workflowName, layoutDirection } = useStore.getState();
+      expect(nodes.map(({ id }) => id)).toEqual(['n1']);
+      expect(workflowName).toBe('Onboarding');
+      expect(layoutDirection).toBe('DOWN');
+      expect(trackFutureChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('is a no-op in read-only mode', () => {
+      useStore.setState({ isReadOnly: true, workflowName: 'Invoice approval' });
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.loadWorkflow(model);
+
+      expect(useStore.getState().nodes).toEqual([]);
+      expect(useStore.getState().workflowName).toBe('Invoice approval');
+      expect(trackFutureChange).not.toHaveBeenCalled();
     });
   });
 
@@ -581,12 +626,14 @@ describe('useWorkflowBuilderActions', () => {
       kept.togglePalette();
       kept.setWorkflowName('stale');
       kept.openSettings();
+      kept.loadWorkflow(model);
 
       expect(await kept.save()).toBe('error');
       expect(onSave).not.toHaveBeenCalled();
       expect(useStore.getState().isPaletteOpen).toBe(false);
       expect(useStore.getState().workflowName).toBe('');
       expect(openModalWorkflowSettings).not.toHaveBeenCalled();
+      expect(trackFutureChange).not.toHaveBeenCalled();
     });
 
     it('keep working after the StrictMode simulated unmount and remount', async () => {

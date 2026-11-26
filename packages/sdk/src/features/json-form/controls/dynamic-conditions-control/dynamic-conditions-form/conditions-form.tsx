@@ -1,8 +1,7 @@
+import plusCircleIcon from '@iconify-icons/ph/plus-circle';
 import { Button } from '@workflowbuilder/ui';
 import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { Icon } from '@workflow-builder/icons';
 
 import styles from './conditions-form.module.css';
 
@@ -12,6 +11,7 @@ import { useSingleSelectedElement } from '../../../../../features/properties-bar
 import { getConditionErrors } from '../../../../../features/variables/actions/conditions';
 import { variablesTypesToExcludeNonPrimitive } from '../../../../../features/variables/constants';
 import { useAvailableVariables } from '../../../../../features/variables/hooks/use-available-variables';
+import { Icon } from '../../../../../icon/icon';
 import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
 
 type ConditionsFormProps = {
@@ -106,7 +106,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
           size="s"
           variant="ghost-secondary"
           shape="square"
-          prefixIcon={<Icon name="PlusCircle" />}
+          prefixIcon={<Icon icon={plusCircleIcon} />}
           aria-label={t('conditions.add')}
           onClick={addCondition}
         />

@@ -2,8 +2,7 @@ import type { NodeIconAccent as UiNodeIconAccent } from '@workflowbuilder/ui';
 import type { ReactFlowInstance, ReactFlowJsonObject, Viewport } from '@xyflow/react';
 import type { ReactNode } from 'react';
 
-import type { WBIcon } from '@workflow-builder/icons';
-
+import type { WBIcon } from '../icon/icon-registry';
 import type { NodeDefinition, WorkflowBuilderEdge, WorkflowBuilderNode } from './node-data';
 import type { NodeSchema } from './node-schema';
 import { NodeType } from './node-types';
@@ -19,8 +18,7 @@ export const layoutDirections = ['DOWN', 'RIGHT'] as const;
 export type LayoutDirection = (typeof layoutDirections)[number];
 
 /**
- * Icon name accepted by node definitions and palette items. Alias for
- * {@link WBIcon} from `@workflow-builder/icons`.
+ * Icon name accepted by node definitions and palette items. Alias for {@link WBIcon}.
  *
  * @category Types
  */

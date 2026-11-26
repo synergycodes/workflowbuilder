@@ -1,14 +1,14 @@
-import { CaretDown } from '@phosphor-icons/react';
+import caretDownIcon from '@iconify-icons/ph/caret-down';
+import flagBannerIcon from '@iconify-icons/ph/flag-banner';
 import { Menu, type MenuItemProps, NavButton } from '@workflowbuilder/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { Icon } from '@workflow-builder/icons';
 
 import styles from './language-selector.module.css';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { SUPPORTED_LANGUAGES, type WorkflowBuilderLanguage } from '../../../../hooks/use-workflow-builder-state';
+import { Icon } from '../../../../icon/icon';
 
 const LANGUAGE_LABELS: Record<WorkflowBuilderLanguage, string> = {
   en: 'English',
@@ -27,7 +27,7 @@ export function LanguageSelector() {
     () =>
       SUPPORTED_LANGUAGES.map((code) => ({
         label: LANGUAGE_LABELS[code],
-        icon: <Icon name="FlagBanner" />,
+        icon: <Icon icon={flagBannerIcon} />,
         selected: code === currentCode,
         onClick: () => setLanguage(code),
       })),
@@ -45,7 +45,7 @@ export function LanguageSelector() {
         >
           <span className={styles['label']}>
             {visibleCode}
-            <CaretDown className={styles['caret']} />
+            <Icon icon={caretDownIcon} size="inherit" className={styles['caret']} />
           </span>
         </NavButton>
       </Menu>

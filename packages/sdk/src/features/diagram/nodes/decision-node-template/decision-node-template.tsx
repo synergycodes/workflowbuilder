@@ -3,10 +3,9 @@ import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './decision-node-template.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import type { IconType, NodeIconAccent } from '../../../../node/common';
 import type { LayoutDirection } from '../../../../node/common';
 import type { DecisionBranch } from '../../../json-form/types/controls';
@@ -35,6 +34,7 @@ type Props = {
   showHandles?: boolean;
   isValid?: boolean;
   decisionBranches?: DecisionBranch[];
+  isAddDisabled?: boolean;
   onAddBranch?: () => void;
 };
 
@@ -51,6 +51,7 @@ export const DecisionNodeTemplate = memo(
     isValid,
     decisionBranches,
     layoutDirection = 'RIGHT',
+    isAddDisabled = false,
     onAddBranch,
   }: Props) => {
     const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
@@ -78,6 +79,7 @@ export const DecisionNodeTemplate = memo(
             <BranchesContainer
               layoutDirection={layoutDirection}
               decisionBranches={decisionBranches ?? []}
+              isAddDisabled={isAddDisabled}
               onAddBranch={onAddBranch}
             />
           </OptionalNodeContent>

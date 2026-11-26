@@ -312,7 +312,6 @@ Every commit lands in this repository. Using `pnpm workspaces`, it is split into
 - [`apps/ai-studio`](./apps/ai-studio/README.md) - AI Studio, the AI workflow app behind the [hosted demo](https://aistudio.workflowbuilder.io/)
 - [`apps/demo`](./apps/demo/README.md) - editor showcase with the plugin set, example node types and templates
 - [`apps/docs`](./apps/docs) - documentation site
-- [`apps/icons`](./apps/icons/README.md) - lazy-loadable icons consumed by the SDK
 - [`deploy/ai-studio`](./deploy/ai-studio/README.md) - Docker Compose deployment of the whole stack
 
 Technical choices are documented in `*.decision-log.md` files next to the code. See the [decision logs list](./DECISION-LOGS.md).

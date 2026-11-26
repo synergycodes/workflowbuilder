@@ -81,7 +81,7 @@ import { uischema } from './uischema';
 export const trigger: PaletteItem<TriggerNodeSchema> = {
   type: 'trigger', // the executor key in the Worker
   isStartNode: true,
-  icon: 'Lightning',
+  icon: 'Lightning', // registered through <WorkflowBuilder.Root icons>
   label: 'Trigger',
   description: 'Starts the workflow',
   defaultPropertiesData,

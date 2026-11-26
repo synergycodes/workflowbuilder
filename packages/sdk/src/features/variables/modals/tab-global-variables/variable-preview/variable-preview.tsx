@@ -1,11 +1,12 @@
+import pencilSimpleIcon from '@iconify-icons/ph/pencil-simple';
+import trashIcon from '@iconify-icons/ph/trash';
 import { NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './variable-preview.module.css';
 
+import { Icon } from '../../../../../icon/icon';
 import { useStore } from '../../../../../store/store';
 import { VariableMeta } from './variable-meta';
 
@@ -33,11 +34,16 @@ export function VariablePreview({ id, onEdit, onRemove }: Props) {
               tooltip={t('common.edit')}
               onClick={onEdit}
               size="xs"
-              prefixIcon={<Icon name="PencilSimple" />}
+              prefixIcon={<Icon icon={pencilSimpleIcon} />}
             />
           )}
           {onRemove && (
-            <NavButton tooltip={t('common.remove')} onClick={onRemove} size="xs" prefixIcon={<Icon name="Trash" />} />
+            <NavButton
+              tooltip={t('common.remove')}
+              onClick={onRemove}
+              size="xs"
+              prefixIcon={<Icon icon={trashIcon} />}
+            />
           )}
         </div>
       </div>

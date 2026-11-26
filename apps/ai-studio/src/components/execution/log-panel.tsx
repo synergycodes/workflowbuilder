@@ -1,3 +1,4 @@
+import linkBreakIcon from '@iconify-icons/ph/link-break';
 import { CaretDown } from '@phosphor-icons/react';
 import { Icon, useSingleSelectedElement, useStore } from '@workflowbuilder/sdk';
 import { Chip } from '@workflowbuilder/ui';
@@ -323,7 +324,7 @@ export function ExecutionLogPanel() {
         <Chip
           label={runStatus.label}
           size="l"
-          prefixIcon={status === 'incomplete' ? <Icon name="LinkBreak" /> : undefined}
+          prefixIcon={status === 'incomplete' ? <Icon icon={linkBreakIcon} /> : undefined}
           className={clsx(styles['chip'], styles[`chip--${runStatus.tone}`])}
         />
       </div>

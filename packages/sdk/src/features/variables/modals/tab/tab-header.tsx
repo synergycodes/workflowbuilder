@@ -1,13 +1,13 @@
+import arrowLeftIcon from '@iconify-icons/ph/arrow-left';
 import { NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import type { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './tab-header.module.css';
 
 import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
+import { Icon } from '../../../../icon/icon';
 
 type Props = {
   title?: string;
@@ -23,7 +23,12 @@ export function TabHeader({ title, description, onGoBack, children, className = 
   return (
     <header className={clsx(styles['container'], className)}>
       {onGoBack && (
-        <NavButton tooltip={t('common.goBack')} onClick={onGoBack} size="l" prefixIcon={<Icon name="ArrowLeft" />} />
+        <NavButton
+          tooltip={t('common.goBack')}
+          onClick={onGoBack}
+          size="l"
+          prefixIcon={<Icon icon={arrowLeftIcon} />}
+        />
       )}
       <div className={styles['content']}>
         <h4 className={clsx('wb-text-title-m-emphasized', styles['title'])}>{translateIfPossible(title) || title}</h4>

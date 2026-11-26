@@ -1,5 +1,7 @@
-import { PlusCircle } from '@phosphor-icons/react';
+import plusCircleBoldIcon from '@iconify-icons/ph/plus-circle-bold';
 import { Button, type LabelButtonProps } from '@workflowbuilder/ui';
+
+import { Icon } from '../../../../../icon/icon';
 
 type Props = {
   label: string;
@@ -7,7 +9,12 @@ type Props = {
 
 export function PlaceholderButton({ label, size = 'xs', ...props }: Props) {
   return (
-    <Button size={size} variant="ghost-secondary" prefixIcon={<PlusCircle weight="bold" />} {...props}>
+    <Button
+      size={size}
+      variant="ghost-secondary"
+      prefixIcon={<Icon icon={plusCircleBoldIcon} size="inherit" />}
+      {...props}
+    >
       {label}
     </Button>
   );

@@ -1,7 +1,6 @@
 import { type EdgeProps, getSmoothStepPath } from '@xyflow/react';
 
-import { Icon } from '@workflow-builder/icons';
-
+import { Icon } from '../../../../icon/icon';
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { OptionalEdgePath } from '../../../plugins-core/components/diagram/optional-edge-path';
 import { EdgeLabel } from '../edge-label-renderer/edge-label-renderer';
