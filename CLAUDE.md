@@ -179,44 +179,27 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 
 ### Releasing the `@workflowbuilder/*` packages
 
-Four workspaces publish to npm: `@workflowbuilder/sdk` (on npm), `@workflowbuilder/ui` (the component library, built on Base UI, on npm), `@workflowbuilder/temporal` (the Temporal Plugin, on npm) and `@workflowbuilder/mcp` (the docs MCP server for AI assistants, in `packages/mcp-server`). `@workflowbuilder/mcp` is publishable but not on npm yet. The first version of a new package is published by hand, because npm cannot register a trusted publisher for a package that does not exist; see [`packages/RELEASE.md`](packages/RELEASE.md) § "First release of a new package". Everything else under `apps/` and `packages/` is `private: true`, and Changesets skips it through `privatePackages` in `.changeset/config.json`. There is no `ignore` list on purpose: Changesets refuses the CLI `--ignore` flag while one exists, and `pnpm release:version` depends on that flag. Each package publishes via its own scoped release tag (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`, `@workflowbuilder/mcp@X.Y.Z`) and its own workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`, `release-mcp.yml`), and each is released on its own: `pnpm release:version <pkg>` consumes only that package's changesets, `pnpm release:tag <pkg>` pushes only that package's tag. Never run bare `pnpm changeset version` or `pnpm changeset tag`. See `packages/RELEASE.md`.
+Four workspaces publish to npm, each under its own scoped tag (`@workflowbuilder/<pkg>@X.Y.Z`) and its own tag-triggered workflow (`release-<pkg>.yml`): `@workflowbuilder/sdk`, `@workflowbuilder/ui`, `@workflowbuilder/temporal` and `@workflowbuilder/mcp` (the docs MCP server for AI assistants, in `packages/mcp-server`). Everything else under `apps/` and `packages/` is `private: true`, and Changesets skips it through `privatePackages` in `.changeset/config.json`. There is no `ignore` list on purpose: Changesets refuses the CLI `--ignore` flag while one exists, and `pnpm release:version` depends on that flag.
 
-**`@workflowbuilder/mcp` ships a snapshot of the docs and the public API.** Its build copies `apps/docs`, the package READMEs and the TypeDoc output of sdk/ui/temporal into `dist/data`, so release it together with them (`pnpm release:version sdk mcp`, with a patch changeset for `@workflowbuilder/mcp`); `release:version` refuses mcp while any of the three has pending version changes left out of the release. The server must not import the build-time loaders in `src/corpus/load-docs.ts`: their parsers are devDependencies. See `packages/RELEASE.md` and `packages/mcp-server/README.md`.
+**`@workflowbuilder/mcp` ships a snapshot of the docs and the public API.** Its build copies `apps/docs`, the package READMEs and the TypeDoc output of sdk/ui/temporal into `dist/data`, so it is released together with them (see `packages/RELEASE.md`). The server must not import the build-time loaders in `src/corpus/load-docs.ts`: their parsers are devDependencies. See `packages/mcp-server/README.md`.
 
 **`@workflowbuilder/temporal` declares every `@temporalio/*` package its `dist` imports as a peer and lists none of those in its own `devDependencies`.** pnpm installs a missing peer as an ordinary dependency of the package, and that survives the `--prod` install in `deploy/ai-studio/Dockerfile`. A peer that is also a devDependency counts as satisfied, `--prod` then removes it, and the production image fails at import time while every local install works and pnpm prints no warning. The packages the tests alone use (`@temporalio/common`, `@temporalio/testing`, `@temporalio/worker`) belong in its devDependencies. `@temporalio/worker` is also an optional peer, because a consumer that runs a Worker supplies it, but nothing in `dist` imports it, so `--prod` dropping it costs nothing.
 
 **Changesets for bundled execution packages.** `@workflow-builder/execution-core` and `@workflow-builder/types` are private and source-only, and `@workflowbuilder/temporal` bundles both into its `dist` (they reach it through `packages/temporal/src/core-contract.ts`, the one file allowed to import them by relative path). A change in either that alters execution behaviour or the published types therefore needs a changeset for `@workflowbuilder/temporal` - that release is how it reaches consumers. A pure refactor needs none. `pr-check.yml` warns when those paths change without one.
 
-**Changesets for `@workflowbuilder/temporal` follow the SDK rules.** `pr-check.yml` warns when `packages/execution-core` or `packages/types` change without a changeset for it.
-
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
-**Daily change to a published package** (the SDK below; `ui` and `temporal` follow the same steps with their own paths):
+**Daily change to a published package** (full rules in [`packages/RELEASE.md`](packages/RELEASE.md) § "Daily flow"):
 
-1. Edit `packages/sdk/**`, run tests/typecheck locally.
+1. Edit `packages/<pkg>/**`, run its tests and typecheck.
 2. **Add a changeset** with `/wb.changeset <patch|minor|major> "<summary>"`. Required for any consumer-visible change. Skip only for changes that don't ship in `dist/` (e.g. `eslint.config.mjs`, internal tests, source-only comments). Keep it to 1-2 plain sentences: the consumer-visible change plus any migration note - changesets become the public CHANGELOG, so no rationale, investigation history, or noise (that belongs in the commit message and PR).
-3. Commit code + changeset together with a Conventional Commits message:
-   ```
-   git add packages/sdk/... .changeset/<slug>.md
-   git commit -m "fix(sdk): zustand store identity leak"
-   ```
-4. Open PR to `main`. The changeset file is part of the PR diff — reviewer sees the declared bump alongside the change.
+3. Commit code and changeset together with a Conventional Commits message and open a PR to `main`. The changeset file is part of the PR diff, so the reviewer sees the declared bump alongside the change.
 
 **`<WorkflowBuilder.Root>` props live on three surfaces.** The type in `packages/sdk/src/workflow-builder-root/workflow-builder-root.types.ts` is the source of truth; the `/api/core/workflowbuilderrootprops/` reference is generated from its JSDoc and never drifts. Two hand-written tables mirror it: `packages/sdk/README.md` (npm landing) and `apps/docs/src/content/docs/guides/configuring-the-editor.md` (docs guide). When you add, rename, or remove a prop, update both tables in the same change. Descriptions may differ per surface (the README leans on gotchas, the guide on how / when); the set of prop names must match.
 
-**Release moment** (maintainer, not Claude):
+**Release moment** (maintainer, not Claude): follow [`packages/RELEASE.md`](packages/RELEASE.md), which covers the release PR, tagging, the first release of a new package, rollback and the reasons behind the setup. Each package is released on its own: `pnpm release:version <pkg>` consumes only that package's changesets, `pnpm release:tag <pkg>` pushes only that package's tag, and the tag push publishes. Never run bare `pnpm changeset version` or `pnpm changeset tag`.
 
-1. On `main`, `pnpm release:version <pkg> --dry-run` shows the version the pending changesets add up to. Cut `release-<pkg>-X.Y.Z` and run `pnpm release:version <pkg>`. It bumps only `packages/<pkg>/package.json`, regenerates its `CHANGELOG.md` (reformat it into Keep a Changelog style before committing, see [`packages/RELEASE.md`](packages/RELEASE.md) § "Reformat the generated CHANGELOG section"), deletes only the changesets that named `<pkg>`.
-2. Open PR `release-<pkg>-X.Y.Z` → `release`, review the diff, merge.
-3. On the tip of `release`: `pnpm release:tag <pkg>`. It checks the state, asks, then creates and pushes `@workflowbuilder/<pkg>@X.Y.Z`.
-4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
-5. Sync back: `git checkout main && git merge release && git push` so main picks up the bumped version + clean `.changeset/`.
-
-Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`, `@workflowbuilder/mcp@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`, `release-mcp.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/RELEASE.md` § "Why these decisions".
-
-`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay". Each release of it records the replay histories under the new version inside the release PR (`packages/RELEASE.md` § "Release procedure").
-
-Canonical procedure with edge cases and rollback: [`packages/RELEASE.md`](packages/RELEASE.md).
+`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay".
 
 ### Maintaining `/wb.*` skills
 
