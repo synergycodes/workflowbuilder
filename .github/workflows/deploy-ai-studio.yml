@@ -14,6 +14,16 @@ permissions:
 env:
   REGISTRY: ${{ vars.AZURE_REGISTRY_NAME }}.azurecr.io
   APP: wb-ai-studio
+  # Release tag of synergycodes/hubspot-contact-form to embed. Bump to pull a newer widget.
+  CONTACT_FORM_VERSION: v0.1.3
+  CONTACT_FORM_HEADER: 'Rolling out Workflow Builder at your company?'
+  CONTACT_FORM_DESCRIPTION: 'Start with a free 30-minute call with the engineers who created Workflow Builder.'
+  CONTACT_FORM_SUBMIT_LABEL: 'Request a call'
+  # Seconds before exit intent arms: long enough to be past the welcome dialog.
+  CONTACT_FORM_ARM_DELAY: '60'
+  CONTACT_FORM_FOOTER: 'Building on your own?'
+  CONTACT_FORM_FOOTER_LINK_LABEL: 'See the code on GitHub'
+  CONTACT_FORM_FOOTER_LINK_URL: 'https://github.com/synergycodes/workflowbuilder'
 
 jobs:
   build-and-push:
@@ -57,12 +67,56 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.APP }}:latest-runtime
           cache-to: type=inline
 
+      # The public demo carries the HubSpot contact form; the stock `web` target does not.
+      # Both files land in the build context for the `web-demo` target. For a private
+      # hubspot-contact-form repo, set the CONTACT_FORM_TOKEN secret (read access to it).
+      - name: Fetch contact-form widget
+        env:
+          GH_TOKEN: ${{ secrets.CONTACT_FORM_TOKEN || github.token }}
+        run: |
+          gh release download "$CONTACT_FORM_VERSION" \
+            --repo synergycodes/hubspot-contact-form \
+            --pattern contact-form.js \
+            --output deploy/ai-studio/contact-form/contact-form.js --clobber
+
+      # The ids are not secret (they show in the page source); variables keep them out of the repo.
+      # The version in the URL makes a widget bump bypass the browser cache.
+      - name: Write contact-form script tag
+        env:
+          HUBSPOT_PORTAL_ID: ${{ vars.HUBSPOT_PORTAL_ID }}
+          HUBSPOT_FORM_ID: ${{ vars.HUBSPOT_FORM_ID }}
+        run: |
+          if [ -z "$HUBSPOT_PORTAL_ID" ] || [ -z "$HUBSPOT_FORM_ID" ]; then
+            echo "::error::HUBSPOT_PORTAL_ID and HUBSPOT_FORM_ID must be set as Actions variables"
+            exit 1
+          fi
+          node -e '
+            const { env } = process;
+            const attributes = {
+              src: `/contact-form.js?v=${env.CONTACT_FORM_VERSION}`,
+              "data-portal-id": env.HUBSPOT_PORTAL_ID,
+              "data-form-id": env.HUBSPOT_FORM_ID,
+              "data-header": env.CONTACT_FORM_HEADER,
+              "data-description": env.CONTACT_FORM_DESCRIPTION,
+              "data-submit-label": env.CONTACT_FORM_SUBMIT_LABEL,
+              "data-arm-delay": env.CONTACT_FORM_ARM_DELAY,
+              "data-footer": env.CONTACT_FORM_FOOTER,
+              "data-footer-link-label": env.CONTACT_FORM_FOOTER_LINK_LABEL,
+              "data-footer-link-url": env.CONTACT_FORM_FOOTER_LINK_URL,
+            };
+            const escape = (value) => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+            const rendered = Object.entries(attributes)
+              .map(([name, value]) => `${name}="${escape(value)}"`)
+              .join(" ");
+            process.stdout.write(`<script ${rendered} defer></script>\n`);
+          ' > deploy/ai-studio/contact-form/script-tag.html
+
       - name: Build and push web image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: deploy/ai-studio/Dockerfile
-          target: web
+          target: web-demo
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.APP }}:${{ steps.tag.outputs.value }}-web

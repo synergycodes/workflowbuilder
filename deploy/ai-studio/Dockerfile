@@ -78,3 +78,19 @@ FROM nginx:1.31-alpine AS web
 COPY deploy/ai-studio/nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY deploy/ai-studio/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=frontend-build /app/dist/apps/ai-studio /usr/share/nginx/html
+
+# Public demo only: `web` plus the HubSpot contact form. deploy-ai-studio.yml writes both
+# copied files first; every other build names `--target web` (README "Contact form").
+FROM web AS web-demo
+COPY deploy/ai-studio/contact-form/contact-form.js /usr/share/nginx/html/contact-form.js
+COPY deploy/ai-studio/contact-form/script-tag.html /tmp/contact-form-script-tag.html
+RUN --network=none cd /usr/share/nginx/html && \
+    test -s /tmp/contact-form-script-tag.html && \
+    grep -q '</head>' index.html && \
+    awk 'NR == FNR { tag = tag $0; next } \
+         { at = index($0, "</head>"); if (at) $0 = substr($0, 1, at - 1) tag substr($0, at) } 1' \
+      /tmp/contact-form-script-tag.html index.html > /tmp/index.html && \
+    cat /tmp/index.html > index.html && \
+    rm /tmp/index.html && \
+    sed -i "s|connect-src 'self'|& https://api.hsforms.com|" /etc/nginx/snippets/security-headers.conf && \
+    grep -q "connect-src 'self' https://api.hsforms.com" /etc/nginx/snippets/security-headers.conf

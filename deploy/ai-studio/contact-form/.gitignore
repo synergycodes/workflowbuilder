@@ -1,0 +1,3 @@
+# deploy-ai-studio.yml writes the widget and its script tag here for the web-demo image.
+*
+!.gitignore
