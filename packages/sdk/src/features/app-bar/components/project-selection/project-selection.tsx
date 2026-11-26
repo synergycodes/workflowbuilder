@@ -132,7 +132,6 @@ export function ProjectSelection(props: object) {
           <Menu items={items} placement="bottom-start" open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <Menu.TriggerButton
               size="xs"
-              className={styles['menu-trigger']}
               aria-label={t('tooltips.pickTheProject')}
               tooltip={t('tooltips.pickTheProject')}
             >

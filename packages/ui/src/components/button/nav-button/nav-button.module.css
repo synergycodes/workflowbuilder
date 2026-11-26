@@ -60,7 +60,8 @@
     --nav-button-color-default: var(--wb-public-nav-button-color-default);
     --nav-button-color-hover: var(--wb-public-nav-button-color-hover);
     --nav-button-color-selected: var(--wb-public-nav-button-color-pressed);
-    --nav-button-color-active: var(--wb-public-nav-button-color-active);
+    /* Held down (:active) is Pressed: Active marks a chosen item. The public -active variables stay for consumers. */
+    --nav-button-color-active: var(--wb-public-nav-button-color-pressed);
     --nav-button-color-disabled: var(--wb-public-nav-button-color-disabled);
 
     box-sizing: border-box;
@@ -197,7 +198,7 @@
     --nav-button-background-hover: var(--wb-public-nav-button-background-color-hover);
     --nav-button-background-selected: var(--wb-public-nav-button-background-color-pressed);
     --nav-button-background-focus: var(--wb-public-nav-button-background-color-focus);
-    --nav-button-background-active: var(--wb-public-nav-button-background-color-active);
+    --nav-button-background-active: var(--wb-public-nav-button-background-color-pressed);
     --nav-button-background-disabled: var(--wb-public-nav-button-background-color-disabled);
   }
 

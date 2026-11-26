@@ -86,17 +86,6 @@
   position: relative;
 }
 
-/* By design this trigger skips Active: a held click shows where it lands (Pressed open, Hover closed). */
-.menu-trigger:not(:disabled):active {
-  background-color: var(--wb-public-nav-button-background-color-hover);
-  color: var(--wb-public-nav-button-color-hover);
-
-  &[data-popup-open] {
-    background-color: var(--wb-public-nav-button-background-color-pressed);
-    color: var(--wb-public-nav-button-color-pressed);
-  }
-}
-
 .folder-name {
   color: var(--wb-sdk-app-bar-folder-name-color);
   composes: wb-text-body-m from global;
