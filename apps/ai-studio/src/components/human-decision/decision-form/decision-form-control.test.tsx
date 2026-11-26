@@ -244,10 +244,10 @@ describe.each([
 
       parkHumanOne();
 
-      for (const label of ['Refund amount', 'orderDate', 'Reply draft', 'Expedite']) {
+      for (const label of ['Refund amount', 'orderDate', 'Reply draft', 'Item count', 'Expedite']) {
         expect(labelled(label), label).toBeDefined();
       }
-      expect(labelled('Item count')).toBeUndefined();
+      expect(labelled('Discount')).toBeUndefined();
       expect(labelled('tags')).toBeUndefined();
       expect(container.textContent).not.toContain('internalReasoning');
     });

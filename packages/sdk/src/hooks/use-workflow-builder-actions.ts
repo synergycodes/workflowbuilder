@@ -38,8 +38,8 @@ export type LayoutChangeOptions = {
  * `'error'` without sending data.
  *
  * Actions that change the persisted diagram (`setWorkflowName`, `deleteSelection`,
- * `setLayoutDirection`, `toggleLayoutDirection`, `cleanUp`) or open the template picker
- * (`openTemplates`) do nothing while the editor is in read-only mode.
+ * `setLayoutDirection`, `toggleLayoutDirection`, `cleanUp`) or open the template picker or the
+ * import modal (`openTemplates`, `openImport`) do nothing while the editor is in read-only mode.
  *
  * `cleanUp`, `saveAsPdf` and `publish` run what the host supplies through
  * `<EditorHeaderCleanUp>`, `<EditorHeaderSaveAsPdf>` and `<EditorHeaderPublish>`, and do

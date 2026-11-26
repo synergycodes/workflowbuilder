@@ -53,7 +53,11 @@ export function ProjectSelection(props: object) {
 
   const items = useMemo(() => {
     const leadingItems: MenuItemProps[] = [
-      ...getExportImportItems({ export: isExportVisible, import: isImportVisible }, { openExport, openImport }),
+      ...getExportImportItems(
+        { export: isExportVisible, import: isImportVisible },
+        { openExport, openImport },
+        isReadOnly,
+      ),
       ...(isSaveAsPdfAvailable
         ? [{ label: t('header.projectSelection.saveAsPdf'), icon: <Icon name="FilePdf" />, onClick: saveAsPdf }]
         : []),
@@ -73,6 +77,7 @@ export function ProjectSelection(props: object) {
   }, [
     isExportVisible,
     isImportVisible,
+    isReadOnly,
     isSettingsVisible,
     isSaveAsPdfAvailable,
     registeredItems,

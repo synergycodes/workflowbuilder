@@ -44,7 +44,7 @@ describe('invalidFieldsOf', () => {
     expect(invalidFieldsOf([{ instancePath: '/a~1b/0', params: {} }])).toEqual(new Set(['a/b']));
   });
 
-  it("names the field of each key the editor's validator reports percent-encoded", () => {
+  it("names the field of each key the editor's validator reports, including ones a URI would escape", () => {
     const keys = ['reply draft', 'kwota_zł', '50%', 'a/b', 'a~b'];
     const field = { type: 'string', maxLength: 3 };
     const validate = workflowBuilderValidator.compile({

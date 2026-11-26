@@ -96,7 +96,9 @@ function MyToolbar() {
     <header>
       <input value={workflowName} onChange={(event) => actions.setWorkflowName(event.target.value)} />
       <button onClick={actions.save}>Save</button>
-      <button onClick={actions.openImport}>Import</button>
+      <button disabled={isReadOnly} onClick={actions.openImport}>
+        Import
+      </button>
       <button onClick={actions.openExport}>Export</button>
       <button disabled={isReadOnly} onClick={actions.openTemplates}>
         Templates
@@ -115,7 +117,7 @@ function MyToolbar() {
 
 - Call both from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) through context, so outside Root `save()` logs an error and resolves to `'error'`. `deleteSelection` does nothing until `<WorkflowBuilder.Canvas />` has mounted.
 - Besides the editor header's commands, the actions hook also covers the palette and the properties panel: `togglePalette`/`setPaletteOpen`, `togglePropertiesPanel`/`setPropertiesPanelOpen`, `setPaletteFilter` (filters the palette's node list by a case-insensitive match on each item's translated label, without touching node definitions, validation or forms), `setLanguage`, and layout-direction control, which the editor header surfaces as the Clean up menu while `<EditorHeaderCleanUp>` is mounted: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
-- `openTemplates`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection` and `cleanUp` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openImport` and `openSettings`, which do change the persisted diagram (a full replace, and the global variables respectively) but are not read-only-guarded today. Hide them explicitly where that matters, e.g. `builtInControls={{ import: canEdit, settings: canEdit }}`.
+- `openTemplates`, `openImport`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection` and `cleanUp` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openSettings`, which does change the persisted global variables but is not read-only-guarded today. Hide it explicitly where that matters, e.g. `builtInControls={{ settings: canEdit }}`.
 - To select from your own controls, use `useSetSelection()`: `setSelection({ nodeIds, edgeIds })` replaces the selection as a click does, and returns `false` when the canvas lacks any of the ids.
 - The editor header also shows and edits the workflow name. Read it with `useWorkflowBuilderState()`'s `workflowName` and change it with `useWorkflowBuilderActions()`'s `setWorkflowName(name)`, up to 128 characters; a longer name is ignored (with a console warning) rather than truncated, and the call does nothing in read-only mode.
 

@@ -55,7 +55,7 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     save,
 
     openSettings: whileActive(openModalWorkflowSettings),
-    openImport: whileActive(openImportModal),
+    openImport: whileEditable(openImportModal),
     openExport: whileActive(openExportModal),
     openTemplates: whileActive(openTemplateSelectorModal),
 

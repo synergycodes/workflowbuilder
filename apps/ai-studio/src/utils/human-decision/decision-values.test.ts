@@ -63,7 +63,7 @@ describe('editsOf', () => {
   });
 
   it('never carries a field of a type the form leaves out, even when its value differs', () => {
-    expect(editsOf({ ...proposed, itemCount: 3 }, { ...proposed, itemCount: 4 }, schema)).toEqual({});
+    expect(editsOf({ ...proposed, discount: 3 }, { ...proposed, discount: 4 }, schema)).toEqual({});
   });
 
   it('never carries a field the form does not declare', () => {
@@ -119,7 +119,7 @@ describe('blocksResume', () => {
 
   it.each([
     ['a read-only field', 'orderDate'],
-    ['a field of a type the form leaves out', 'itemCount'],
+    ['a field of a type the form leaves out', 'discount'],
     ['a field the form does not declare', 'internalReasoning'],
   ])('lets it through for a fault in %s', (_name, field) => {
     expect(blocksResume(new Set([field]), schema, {})).toBe(false);

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import '../../../i18n/index';
 import { AiAgentNodeTemplate } from './ai-agent-node-template';
 
 vi.mock('@workflowbuilder/ui', async (importOriginal) => ({
@@ -24,5 +25,11 @@ describe('AiAgentNodeTemplate', () => {
     render(<AiAgentNodeTemplate id="agent" icon="Robot" label="Agent" description="" accent="green" />);
 
     expect(screen.getByTestId('node-icon').dataset.accent).toBe('green');
+  });
+
+  it.each([true, false])('disables Add Tool when isAddDisabled is %s', (isAddDisabled) => {
+    render(<AiAgentNodeTemplate id="agent" icon="Robot" label="Agent" description="" isAddDisabled={isAddDisabled} />);
+
+    expect((screen.getByRole('button', { name: 'Add Tool' }) as HTMLButtonElement).disabled).toBe(isAddDisabled);
   });
 });

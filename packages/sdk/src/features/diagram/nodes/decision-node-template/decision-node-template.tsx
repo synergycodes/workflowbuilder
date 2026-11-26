@@ -35,6 +35,7 @@ type Props = {
   showHandles?: boolean;
   isValid?: boolean;
   decisionBranches?: DecisionBranch[];
+  isAddDisabled?: boolean;
   onAddBranch?: () => void;
 };
 
@@ -51,6 +52,7 @@ export const DecisionNodeTemplate = memo(
     isValid,
     decisionBranches,
     layoutDirection = 'RIGHT',
+    isAddDisabled = false,
     onAddBranch,
   }: Props) => {
     const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
@@ -78,6 +80,7 @@ export const DecisionNodeTemplate = memo(
             <BranchesContainer
               layoutDirection={layoutDirection}
               decisionBranches={decisionBranches ?? []}
+              isAddDisabled={isAddDisabled}
               onAddBranch={onAddBranch}
             />
           </OptionalNodeContent>

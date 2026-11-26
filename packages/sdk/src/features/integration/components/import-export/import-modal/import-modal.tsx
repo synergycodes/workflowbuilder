@@ -8,6 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from '../import-export-modal.module.css';
 
 import { setStoreDataFromIntegration } from '../../../../../store/slices/diagram-slice/actions';
+import { useStore } from '../../../../../store/store';
 import { showTranslatedSnackbar } from '../../../../../utils/show-translated-snackbar';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
 import { closeModal } from '../../../../modals/stores/use-modal-store';
@@ -27,6 +28,12 @@ export function ImportModal() {
 
   const handleImport = useCallback(
     ({ shouldIgnoreWarnings }: { shouldIgnoreWarnings: boolean }) => {
+      // Read-only can switch on while the modal is open: AI Studio sets it when a run starts.
+      if (useStore.getState().isReadOnly) {
+        closeModal();
+        return;
+      }
+
       const { errors, warnings, validatedIntegrationData } = validateIntegrationData(jsonToParse);
 
       setJsonValidation({

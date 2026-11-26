@@ -8,6 +8,7 @@ import type { WorkflowBuilderActions } from '../../../hooks/use-workflow-builder
 export function getExportImportItems(
   visible: { export: boolean; import: boolean },
   { openExport, openImport }: Pick<WorkflowBuilderActions, 'openExport' | 'openImport'>,
+  isReadOnly: boolean,
 ): MenuItemProps[] {
   return [
     ...(visible.export
@@ -25,6 +26,7 @@ export function getExportImportItems(
             label: i18n.t('importExport.import'),
             icon: <Icon name="DownloadSimple" />,
             onClick: openImport,
+            disabled: isReadOnly,
           },
         ]
       : []),
