@@ -12,6 +12,7 @@ import { DashedEdge } from './components/dashed-edge/dashed-edge';
 import { MultiPortNodeTemplate } from './components/multi-port-node/multi-port-node-template';
 import { demoPaletteItems } from './data/palette';
 import { demoTemplates } from './data/templates';
+import { demoIcons } from './icons';
 import { plugin as demoPlugin } from './plugins/__demo/plugin-exports';
 import { plugin as analyticsPlugin } from './plugins/analytics/plugin-exports';
 import { plugin as avoidNodesEdgesPlugin } from './plugins/avoid-nodes-edges/plugin-exports';
@@ -47,6 +48,7 @@ export function App() {
   return (
     <WorkflowBuilder.Root
       name="demo"
+      icons={demoIcons}
       nodeTypes={demoPaletteItems}
       nodeTemplates={nodeTemplates}
       edgeTemplates={edgeTemplates}

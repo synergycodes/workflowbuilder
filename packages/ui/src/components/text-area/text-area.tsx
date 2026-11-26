@@ -1,4 +1,5 @@
-import { X } from '@phosphor-icons/react';
+import xIcon from '@iconify-icons/ph/x';
+import { Icon } from '@ui/components/icon';
 import { Field } from '@ui/shared/components/field/field';
 import type { FieldControlProps, FieldSize } from '@ui/shared/types/field';
 import clsx from 'clsx';
@@ -92,7 +93,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
               onPointerDown={(event) => event.preventDefault()}
               onClick={onClear}
             >
-              <X />
+              <Icon icon={xIcon} />
             </button>
           )}
         </div>

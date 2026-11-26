@@ -1,4 +1,5 @@
-import { SlidersHorizontal, Trash } from '@phosphor-icons/react';
+import slidersHorizontalBoldIcon from '@iconify-icons/ph/sliders-horizontal-bold';
+import trashBoldIcon from '@iconify-icons/ph/trash-bold';
 import { Input, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useRef } from 'react';
@@ -7,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import styles from './branch-card.module.css';
 
 import { FormControlWithLabel } from '../../../../../components/form/form-control-with-label/form-control-with-label';
+import { Icon } from '../../../../../icon/icon';
 import { closeModal, openModal } from '../../../../modals/stores/use-modal-store';
 import type { DecisionBranch } from '../../../types/controls';
 import { ConditionModalFooter } from '../../dynamic-conditions-control/dynamic-condition-modal-footer/condition-modal-footer';
@@ -64,9 +66,13 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
           <NavButton
             aria-label={t('common.edit')}
             onClick={onClickEdit}
-            prefixIcon={<SlidersHorizontal weight="bold" />}
+            prefixIcon={<Icon icon={slidersHorizontalBoldIcon} size="inherit" />}
           />
-          <NavButton aria-label={t('common.remove')} onClick={onClickRemove} prefixIcon={<Trash weight="bold" />} />
+          <NavButton
+            aria-label={t('common.remove')}
+            onClick={onClickRemove}
+            prefixIcon={<Icon icon={trashBoldIcon} size="inherit" />}
+          />
         </div>
       </div>
       <div>

@@ -1,8 +1,9 @@
-import { MinusCircle } from '@phosphor-icons/react';
+import minusCircleIcon from '@iconify-icons/ph/minus-circle';
 import type { Edge, Node } from '@xyflow/react';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { Icon } from '../../../icon/icon';
 import { useStore } from '../../../store/store';
 import { closeModal, getIsModalOpen, openModal } from '../stores/use-modal-store';
 import { DeleteConfirmation, DeleteConfirmationButtons } from './delete-confirmation';
@@ -61,7 +62,7 @@ export function useDeleteConfirmation() {
             onDeleteClick={() => handleDeleteClick(onDeleteClick, shouldShowAgain)}
           />
         ),
-        icon: <MinusCircle />,
+        icon: <Icon icon={minusCircleIcon} size="inherit" />,
         title: t('deleteConfirmation.deleteSelection'),
         onModalClosed: onModalClosed,
       });

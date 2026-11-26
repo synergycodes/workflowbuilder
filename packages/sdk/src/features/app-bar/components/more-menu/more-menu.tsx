@@ -1,4 +1,9 @@
-import { Check, DotsThreeVertical, Moon, Network, SunDim, TreeStructure } from '@phosphor-icons/react';
+import checkIcon from '@iconify-icons/ph/check';
+import dotsThreeVerticalIcon from '@iconify-icons/ph/dots-three-vertical';
+import moonIcon from '@iconify-icons/ph/moon';
+import networkIcon from '@iconify-icons/ph/network';
+import sunDimIcon from '@iconify-icons/ph/sun-dim';
+import treeStructureIcon from '@iconify-icons/ph/tree-structure';
 import { Menu, type MenuItemProps } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
@@ -6,6 +11,7 @@ import styles from '../../app-bar.module.css';
 
 import { useTheme } from '../../../../hooks/use-theme';
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { Icon } from '../../../../icon/icon';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { useCleanUp } from '../clean-up-button/use-clean-up';
 import { ToggleDarkMode } from '../toggle-dark-mode/toggle-dark-mode';
@@ -17,13 +23,18 @@ export function MoreMenu() {
   const isThemeToggleVisible = useIsBuiltInControlVisible('themeToggle');
   const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp } = useCleanUp();
   const disabled = isDisabled || isPending;
-  const alignedIcon = <Check aria-hidden visibility="hidden" />;
+  const alignedIcon = <Icon icon={checkIcon} size="inherit" aria-hidden visibility="hidden" />;
 
   const items: MenuItemProps[] = isAvailable
     ? [
         {
           label: t('header.cleanUp.diagram'),
-          icon: layoutDirection === 'DOWN' ? <Network /> : <TreeStructure />,
+          icon:
+            layoutDirection === 'DOWN' ? (
+              <Icon icon={networkIcon} size="inherit" />
+            ) : (
+              <Icon icon={treeStructureIcon} size="inherit" />
+            ),
           disabled,
           onClick: () => cleanUp(),
         },
@@ -47,13 +58,13 @@ export function MoreMenu() {
       ? [
           {
             label: t('header.theme.light'),
-            icon: <SunDim />,
+            icon: <Icon icon={sunDimIcon} size="inherit" />,
             selected: theme === 'light',
             onClick: () => setTheme('light'),
           },
           {
             label: t('header.theme.dark'),
-            icon: <Moon />,
+            icon: <Icon icon={moonIcon} size="inherit" />,
             selected: theme === 'dark',
             onClick: () => setTheme('dark'),
           },
@@ -70,7 +81,7 @@ export function MoreMenu() {
     <div className={styles['more-menu']}>
       <Menu items={items} footer={footer}>
         <Menu.TriggerButton size="xs" aria-label={t('tooltips.menu')} tooltip={t('tooltips.menu')}>
-          <DotsThreeVertical />
+          <Icon icon={dotsThreeVerticalIcon} size="inherit" />
         </Menu.TriggerButton>
       </Menu>
     </div>

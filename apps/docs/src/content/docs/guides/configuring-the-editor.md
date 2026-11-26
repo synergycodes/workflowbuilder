@@ -31,6 +31,7 @@ Every prop is optional. The **Type** column links to the auto-generated [SDK API
 | `logo`              | `WorkflowBuilderLogo`                                                                    | Replaces the built-in editor header logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                                                                                                      |
 | `logoHref`          | `string`                                                                                 | Wraps the editor header logo (built-in or custom) in a link opened in a new tab.                                                                                                                                                                                                                                                                                                                    |
 | `layoutDirection`   | [`LayoutDirection`](/api/types/layoutdirection/)                                         | Initial flow direction, `'DOWN'` or `'RIGHT'`. Defaults to `'DOWN'`.                                                                                                                                                                                                                                                                                                                                |
+| `icons`             | [`IconSet`](/api/icons/iconset/)                                                         | Icons that node types, templates and select options refer to by name, built with `defineIcons`. Only these are bundled. Read when an icon renders: set it once, a later change does not refresh icons already on the canvas. See [Icons](#icons).                                                                                                                                                   |
 | `initialNodes`      | [`WorkflowBuilderNode[]`](/api/types/workflowbuildernode/)                               | Initial nodes for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                                                                                                        |
 | `initialEdges`      | [`WorkflowBuilderEdge[]`](/api/types/workflowbuilderedge/)                               | Initial edges for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                                                                                                        |
 | `isValidConnection` | [`WorkflowBuilderIsValidConnection`](/api/core/workflowbuilderisvalidconnection/)        | Validate connections as the user draws them. See [Connection validation](#connection-validation).                                                                                                                                                                                                                                                                                                   |
@@ -148,6 +149,57 @@ The SDK ships no default palette — `nodeTypes` must be supplied for the palett
   integration={{ strategy: 'props', onDataSave }}
 />
 ```
+
+## Icons
+
+Node types, palette groups, templates and select options name their icon with a string, `icon: 'Lightning'`, because the name is saved with the diagram. The editor renders only icons it knows by name: the ones you register through the `icons` prop and a few built-in ones its own options use (`Gear`, `AiAgent`, `ClaudeLogo`, `StatusActive`, …). Only the icons you import end up in your bundle, and they render on the first frame.
+
+Install an icon set in the Iconify format, for example Phosphor, and register one file per icon:
+
+```bash
+pnpm add @iconify-icons/ph
+```
+
+```ts
+// src/icons.ts
+import lightningIcon from '@iconify-icons/ph/lightning';
+import timerIcon from '@iconify-icons/ph/timer';
+import { defineIcons } from '@workflowbuilder/sdk';
+
+export const appIcons = defineIcons({
+  Lightning: lightningIcon,
+  Timer: timerIcon,
+});
+
+declare module '@workflowbuilder/sdk' {
+  interface Register {
+    icons: typeof appIcons;
+  }
+}
+```
+
+```tsx
+<WorkflowBuilder.Root icons={appIcons} nodeTypes={nodeTypes} />
+```
+
+The `Register` augmentation types icon names against the set: `icon: 'Acorn'` in a node type is then a type error until you register `Acorn`. Without it any string type-checks. A name that is neither registered nor built in renders a question mark of the same size and logs one `console.warn` that says how to register it.
+
+Any `@iconify-icons/*` package works the same way, so you can mix sets; `Icon` does not rotate or flip glyphs, so pick icons that are not defined that way. For your own SVG files, build an Iconify JSON set once, for example with `importDirectory` from `@iconify/tools`, and take each icon out of it with `getIconData` from `@iconify/utils`:
+
+```ts
+import { getIconData } from '@iconify/utils';
+
+import brandIcons from './icons/brand.json';
+
+export const appIcons = defineIcons({
+  Lightning: lightningIcon,
+  HubspotLogo: getIconData(brandIcons, 'hubspot-logo')!,
+});
+```
+
+In your own components, an icon that is fixed in the code does not need a name: pass the imported data instead, `<Icon icon={timerIcon} />`. `name` is for names that come from data.
+
+A plugin registers the icons its own node types and templates name itself, with `registerIcons`, so the app's set does not list them: see [Icons in a plugin](/guides/build-a-plugin/#icons-in-a-plugin). An app icon of the same name wins over a plugin icon.
 
 ## Custom node and edge renderers
 

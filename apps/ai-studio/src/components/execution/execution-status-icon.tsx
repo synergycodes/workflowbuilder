@@ -45,7 +45,6 @@ function InfoGlyph() {
   );
 }
 
-// Phosphor, not the SDK `Icon`: that one sets its size inline, so the glyphs would not follow the badge.
 function Glyph({ tone }: { tone: ExecutionStatusTone }) {
   switch (tone) {
     case 'running': {

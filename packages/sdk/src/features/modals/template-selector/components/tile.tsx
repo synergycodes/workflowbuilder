@@ -1,13 +1,10 @@
 import clsx from 'clsx';
-
-import { Icon } from '@workflow-builder/icons';
+import type { ReactNode } from 'react';
 
 import styles from './tile.module.css';
 
-import type { IconType } from '../../../../node/common';
-
 type TileProps = {
-  icon: IconType;
+  icon: ReactNode;
   title: string;
   subTitle?: string;
   outlined?: boolean;
@@ -22,7 +19,7 @@ export function Tile({ icon, title, subTitle, outlined, onClick }: TileProps) {
       })}
       onClick={() => onClick()}
     >
-      <Icon name={icon} size="large" />
+      {icon}
       <div className={styles['description']}>
         <span className={clsx('wb-text-body-s', styles['title'])}>{title}</span>
         {subTitle && <span className={clsx('wb-text-body-s', styles['sub-title'])}>{subTitle}</span>}

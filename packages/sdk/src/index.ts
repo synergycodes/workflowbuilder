@@ -295,23 +295,14 @@ export type { TranslationKey } from './features/i18n/i18next';
 // Icons
 // =============================================================================
 
-// Re-exported so consumer code (incl. plugin source distributions) resolves icons
-// entirely through @workflowbuilder/sdk without needing to install
-// @workflow-builder/icons separately. Icons is bundled into dist at build time
-// and inlined into dist/index.d.ts via vite-plugin-dts bundledPackages.
-
-/**
- * Renders an icon by name. Names are typed via {@link WBIcon} —
- * autocomplete shows every icon bundled with the SDK.
- *
- * @category Icons
- */
-export { Icon } from '@workflow-builder/icons';
-
-/**
- * Union of every icon name shipped with the SDK. Use it to constrain
- * props that accept an icon (`icon: WBIcon`).
- *
- * @category Icons
- */
-export type { WBIcon } from '@workflow-builder/icons';
+export { Icon } from './icon/icon';
+export {
+  defineIcons,
+  registerIcons,
+  type IconNamesOf,
+  type IconSet,
+  type PluginIconNames,
+  type Register,
+  type WBIcon,
+} from './icon/icon-registry';
+export type { IconData } from '@workflowbuilder/ui';

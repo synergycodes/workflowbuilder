@@ -1,13 +1,13 @@
-import { PlusCircle, Trash } from '@phosphor-icons/react';
+import plusCircleIcon from '@iconify-icons/ph/plus-circle';
+import trashBoldIcon from '@iconify-icons/ph/trash-bold';
 import { Button, NavButton } from '@workflowbuilder/ui';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './ai-tools-control.module.css';
 
 import { FormControlWithLabel } from '../../../../components/form/form-control-with-label/form-control-with-label';
+import { Icon } from '../../../../icon/icon';
 import { closeModal } from '../../../modals/stores/use-modal-store';
 import type { AiAgentTool, AiToolsControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
@@ -78,13 +78,18 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
                 aria-label={t('common.remove')}
                 onClick={() => onRemoveTool(toolData.id)}
                 disabled={isDisabled}
-                prefixIcon={<Trash weight="bold" />}
+                prefixIcon={<Icon icon={trashBoldIcon} size="inherit" />}
               />
             </div>
           </FormControlWithLabel>
         );
       })}
-      <Button variant="primary" prefixIcon={<PlusCircle />} onClick={(_) => openEditorModal()} disabled={isDisabled}>
+      <Button
+        variant="primary"
+        prefixIcon={<Icon icon={plusCircleIcon} size="inherit" />}
+        onClick={(_) => openEditorModal()}
+        disabled={isDisabled}
+      >
         {t('aiTools.addToolSlot')}
       </Button>
     </>

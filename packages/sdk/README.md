@@ -111,6 +111,7 @@ If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBui
 | `logo`              | `WorkflowBuilderLogo`              | Replaces the built-in editor header logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                                                                                                      |
 | `logoHref`          | `string`                           | Wraps the editor header logo in a link opened in a new tab.                                                                                                                                                                                                                                                                                                                                         |
 | `layoutDirection`   | `'DOWN' \| 'RIGHT'`                | Initial flow direction.                                                                                                                                                                                                                                                                                                                                                                             |
+| `icons`             | `IconSet`                          | Icons that node types, templates and select options name, built with `defineIcons`. Only these are bundled; an unknown name renders a question mark and warns. Read when an icon renders: set it once, a later change does not refresh icons already on the canvas. See [Icons](#icons).                                                                                                            |
 | `initialNodes`      | `WorkflowBuilderNode[]`            | Starting diagram nodes.                                                                                                                                                                                                                                                                                                                                                                             |
 | `initialEdges`      | `WorkflowBuilderEdge[]`            | Starting diagram edges.                                                                                                                                                                                                                                                                                                                                                                             |
 | `isValidConnection` | `WorkflowBuilderIsValidConnection` | Validate connections as the user draws them. See [Connection validation](#connection-validation). **Stable reference required.**                                                                                                                                                                                                                                                                    |
@@ -120,6 +121,27 @@ If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBui
 | `children`          | `ReactNode`                        | Custom layout. Omit for the default floating-overlay layout (editor header, palette, canvas, properties panel). See [Compose a custom layout](#compose-a-custom-layout).                                                                                                                                                                                                                            |
 
 Exact prop types come from the auto-generated [`WorkflowBuilderRootProps`](https://www.workflowbuilder.io/docs/api/core/workflowbuilderrootprops/) reference. For how and when to reach for each prop, see [Configuring the editor](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/).
+
+## Icons
+
+Node types, templates and select options name their icon (`icon: 'Lightning'`). Register the icons your data names, one file per icon from any `@iconify-icons/*` set, and only those are bundled:
+
+```tsx
+import lightningIcon from '@iconify-icons/ph/lightning';
+import { WorkflowBuilder, defineIcons } from '@workflowbuilder/sdk';
+
+const appIcons = defineIcons({ Lightning: lightningIcon });
+
+declare module '@workflowbuilder/sdk' {
+  interface Register {
+    icons: typeof appIcons;
+  }
+}
+
+<WorkflowBuilder.Root icons={appIcons} nodeTypes={nodeTypes} />;
+```
+
+The `Register` augmentation makes an unregistered name a type error. Own SVGs, icons fixed in code and icons registered by a plugin: see [Icons](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#icons).
 
 ## Persistence
 

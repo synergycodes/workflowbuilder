@@ -11,6 +11,7 @@ export * from './components/chip';
 export * from './components/collapsible';
 export * from './components/date-picker';
 export * from './components/edge';
+export * from './components/icon';
 export * from './components/input';
 export * from './components/menu';
 export * from './components/modal';

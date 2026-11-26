@@ -1,5 +1,7 @@
 import { Popover } from '@base-ui/react/popover';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import caretLeftBoldIcon from '@iconify-icons/ph/caret-left-bold';
+import caretRightBoldIcon from '@iconify-icons/ph/caret-right-bold';
+import { Icon } from '@ui/components/icon';
 import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
 import { format } from 'date-fns';
@@ -222,13 +224,13 @@ function CalendarChevron({
   className?: string;
 }) {
   if (orientation === 'left') {
-    return <CaretLeft className={className} weight="bold" />;
+    return <Icon icon={caretLeftBoldIcon} className={className} />;
   }
   if (orientation === 'right') {
-    return <CaretRight className={className} weight="bold" />;
+    return <Icon icon={caretRightBoldIcon} className={className} />;
   }
   // up/down used by dropdowns — fall back to a right-pointing caret rotated
-  return <CaretRight className={className} weight="bold" />;
+  return <Icon icon={caretRightBoldIcon} className={className} />;
 }
 
 function formatTriggerLabel(

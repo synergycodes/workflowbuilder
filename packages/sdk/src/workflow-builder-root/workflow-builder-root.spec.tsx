@@ -28,6 +28,8 @@ import {
   setReactFlowProps,
 } from '../data/react-flow-config';
 import { EdgeEndpointContext } from '../features/diagram/edges/edge-endpoint-context';
+import { Icon } from '../icon/icon';
+import { defineIcons } from '../icon/icon-registry';
 import { type PaletteItem, StatusType } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
@@ -271,5 +273,21 @@ describe('WorkflowBuilderRoot — node definitions', () => {
     expect(getByTestId('accent').textContent).toBe('green');
     expect(useStore.getState().fetchDataStatus).toBe(StatusType.Success);
     expect(paletteMock.getPaletteData).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('WorkflowBuilderRoot icons', () => {
+  it('renders an icon registered through the icons prop and a built-in icon by name', () => {
+    const icons = defineIcons({ Custom: { body: '<path d="M1 1"/>' } });
+
+    const { container } = render(
+      <WorkflowBuilderRoot icons={icons}>
+        <Icon name="Custom" data-testid="custom" />
+        <Icon name="Gear" data-testid="gear" />
+      </WorkflowBuilderRoot>,
+    );
+
+    expect(container.querySelector('[data-testid="custom"]')?.innerHTML).toBe('<path d="M1 1"></path>');
+    expect(container.querySelector('[data-testid="gear"]')?.innerHTML).not.toBe('');
   });
 });

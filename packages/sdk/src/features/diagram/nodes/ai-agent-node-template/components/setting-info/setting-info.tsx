@@ -1,9 +1,9 @@
-import { Plus } from '@phosphor-icons/react';
-
-import { Icon, type WBIcon } from '@workflow-builder/icons';
+import plusIcon from '@iconify-icons/ph/plus';
 
 import styles from './setting-info.module.css';
 
+import { Icon } from '../../../../../../icon/icon';
+import type { WBIcon } from '../../../../../../icon/icon-registry';
 import { IconPlaceholder } from '../icon-placeholder/icon-placeholder';
 import { NodeInfoWrapper } from '../node-info-wrapper/node-wrapper-info';
 
@@ -18,7 +18,9 @@ export function SettingInfo({ label, actionLabel, icon, className }: SettingPlac
   return (
     <NodeInfoWrapper label={label}>
       <div className={styles['container']}>
-        <IconPlaceholder className={className}>{icon ? <Icon name={icon} /> : <Plus size={18} />}</IconPlaceholder>
+        <IconPlaceholder className={className}>
+          {icon ? <Icon name={icon} /> : <Icon icon={plusIcon} size="inherit" style={{ width: 18, height: 18 }} />}
+        </IconPlaceholder>
         {actionLabel}
       </div>
     </NodeInfoWrapper>

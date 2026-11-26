@@ -1,4 +1,5 @@
-import { X } from '@phosphor-icons/react';
+import xIcon from '@iconify-icons/ph/x';
+import { Icon } from '@ui/components/icon';
 import clsx from 'clsx';
 import { HTMLAttributes, ReactNode, forwardRef } from 'react';
 
@@ -50,7 +51,7 @@ export const Chip = forwardRef<HTMLSpanElement, ChipProps>(
             aria-label={closeLabel ?? `Remove ${label}`}
             onClick={onClose}
           >
-            <X />
+            <Icon icon={xIcon} />
           </button>
         )}
       </span>

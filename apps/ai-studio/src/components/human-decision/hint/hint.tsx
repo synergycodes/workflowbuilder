@@ -1,3 +1,5 @@
+import infoIcon from '@iconify-icons/ph/info';
+import warningIcon from '@iconify-icons/ph/warning';
 import { Icon } from '@workflowbuilder/sdk';
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
@@ -6,7 +8,7 @@ import styles from './hint.module.css';
 
 export type HintVariant = 'neutral' | 'info' | 'warning';
 
-const ICONS = { neutral: undefined, info: 'Info', warning: 'Warning' } as const;
+const ICONS = { neutral: undefined, info: infoIcon, warning: warningIcon };
 
 // `live` reads out every new text: a switch's, and, as the panel stays mounted, a new selection's or edge's too.
 type Props = { variant: HintVariant; live?: boolean; children: ReactNode };
@@ -20,7 +22,7 @@ export function Hint({ variant, live = false, children }: Props) {
       className={clsx(styles['hint'], styles[`hint--${variant}`])}
       data-hint={variant}
     >
-      {icon && <Icon name={icon} className={styles['icon']} aria-hidden />}
+      {icon && <Icon icon={icon} className={styles['icon']} aria-hidden />}
       <span>{children}</span>
     </p>
   );

@@ -1,3 +1,4 @@
+import cornersOutIcon from '@iconify-icons/ph/corners-out';
 import clsx from 'clsx';
 import { Trans, useTranslation } from 'react-i18next';
 
@@ -5,6 +6,7 @@ import styles from './template-selector.module.css';
 
 import { getTemplates } from '../../../data/templates';
 import { loadDiagramModel } from '../../../hooks/load-diagram-model';
+import { Icon } from '../../../icon/icon';
 import type { DiagramModel } from '../../../node/common';
 import { useStore } from '../../../store/store';
 import { trackFutureChange } from '../../changes-tracker/stores/use-changes-tracker-store';
@@ -39,14 +41,19 @@ export function TemplateSelector() {
         <div className={styles['templates']}>
           {getTemplates().map(({ icon, id, name, value }) => (
             <Tile
-              icon={icon}
+              icon={<Icon name={icon} size="large" />}
               key={id}
               title={name}
               subTitle={`${value.diagram.nodes.length} nodes`}
               onClick={() => selectTemplate(value, name)}
             />
           ))}
-          <Tile icon="CornersOut" title={t('templateSelector.emptyCanvas')} outlined={true} onClick={selectTemplate} />
+          <Tile
+            icon={<Icon icon={cornersOutIcon} size="large" />}
+            title={t('templateSelector.emptyCanvas')}
+            outlined={true}
+            onClick={selectTemplate}
+          />
         </div>
       </section>
     </div>

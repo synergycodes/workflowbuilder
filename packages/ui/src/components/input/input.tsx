@@ -1,5 +1,6 @@
 import { Input as InputBase } from '@base-ui/react/input';
-import { X } from '@phosphor-icons/react';
+import xIcon from '@iconify-icons/ph/x';
+import { Icon } from '@ui/components/icon';
 import { Field } from '@ui/shared/components/field/field';
 import clsx from 'clsx';
 import { forwardRef } from 'react';
@@ -84,7 +85,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
               onPointerDown={(event) => event.preventDefault()}
               onClick={onClear}
             >
-              <X />
+              <Icon icon={xIcon} />
             </button>
           )}
         </div>

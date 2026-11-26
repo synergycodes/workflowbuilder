@@ -20,6 +20,7 @@ import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { nodeTemplates } from '../data/node-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
+import { aiStudioIcons } from './icons';
 import type { OpenedSource } from './open-from-url';
 import { rootPropsFor } from './root-props';
 
@@ -40,6 +41,7 @@ export function App({ opened }: { opened: OpenedSource }) {
   return (
     <WorkflowBuilder.Root
       name={name}
+      icons={aiStudioIcons}
       logo={{ light: logoLight, dark: logoDark }}
       logoHref="https://workflowbuilder.io"
       layoutDirection={flagship.layoutDirection}

@@ -10,6 +10,7 @@ import type {
 } from '../features/json-form/extension-registry';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import type { WorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
+import type { IconSet } from '../icon/icon-registry';
 import type { LayoutDirection, PaletteItemOrGroup, TemplateModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
 import type { OnSaveExternal } from '../types/integration';
@@ -291,6 +292,12 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   logoHref?: string;
   /** Initial layout direction (`'RIGHT'` or `'DOWN'`). */
   layoutDirection?: LayoutDirection;
+  /**
+   * Icons that nodes, palette items and templates refer to by name, built with `defineIcons`.
+   * They render synchronously and only these end up in the bundle.
+   * Read when an icon renders: set it once, a later change does not refresh icons already on the canvas.
+   */
+  icons?: IconSet;
   /** Initial nodes rendered on first mount. */
   initialNodes?: WorkflowBuilderNode[];
   /** Initial edges rendered on first mount. */

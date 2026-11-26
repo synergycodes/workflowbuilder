@@ -1,4 +1,5 @@
-import { CaretUp } from '@phosphor-icons/react';
+import caretUpIcon from '@iconify-icons/ph/caret-up';
+import { Icon } from '@ui/components/icon';
 import clsx from 'clsx';
 import { ReactNode, RefObject, createContext, useCallback, useContext, useRef, useState } from 'react';
 
@@ -80,7 +81,7 @@ Collapsible.Button = function CollapsibleButton() {
         [styles['expanded']]: context?.isExpanded,
       })}
       onClick={context?.toggle}
-      prefixIcon={<CaretUp />}
+      prefixIcon={<Icon icon={caretUpIcon} />}
     />
   );
 };

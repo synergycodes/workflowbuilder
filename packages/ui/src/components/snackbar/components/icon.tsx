@@ -1,4 +1,5 @@
-import { Info } from '@phosphor-icons/react';
+import infoIcon from '@iconify-icons/ph/info';
+import { Icon as IconGlyph } from '@ui/components/icon';
 import { WithIcon } from '@ui/shared/types/with-icon';
 import { clsx } from 'clsx';
 
@@ -18,7 +19,7 @@ export function Icon({ icon, isCentered, variant }: IconProps) {
         [styles['center']]: isCentered,
       })}
     >
-      {icon ?? <Info className={clsx(styles['status'], styles[variant])} />}
+      {icon ?? <IconGlyph icon={infoIcon} className={clsx(styles['status'], styles[variant])} />}
     </div>
   );
 }
