@@ -79,7 +79,10 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
   }, [lastUpdateIndex, nodeId, edges.length, nodes.length, excludeTypes, includeTypes]);
 
   return useMemo(() => {
-    const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups];
+    // A node with nothing left after the type filter gets no group, so a picker never opens empty.
+    const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups].filter(
+      (group) => group.suggestions.length > 0,
+    );
     const { totalVariables, variablesKey } = suggestionGroups.reduce(
       (stack: Omit<Response, 'suggestionGroups'>, group) => {
         stack.totalVariables += group.suggestions.length;
