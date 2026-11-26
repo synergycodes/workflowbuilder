@@ -1,39 +1,32 @@
 import clsx from 'clsx';
-import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 
 import styles from './template-selector.module.css';
 
 import { getTemplates } from '../../../data/templates';
-import { useFitView } from '../../../hooks/use-fit-view';
+import { loadDiagramModel } from '../../../hooks/load-diagram-model';
 import type { DiagramModel } from '../../../node/common';
 import { useStore } from '../../../store/store';
 import { trackFutureChange } from '../../changes-tracker/stores/use-changes-tracker-store';
 import { closeModal } from '../stores/use-modal-store';
 import { Tile } from './components/tile';
 
+function selectTemplate(model?: DiagramModel, templateName?: string) {
+  // Read-only can switch on while the modal is open: AI Studio sets it when a run starts.
+  if (useStore.getState().isReadOnly) {
+    closeModal();
+    return;
+  }
+
+  if (templateName) {
+    trackFutureChange('selectTemplate', { templateName });
+  }
+  loadDiagramModel(model);
+  closeModal();
+}
+
 export function TemplateSelector() {
   const { t } = useTranslation();
-  const setDiagramModel = useStore((store) => store.setDiagramModel);
-  const fitView = useFitView();
-
-  const selectTemplate = useCallback(
-    (model?: DiagramModel, templateName?: string) => {
-      // Read-only can switch on while the modal is open: AI Studio sets it when a run starts.
-      if (useStore.getState().isReadOnly) {
-        closeModal();
-        return;
-      }
-
-      if (templateName) {
-        trackFutureChange('selectTemplate', { templateName });
-      }
-      setDiagramModel(model);
-      fitView();
-      closeModal();
-    },
-    [setDiagramModel, fitView],
-  );
 
   return (
     <div className={styles['container']}>

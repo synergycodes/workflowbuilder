@@ -12,6 +12,7 @@ import { getStoreSelection } from '../store/slices/diagram-selection/actions';
 import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
 import { useStore } from '../store/store';
 import type { DidSaveStatus } from '../types/integration';
+import { loadDiagramModel } from './load-diagram-model';
 import { getTheme, setTheme } from './theme';
 import { fitDiagramView } from './use-fit-view';
 import type { WorkflowBuilderActions } from './use-workflow-builder-actions';
@@ -58,6 +59,7 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     openImport: whileEditable(openImportModal),
     openExport: whileActive(openExportModal),
     openTemplates: whileActive(openTemplateSelectorModal),
+    loadWorkflow: whileEditable(loadDiagramModel),
 
     toggleReadOnly: whileActive(() => store().setReadOnly(!store().isReadOnly)),
     setReadOnly: whileActive((value: boolean) => store().setReadOnly(value)),
