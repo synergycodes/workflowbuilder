@@ -9,7 +9,9 @@ import { NodeRunBadgeExample } from '../../../../components/ui-examples/run-stat
 
 `NodeRunBadge` is a size `m` [`BadgeLabel`](/ui-library/ui-components/badge-label/) placed 8px above
 the node, aligned to its right edge. It grows to the left and never wraps. `tone` picks one of seven
-colour pairs, with Light and Dark values; `dimmed` lowers its opacity (Skipped).
+colour pairs (`NodeRunTone`), with Light and Dark values, or a
+[custom tone](/ui-library/diagram-components/run-status/#custom-tone); `dimmed` lowers its opacity
+(Skipped).
 
 <NodeRunBadgeExample client:visible />
 
@@ -30,9 +32,9 @@ import { NodePanel, NodeRunBadge } from '@workflowbuilder/ui';
 
 Each tone reads `--wb-public-node-run-status-bg-<tone>` and `--wb-public-node-run-status-fg-<tone>`,
 which colours the text and the glyph, from the palette shared by all run status parts (see
-[Run status colours](/ui-library/diagram-components/run-status/#colours)). The `inverse` tone reads the
-`BadgeLabel` Inverse variables (`--wb-public-badge-label-background-color-inverse` and
-`--wb-public-badge-label-color-inverse`), so a global `BadgeLabel` recolour reaches it too.
+[Run status colours](/ui-library/diagram-components/run-status/#colours)). The `inverse` tone renders the
+`BadgeLabel` Inverse variant, which reads `--wb-public-badge-label-background-color-inverse` and
+`--wb-public-badge-label-color-inverse`, so a global `BadgeLabel` recolour reaches it too.
 
 ## Props
 

@@ -129,6 +129,7 @@ starlightTypeDoc({
 - `disableSources: true` — drop the `Defined in <file>:<line>` line from every page. Internal paths (`packages/sdk/src/features/diagram/edges/...`) are noise for an API consumer and tie the docs to the current file structure.
 - `excludeInternal` / `excludePrivate` / `excludeProtected` — strip `@internal`-tagged exports, TS `private` / `protected` modifiers. The barrel surface is curated already, but defensive in case a re-export drags in an internal-typed neighbour.
 - `entryFileName: '_readme'` — TypeDoc emits a per-package README page by default; the underscore prefix keeps it out of the alphabetical sidebar listing.
+- `logLevel: 'Warn'` (added 2026-11-24): hides TypeDoc's info lines such as `Loaded plugin typedoc-plugin-markdown`, which every `astro dev`, `astro build` and `astro check` printed twice; warnings and errors still show.
 
 ## PR 2 — Coverage closes, strict mode flips on
 

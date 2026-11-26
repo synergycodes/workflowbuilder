@@ -2,6 +2,7 @@ import {
   type EdgeEndpoint,
   type EdgeLineType,
   type EdgeRunState,
+  type EdgeRunToneName,
   type EdgeState,
   useEdgeStyle,
 } from '@workflowbuilder/ui';
@@ -13,8 +14,8 @@ import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 /**
  * Props of {@link EdgePath} and of the `'OptionalEdgePath'` slot. `source`,
  * `target` and `sourceHandle` are not drawn; they let a decorator look up the
- * run state of the edge's nodes. `runState`, `lineType` and `endpoint` come
- * from the app.
+ * run state of the edge's nodes. `runState`, `tone`, `lineType` and `endpoint`
+ * come from the app.
  *
  * @category Components
  */
@@ -27,6 +28,8 @@ export type EdgePathProps = {
   state?: EdgeState;
   hovered?: boolean;
   runState?: EdgeRunState;
+  /** Colour under `runState`, replacing its default tone. Ignored without `runState`. */
+  tone?: EdgeRunToneName;
   lineType?: EdgeLineType;
   /** Terminator at the target end. Defaults to `edgeEndpoint` of `<WorkflowBuilder.Root>`. */
   endpoint?: EdgeEndpoint;
@@ -34,13 +37,13 @@ export type EdgePathProps = {
 
 /**
  * Draws one edge path with the design-system look, through `useEdgeStyle` and
- * {@link EnhancedBaseEdge}. `runState`, `lineType` and `endpoint` come from the
- * app: render {@link OptionalEdgePath} instead to let a plugin set them.
+ * {@link EnhancedBaseEdge}. `runState`, `tone`, `lineType` and `endpoint` come
+ * from the app: render {@link OptionalEdgePath} instead to let a plugin set them.
  *
  * @category Components
  */
-export function EdgePath({ edgeId, path, state, hovered, runState, lineType, endpoint }: EdgePathProps) {
-  const style = useEdgeStyle({ state, isHovered: hovered, runState, lineType });
+export function EdgePath({ edgeId, path, state, hovered, runState, tone, lineType, endpoint }: EdgePathProps) {
+  const style = useEdgeStyle({ state, isHovered: hovered, runState, tone, lineType });
   const rootEndpoint = useContext(EdgeEndpointContext);
 
   return (

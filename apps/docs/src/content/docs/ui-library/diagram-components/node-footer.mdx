@@ -1,0 +1,43 @@
+---
+title: NodeFooter
+description: Message and actions at the bottom of a node.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeFooterExample } from '../../../../components/ui-examples/node-footer';
+
+`NodeFooter` is the bottom strip of a node: a status message and up to two actions.
+
+<NodeFooterExample client:visible />
+
+## Usage
+
+Place it in [`NodePanel.Footer`](/ui-library/diagram-components/node-panel/). Pass actions as
+children, for example `Button`s of size `xs`. On the canvas, give each one the `nodrag` class so a
+press does not drag the node.
+
+```tsx
+import { Button, NodeFooter, NodePanel } from '@workflowbuilder/ui';
+
+<NodePanel.Footer>
+  <NodeFooter tone="human" message="Decision needed">
+    <Button className="nodrag" variant="ghost-secondary" size="xs" onClick={decide}>
+      Decide
+    </Button>
+  </NodeFooter>
+</NodePanel.Footer>;
+```
+
+The [run status presets](/ui-library/diagram-components/run-status/) hold the design-system message
+of six statuses: `<NodeFooter {...runStatusPresets.failed.footer} />`. In a Workflow Builder node
+template, decorate the `OptionalNodeFooter` slot instead (see
+[Build a plugin](/guides/build-a-plugin/)).
+
+## Props
+
+<PropsTable slug="node-footer" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-footer" />

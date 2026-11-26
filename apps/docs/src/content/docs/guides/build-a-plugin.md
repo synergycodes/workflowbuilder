@@ -85,11 +85,12 @@ Set props through `modifyProps`: it runs before every wrapper, so it composes wi
 | `OptionalNodeOverlay`    | Layer over the whole canvas node, empty by default, for a ring, veil or progress (`nodeId`) |
 | `OptionalNodeCorner`     | Top-right corner of the canvas node; holds the validation `Status` by default (`nodeId`)    |
 | `OptionalNodeHeaderEnd`  | End of the canvas node's header, empty by default, for a run indicator (`nodeId`)           |
+| `OptionalNodeFooter`     | Below the canvas node's content, empty by default, for a `NodeFooter` (`nodeId`)            |
 | `OptionalEdgePath`       | Path of every built-in edge; draws `EdgePath` by default (`EdgePathProps`)                  |
 
 The editor header, the palette and the properties panel have no slots: see [Built-in interface: hide, move, add](#built-in-interface-hide-move-add). A decorator registered on one of the slots that 4.0 removed logs a warning naming its replacement and renders nothing; the 4.0 changelog lists them.
 
-The three node slots render on the canvas only, not on palette entries, and only the built-in node templates render them: a [custom node template](/guides/add-a-custom-node/#7-optional-custom-node-template) has to render them itself. `OptionalNodeOverlay` and `OptionalNodeCorner` sit inside `NodePanel.Overlay`, a layer positioned absolutely over the whole node, so their content positions itself. The layer is `pointer-events: none`, so interactive content in these slots sets `pointer-events: auto`. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render as siblings of it inside the overlay, not in the corner:
+The four node slots render on the canvas only, not on palette entries, and only the built-in node templates render them: a [custom node template](/guides/add-a-custom-node/#7-optional-custom-node-template) has to render them itself. `OptionalNodeOverlay` and `OptionalNodeCorner` sit inside `NodePanel.Overlay`, a layer positioned absolutely over the whole node, so their content positions itself. The layer is `pointer-events: none`, so interactive content in these slots sets `pointer-events: auto`. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render as siblings of it inside the overlay, not in the corner:
 
 ```tsx
 import {
@@ -123,7 +124,7 @@ registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
 });
 ```
 
-`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` (and `sourceHandle`, to tell a branch the run took from one it pruned) and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Rendering `component` drops any wrapper inside it, so give this decorator a high `priority`: the highest one wraps innermost. Nothing is written to the edge data, the store or undo history:
+`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` (and `sourceHandle`, to tell a branch the run took from one it pruned) and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. To recolour a run state it also passes `tone`: a name from `EDGE_RUN_TONES` or a custom tone defined in CSS (see [Edge](/ui-library/diagram-components/edge/#run-tones)). `tone` without `runState` is ignored, and edge tones are a separate list from node tones, so keep one status-to-tone map per element. Rendering `component` drops any wrapper inside it, so give this decorator a high `priority`: the highest one wraps innermost. Nothing is written to the edge data, the store or undo history:
 
 ```tsx
 import {

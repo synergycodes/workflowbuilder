@@ -1,15 +1,15 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { act } from 'react';
+import { type CSSProperties, act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
 import postcss from 'postcss';
 
-import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { NODE_RUN_TONES } from '../run-status/run-status-tone';
 import { throughPalette } from '../run-status/test-utils';
 import { NodeRunIndicator } from './node-run-indicator';
 
-const CIRCLE_TONES = RUN_STATUS_TONES.filter((tone) => tone !== 'inverse');
+const CIRCLE_TONES = NODE_RUN_TONES.filter((tone) => tone !== 'inverse');
 
 let container: HTMLDivElement;
 let root: Root;
@@ -29,10 +29,8 @@ function indicator() {
   return container.firstElementChild as HTMLElement;
 }
 
-// Never called: `pnpm typecheck` fails if the circle accepts `inverse`, whose glyph would match it.
-function _inverseCircle() {
-  // @ts-expect-error inverse is a glyph tone only
-  return <NodeRunIndicator tone="inverse" icon={<svg />} />;
+function color(property: string) {
+  return indicator().style.getPropertyValue(property);
 }
 
 describe('NodeRunIndicator', () => {
@@ -60,33 +58,57 @@ describe('NodeRunIndicator', () => {
     expect(indicator().getAttribute('aria-hidden')).toBe('false');
     expect(indicator().getAttribute('aria-label')).toBe('Running');
   });
+
+  it.each(CIRCLE_TONES)('colours the %s circle with the DS run status bg token', (tone) => {
+    act(() => root.render(<NodeRunIndicator tone={tone} icon={<svg />} />));
+
+    expect(throughPalette(color('--indicator-background-color'))).toBe(`var(--wb-ds-canvas-run-status-bg-${tone})`);
+  });
+
+  it.each(NODE_RUN_TONES)('colours the %s glyph with the DS run status fg token', (tone) => {
+    act(() => root.render(<NodeRunIndicator tone="neutral" iconTone={tone} icon={<svg />} />));
+
+    expect(throughPalette(color('--indicator-icon-color'))).toBe(`var(--wb-ds-canvas-run-status-fg-${tone})`);
+  });
+
+  it('draws the neutral circle for the glyph-only inverse tone', () => {
+    act(() => root.render(<NodeRunIndicator tone="inverse" icon={<svg />} />));
+
+    expect(throughPalette(color('--indicator-background-color'))).toBe('var(--wb-ds-canvas-run-status-bg-neutral)');
+    expect(indicator().dataset['tone']).toBe('inverse');
+  });
+
+  it('reads a custom tone from its own variables with the neutral fallback', () => {
+    act(() => root.render(<NodeRunIndicator tone="paused" icon={<svg />} />));
+
+    expect(color('--indicator-background-color')).toBe(
+      'var(--wb-public-node-run-status-bg-paused, var(--wb-public-node-run-status-bg-neutral))',
+    );
+    expect(color('--indicator-icon-color')).toBe(
+      'var(--wb-public-node-run-status-fg-paused, var(--wb-public-node-run-status-fg-neutral))',
+    );
+  });
+
+  it.each(['My Tone', 'a b'])('uses the neutral colours for the invalid name %j', (tone) => {
+    act(() => root.render(<NodeRunIndicator tone={tone} icon={<svg />} />));
+
+    expect(color('--indicator-background-color')).toBe('var(--wb-public-node-run-status-bg-neutral)');
+    expect(color('--indicator-icon-color')).toBe('var(--wb-public-node-run-status-fg-neutral)');
+  });
+
+  it('lets the consumer style override the tone variables and merges the rest', () => {
+    const style = { opacity: 0.5, '--indicator-icon-color': 'red' } as CSSProperties;
+    act(() => root.render(<NodeRunIndicator tone="info" icon={<svg />} style={style} />));
+
+    expect(color('--indicator-icon-color')).toBe('red');
+    expect(throughPalette(color('--indicator-background-color'))).toBe('var(--wb-ds-canvas-run-status-bg-info)');
+    expect(indicator().style.opacity).toBe('0.5');
+  });
 });
 
 describe('node-run-indicator.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-indicator.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
-
-  function declaration(selector: string, property: string) {
-    let value: string | undefined;
-    stylesheet.walkRules(selector, (rule) => {
-      rule.walkDecls(property, (found) => {
-        value = found.value;
-      });
-    });
-    return value;
-  }
-
-  it.each(CIRCLE_TONES)('colours the %s circle with the DS run status bg token', (tone) => {
-    expect(throughPalette(declaration(`.indicator[data-tone='${tone}']`, '--indicator-background-color'))).toBe(
-      `var(--wb-ds-canvas-run-status-bg-${tone})`,
-    );
-  });
-
-  it.each(RUN_STATUS_TONES)('colours the %s glyph with the DS run status fg token', (tone) => {
-    expect(throughPalette(declaration(`.indicator[data-icon-tone='${tone}']`, '--indicator-icon-color'))).toBe(
-      `var(--wb-ds-canvas-run-status-fg-${tone})`,
-    );
-  });
 
   it('stops the spinner under reduced motion, which leaves the arc on top', () => {
     let stopped = false;

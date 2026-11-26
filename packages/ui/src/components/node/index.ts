@@ -1,5 +1,6 @@
 export * from './node-as-port-wrapper/node-as-port-wrapper';
 export * from './node-description/node-description';
+export * from './node-footer/node-footer';
 export * from './node-icon/node-icon';
 export * from './node-panel/node-panel';
 export * from './node-run-badge/node-run-badge';

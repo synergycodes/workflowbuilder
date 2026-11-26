@@ -103,6 +103,7 @@ export const COMPONENTS = [
     dir: 'node/node-run-indicator',
   },
   { slug: 'node-run-badge', name: 'NodeRunBadge', propsType: 'NodeRunBadgeProps', dir: 'node/node-run-badge' },
+  { slug: 'node-footer', name: 'NodeFooter', propsType: 'NodeFooterProps', dir: 'node/node-footer' },
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
   // Documented on the Edge page, which already renders the edge variables.
   { slug: 'use-edge-style', name: 'useEdgeStyle', propsType: 'UseEdgeStyleParams', dir: null },
@@ -112,4 +113,4 @@ export const COMPONENTS = [
 ];
 
 // Exports no documented prop links to, given a UI API Reference page anyway; the types they use come along.
-export const REFERENCE_EXPORTS = ['runStatusPresets', 'RUN_STATUS_TONES'];
+export const REFERENCE_EXPORTS = ['runStatusPresets', 'NODE_RUN_TONES', 'EDGE_RUN_TONES'];

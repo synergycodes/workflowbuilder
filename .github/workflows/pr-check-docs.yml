@@ -5,8 +5,7 @@ name: PR Check (docs)
 # the docs build - which otherwise first runs at release-time deploy.
 # Full `astro build` is the gate: it runs the ui-api generator, the
 # component-coverage guard, and page rendering (loud failures included).
-# Typecheck is deliberately absent: apps/docs tolerates known starlight
-# virtual-module type errors.
+# `astro build` does not type-check, so `astro check` runs as its own step.
 
 # PRs into main and release get checks. Add an integration branch here for
 # the time it is the base of stacked PRs.
@@ -55,6 +54,9 @@ jobs:
 
       - name: Build UI library
         run: pnpm build:ui
+
+      - name: Typecheck docs
+        run: pnpm --filter @workflow-builder/docs typecheck
 
       - name: Build docs
         run: pnpm build:docs

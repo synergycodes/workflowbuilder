@@ -36,17 +36,24 @@ describe('the Statuses table of the run status docs page', () => {
     .filter((line) => line.startsWith('| ') && line.includes('`'))
     .map((line) => line.split('|').map((cell) => cell.trim()));
 
-  it('has one row per preset with its ring, indicator and badge tones', () => {
-    // cells: '' (before the first pipe), Status, Key, Ring, Indicator, Badge
+  it('has one row per preset with its ring, indicator and badge tones and its footer', () => {
+    // cells: '' (before the first pipe), Status, Key, Ring, Indicator, Badge, Footer
     const documented = rows.map((cells) => [
       cells[2]!.replaceAll('`', ''),
       cells[3]!.split(',')[0],
       cells[4]!.split(',')[0],
       cells[5]!.split(',')[0],
+      cells[6],
     ]);
 
     expect(documented).toEqual(
-      presets.map(([key, { ring, indicator, badge }]) => [key, ring.tone, indicator?.tone ?? 'none', badge.tone]),
+      presets.map(([key, { ring, indicator, badge, footer }]) => [
+        key,
+        ring.tone,
+        indicator?.tone ?? 'none',
+        badge.tone,
+        footer ? `${footer.tone}, ${footer.message}` : 'none',
+      ]),
     );
   });
 });
