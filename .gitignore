@@ -11,12 +11,6 @@ tmp
 # air-gap bundle from deploy/ai-studio/pack-offline.sh, if written into the checkout
 ai-studio-offline/
 
-# Emitted declarations from `pnpm --filter @workflow-builder/icons build`
-# (prepare hook). Root + src/ locations are outside `dist/` so need explicit
-# patterns. `global.d.ts` is a source file — don't ignore.
-apps/icons/index.d.ts
-apps/icons/src/*.d.ts
-
 # dependencies
 node_modules
 

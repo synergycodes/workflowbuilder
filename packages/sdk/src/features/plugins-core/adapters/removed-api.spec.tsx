@@ -16,7 +16,7 @@ const node = {
   id: 'node-1',
   type: 'node',
   position: { x: 0, y: 0 },
-  data: { type: 'action', icon: 'Play', properties: { label: 'Review' } },
+  data: { type: 'action', icon: 'Gear', properties: { label: 'Review' } },
 } as unknown as WorkflowBuilderNode;
 
 function silenceWarnings() {

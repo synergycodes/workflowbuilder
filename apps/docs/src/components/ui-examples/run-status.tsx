@@ -1,0 +1,179 @@
+import { Check, Clock, Pause, PlayCircle, Warning, X } from '@phosphor-icons/react';
+import {
+  NODE_RUN_TONES,
+  NodeDescription,
+  NodeIcon,
+  NodePanel,
+  NodeRunBadge,
+  NodeRunIndicator,
+  type NodeRunIndicatorProps,
+  NodeRunProgress,
+  NodeRunRing,
+  type NodeRunRingProps,
+  NodeRunVeil,
+  runStatusPresets,
+} from '@workflowbuilder/ui';
+import type { CSSProperties, ReactNode } from 'react';
+
+import { ComponentPreview } from './component-preview';
+
+// Room above each node for its badge.
+const grid: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, max-content)',
+  gap: '2.75rem 1.5rem',
+  paddingTop: '2rem',
+};
+const caption: CSSProperties = { marginTop: '0.5rem', fontSize: '0.75rem', opacity: 0.7 };
+
+type DemoNodeProps = {
+  title?: string;
+  selected?: boolean;
+  indicator?: NodeRunIndicatorProps;
+  caption?: string;
+  children?: ReactNode;
+};
+
+function DemoNode({ title = 'Node title', selected = false, indicator, caption: text, children }: DemoNodeProps) {
+  return (
+    <div>
+      <NodePanel.Root selected={selected}>
+        <NodePanel.Header>
+          <NodeIcon icon={<PlayCircle />} />
+          <NodeDescription label={title} description="Subtitle" />
+          {indicator && <NodeRunIndicator {...indicator} />}
+        </NodePanel.Header>
+        {children && <NodePanel.Overlay>{children}</NodePanel.Overlay>}
+      </NodePanel.Root>
+      {text && <div style={caption}>{text}</div>}
+    </div>
+  );
+}
+
+export function NodeRunRingExample() {
+  const rings: (NodeRunRingProps & { caption: string; selected?: boolean })[] = [
+    ...NODE_RUN_TONES.map((tone) => ({ tone, caption: tone })),
+    { tone: 'info', halo: 'static', caption: "info, halo 'static'" },
+    { tone: 'info', halo: 'heartbeat', caption: "info, halo 'heartbeat'" },
+    { tone: 'human', halo: 'waiting', caption: "human, halo 'waiting'" },
+    { tone: 'info', halo: 'static', selected: true, caption: 'selected' },
+  ];
+
+  return (
+    <ComponentPreview>
+      <div style={grid}>
+        {rings.map(({ caption: text, selected, ...ring }) => (
+          <DemoNode key={text} caption={text} selected={selected}>
+            <NodeRunRing {...ring} />
+          </DemoNode>
+        ))}
+      </div>
+    </ComponentPreview>
+  );
+}
+
+export function NodeRunVeilExample() {
+  return (
+    <ComponentPreview>
+      <DemoNode>
+        <NodeRunRing tone="neutral" />
+        <NodeRunVeil />
+      </DemoNode>
+    </ComponentPreview>
+  );
+}
+
+export function NodeRunProgressExample() {
+  return (
+    <ComponentPreview>
+      <ComponentPreview.Row>
+        <DemoNode indicator={{ tone: 'info', spinner: 'running' }} caption="35%">
+          <NodeRunRing tone="info" halo="heartbeat" />
+          <NodeRunProgress value={35} />
+        </DemoNode>
+        <DemoNode indicator={{ tone: 'info', spinner: 'running' }} caption="80%">
+          <NodeRunRing tone="info" halo="heartbeat" />
+          <NodeRunProgress value={80} />
+        </DemoNode>
+      </ComponentPreview.Row>
+    </ComponentPreview>
+  );
+}
+
+export function NodeRunIndicatorExample() {
+  return (
+    <ComponentPreview>
+      <ComponentPreview.Stack>
+        <ComponentPreview.Row>
+          <NodeRunIndicator tone="info" spinner="running" />
+          <NodeRunIndicator tone="warning" spinner="slow" />
+          <NodeRunIndicator tone="success" icon={<Check />} />
+          <NodeRunIndicator tone="critical" icon={<Warning />} />
+          <NodeRunIndicator tone="human" icon={<Clock />} />
+          <NodeRunIndicator tone="neutral" icon={<X />} />
+          <NodeRunIndicator tone="neutral" iconTone="inverse" icon={<X />} />
+        </ComponentPreview.Row>
+        <DemoNode title="A long node title that truncates" indicator={{ tone: 'success', icon: <Check /> }} />
+      </ComponentPreview.Stack>
+    </ComponentPreview>
+  );
+}
+
+export function NodeRunBadgeExample() {
+  return (
+    <ComponentPreview>
+      <div style={grid}>
+        {NODE_RUN_TONES.map((tone) => (
+          <DemoNode key={tone} caption={tone}>
+            <NodeRunBadge tone={tone} label={tone} />
+          </DemoNode>
+        ))}
+        <DemoNode caption="neutral, dimmed">
+          <NodeRunBadge tone="neutral" label="Skipped" dimmed />
+        </DemoNode>
+      </div>
+    </ComponentPreview>
+  );
+}
+
+export function RunStatusExample() {
+  return (
+    <ComponentPreview>
+      <div style={grid}>
+        {Object.entries(runStatusPresets).map(([status, preset]) => (
+          <DemoNode key={status} indicator={preset.indicator} caption={status}>
+            <NodeRunRing {...preset.ring} />
+            {preset.veil && <NodeRunVeil />}
+            <NodeRunBadge {...preset.badge} />
+          </DemoNode>
+        ))}
+        <DemoNode indicator={runStatusPresets.running.indicator} caption="Running with progress">
+          <NodeRunRing tone="info" halo="heartbeat" />
+          <NodeRunProgress value={60} />
+          <NodeRunBadge {...runStatusPresets.running.badge} />
+        </DemoNode>
+      </div>
+    </ComponentPreview>
+  );
+}
+
+// Set inline so the page needs no global CSS; an application sets them on :root.
+const pausedTone = {
+  '--wb-public-node-run-status-stroke-paused': '#7c3aed',
+  '--wb-public-node-run-status-halo-paused': '#ede9fe',
+  '--wb-public-node-run-status-bg-paused': '#ede9fe',
+  '--wb-public-node-run-status-fg-paused': '#5b21b6',
+} as CSSProperties;
+
+export function NodeRunCustomToneExample() {
+  return (
+    <ComponentPreview>
+      <div style={{ ...grid, ...pausedTone }}>
+        <DemoNode indicator={{ tone: 'paused', icon: <Pause /> }} caption="paused">
+          <NodeRunRing tone="paused" halo="static" />
+          <NodeRunBadge tone="paused" label="Paused" />
+        </DemoNode>
+      </div>
+    </ComponentPreview>
+  );
+}

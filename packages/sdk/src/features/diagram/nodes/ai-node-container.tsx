@@ -29,6 +29,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
 
   const layoutDirection = useStore((store) => store.layoutDirection);
   const connectionBeingDragged = useStore((store) => store.connectionBeingDragged);
+  const isReadOnly = useStore((store) => store.isReadOnly);
   const nodeDefinition = useStore((store) => store.getNodeDefinition(type));
   const accent = nodeDefinition?.accent;
 
@@ -64,6 +65,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
         selectedTools={data.properties.tools}
         layoutDirection={layoutDirection}
         isValid={isValid}
+        isAddDisabled={isReadOnly}
         onAddTool={() => openAddToolModalForNode(id)}
       />
     </NodeAsPortWrapper>

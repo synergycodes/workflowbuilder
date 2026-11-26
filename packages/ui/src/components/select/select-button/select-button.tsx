@@ -1,4 +1,5 @@
-import { CaretDown } from '@phosphor-icons/react';
+import caretDownBold from '@iconify-icons/ph/caret-down-bold';
+import { Icon } from '@ui/components/icon';
 import type { WithIcon } from '@ui/shared/types/with-icon';
 import { type ComponentPropsWithoutRef, forwardRef } from 'react';
 
@@ -7,7 +8,7 @@ export const SelectButton = forwardRef<HTMLButtonElement, ComponentPropsWithoutR
     return (
       <button type="button" {...rest} ref={ref}>
         {children}
-        {icon ?? <CaretDown weight="bold" />}
+        {icon ?? <Icon icon={caretDownBold} />}
       </button>
     );
   },

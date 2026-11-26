@@ -1,3 +1,4 @@
+import type { EdgeEndpoint } from '@workflowbuilder/ui';
 import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
 import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
 
@@ -9,6 +10,7 @@ import type {
 } from '../features/json-form/extension-registry';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import type { WorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
+import type { IconSet } from '../icon/icon-registry';
 import type { LayoutDirection, PaletteItemOrGroup, TemplateModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
 import type { OnSaveExternal } from '../types/integration';
@@ -252,9 +254,9 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * `EdgeProps` directly). The only SDK-specific step is registering it here
    * instead of via ReactFlow's `edgeTypes`. See ReactFlow's "Custom Edges"
    * guide: https://reactflow.dev/learn/customization/custom-edges. To match the
-   * built-in selection and hover look, reuse the exported `useLabelEdgeHover`
-   * and `EnhancedBaseEdge`, or restyle selection globally via the
-   * `--wb-public-edge-color-select` CSS variable. A custom edge does not inherit
+   * built-in look and get run states set by plugins, draw the path with the
+   * exported `OptionalEdgePath` (`hovered` from `useLabelEdgeHover`), or
+   * `EdgePath` without the slot. A custom edge does not inherit
    * the built-in self-connecting loop or label rendering.
    *
    * **Must be a stable reference** (same rationale as `nodeTemplates`).
@@ -290,6 +292,12 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   logoHref?: string;
   /** Initial layout direction (`'RIGHT'` or `'DOWN'`). */
   layoutDirection?: LayoutDirection;
+  /**
+   * Icons that nodes, palette items and templates refer to by name, built with `defineIcons`.
+   * They render synchronously and only these end up in the bundle.
+   * Read when an icon renders: set it once, a later change does not refresh icons already on the canvas.
+   */
+  icons?: IconSet;
   /** Initial nodes rendered on first mount. */
   initialNodes?: WorkflowBuilderNode[];
   /** Initial edges rendered on first mount. */
@@ -330,4 +338,10 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * ```
    */
   builtInControls?: BuiltInControls;
+  /**
+   * Terminator every edge ends with at its target: `'arrow'`, `'circle'` or `'none'` (the default). It has
+   * the colour of the line in every state. Applies to the built-in edges, the edge drawn while connecting and any
+   * custom edge drawn with `OptionalEdgePath` or `EdgePath`; an `endpoint` passed to those wins for that edge.
+   */
+  edgeEndpoint?: EdgeEndpoint;
 }>;

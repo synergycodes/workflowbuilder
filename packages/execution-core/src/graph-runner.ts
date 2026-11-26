@@ -1,8 +1,11 @@
+import { RESERVED_ERROR_HANDLE, isPortRouted } from '@workflow-builder/types/workflow-execution/edge-routing';
 import type {
   DeadEnd,
   ExecutionErrorPayload,
   ExecutionOutcome,
   ExecutionOutcomeRecord,
+  NodeCompletedPayload,
+  NodeFailedPayload,
   NodeSkipReason,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
@@ -19,15 +22,6 @@ import type { VersioningPort } from './ports/versioning.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { withRedactedPayloads } from './redact';
 import { resolveStartNode } from './resolve-start-node';
-
-// `sourceHandle` reserved for the 'errorRoute' error policy. Edges tagged
-// with this value fire ONLY when the upstream node failed with policy
-// 'errorRoute' (which sets the propagation nextPort to this value). Every other
-// propagation path — success, 'continue' on error, decision branching,
-// skip — prunes them, so a dangling error branch never fires unless
-// someone explicitly opted into error routing. The handle name matches the
-// policy literal so the wiring reads consistently from schema to runner.
-const RESERVED_ERROR_HANDLE = 'errorRoute';
 
 // How the run ended. Returned rather than thrown so `runGraph` stays engine-agnostic:
 // each engine adapter decides how an outcome maps onto its own vocabulary (the
@@ -252,9 +246,8 @@ type LivePruneKind = 'branch' | 'error';
 type SkippedNode = { id: string; reason: NodeSkipReason };
 
 // Resolves all outgoing edges from `rootId`. For each successor, decrements its
-// pending counter, increments live counter if the edge is alive (no decision
-// pruning, or sourceHandle matches the decision's nextPort). When pending hits
-// 0, the successor either becomes ready or is marked skipped — and skip walks
+// pending counter, increments live counter if `isPortRouted` takes the edge. When
+// pending hits 0, the successor either becomes ready or is marked skipped — and skip walks
 // through its own outgoing edges via the same queue, so unreachable subtrees
 // don't stall downstream join points and deep dead-branch chains can't blow the
 // call stack.
@@ -308,7 +301,7 @@ function propagate<TNode extends BaseNode>(
   }
 
   // A node that named a port but reached nothing through it. Only a non-empty port
-  // counts — truthiness, to mirror `isEdgeLive`'s `!nextPort`: config arrives
+  // counts — truthiness, to mirror `isPortRouted`'s `!nextPort`: config arrives
   // unvalidated, and a falsy port ('' or a smuggled null) routes as "no port" there,
   // so it must not read as a promised route here.
   if (rootNextPort && !rootRoutedSomewhere) {
@@ -359,14 +352,22 @@ async function runNode<TNode extends BaseNode>(
     } else {
       result = executed;
     }
-    await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
+    // nextPort tells a client which outgoing edges the run took; falsy reads as none, as in isPortRouted.
+    const completed: NodeCompletedPayload = result.nextPort
+      ? { output: result.output, nextPort: result.nextPort }
+      : { output: result.output };
+    await events.emitEvent(executionId, 'node_completed', completed, node.id);
     return { node, output: result.output, nextPort: result.nextPort, outcome: result.outcome, failed: false };
   } catch (error) {
     const { message, code, attempt } = extractDeepestError(error);
     const errorPayload: ExecutionErrorPayload['error'] = { message };
     if (code !== undefined) errorPayload.code = code;
     if (attempt !== undefined) errorPayload.attempt = attempt;
-    await events.emitEvent(executionId, 'node_failed', { error: errorPayload }, node.id);
+    const failed: NodeFailedPayload =
+      resolveErrorPolicy(node) === 'errorRoute'
+        ? { error: errorPayload, nextPort: RESERVED_ERROR_HANDLE }
+        : { error: errorPayload };
+    await events.emitEvent(executionId, 'node_failed', failed, node.id);
     return { node, message, code, failed: true };
   }
 }
@@ -432,20 +433,8 @@ function isFilled(text: unknown): text is string {
   return typeof text === 'string' && text.trim().length > 0;
 }
 
-// Edge liveness rules:
-// - Dead upstream prunes everything (skip propagation).
-// - Error routing (`nextPort === RESERVED_ERROR_HANDLE`) fires only the
-//   matching error edges; every other outgoing edge is pruned.
-// - Otherwise (success, `continue`, decision branches): error edges are
-//   pruned, and a non-error edge fires when it has no `sourceHandle` set
-//   or when its handle matches `nextPort` (decision-style routing).
 function isEdgeLive(sourceLive: boolean, nextPort: string | undefined, sourceHandle: string | undefined): boolean {
-  if (!sourceLive) return false;
-  const isErrorEdge = sourceHandle === RESERVED_ERROR_HANDLE;
-  const isErrorRouting = nextPort === RESERVED_ERROR_HANDLE;
-  if (isErrorRouting) return isErrorEdge;
-  if (isErrorEdge) return false;
-  return !nextPort || sourceHandle === nextPort;
+  return sourceLive && isPortRouted(nextPort, sourceHandle);
 }
 
 type AdjacencyEntry<TNode extends BaseNode> = {

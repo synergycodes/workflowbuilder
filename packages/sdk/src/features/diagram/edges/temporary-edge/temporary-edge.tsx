@@ -1,11 +1,14 @@
 import { useEdgeStyle } from '@workflowbuilder/ui';
 import { type ConnectionLineComponentProps, getSmoothStepPath } from '@xyflow/react';
+import { useContext } from 'react';
 
+import { EdgeEndpointContext } from '../edge-endpoint-context';
 import { EDGE_CURVE_RADIUS, EDGE_OFFSET } from '../edge.consts';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 
 export function TemporaryEdge({ fromX, fromY, fromPosition, toX, toY, toPosition }: ConnectionLineComponentProps) {
   const style = useEdgeStyle({ state: 'temporary' });
+  const endpoint = useContext(EdgeEndpointContext);
   const defaultPortSize = 4;
 
   /**
@@ -31,5 +34,5 @@ export function TemporaryEdge({ fromX, fromY, fromPosition, toX, toY, toPosition
     offset,
   });
 
-  return <EnhancedBaseEdge path={edgePath} style={style} />;
+  return <EnhancedBaseEdge path={edgePath} style={style} endpoint={endpoint} />;
 }

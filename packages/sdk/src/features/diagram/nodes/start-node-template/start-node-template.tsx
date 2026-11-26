@@ -1,16 +1,20 @@
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
+import styles from '../components/collapsible-body/collapsible-body.module.css';
 
-import styles from './start-node-template.module.css';
-
+import { Icon } from '../../../../icon/icon';
 import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { NodeData } from '../../../../node/node-data';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
+import {
+  NodeOverlaySlots,
+  OptionalNodeFooter,
+  OptionalNodeHeaderEnd,
+} from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
 import { getHandlesAlignment } from '../../handles/get-handles-alignment';
@@ -59,20 +63,26 @@ const StartNodeTemplateComponent = memo(
 
     return (
       <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
-        <NodePanel.Root selected={selected} disabled={disabled} className={styles['content']}>
+        <NodePanel.Root selected={selected} disabled={disabled}>
           <NodePanel.Header>
             <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
             {!!children && <Collapsible.Button />}
+            {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
-          <NodePanel.Content isVisible={isCanvasNode}>
+          <NodePanel.Content isVisible={isCanvasNode} className={styles['content']}>
             <OptionalNodeContent nodeId={id}>
-              <Status status={isValid === false ? 'invalid' : undefined} />
               <Collapsible.Content>
                 <div className={styles['collapsible']}>{children}</div>
               </Collapsible.Content>
             </OptionalNodeContent>
           </NodePanel.Content>
+          <NodePanel.Footer isVisible={isCanvasNode}>
+            <OptionalNodeFooter nodeId={id} />
+          </NodePanel.Footer>
+          <NodePanel.Overlay isVisible={isCanvasNode}>
+            <NodeOverlaySlots nodeId={id} isValid={isValid} />
+          </NodePanel.Overlay>
           <NodePanel.Handles isVisible={showHandles} alignment={handlesAlignment}>
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
           </NodePanel.Handles>

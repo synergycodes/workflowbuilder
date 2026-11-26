@@ -8,7 +8,7 @@ import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import { NodeProperties } from './node-properties';
 
-vi.mock('@workflow-builder/icons', () => ({ Icon: ({ name }: { name: string }) => <i data-icon={name} /> }));
+vi.mock('../../../../icon/icon', () => ({ Icon: ({ name }: { name: string }) => <i data-icon={name} /> }));
 
 function definition(type: string, modes: string[]) {
   return {

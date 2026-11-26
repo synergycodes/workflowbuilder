@@ -1,11 +1,11 @@
+import copyIcon from '@iconify-icons/ph/copy';
 import { Button, SnackbarType } from '@workflowbuilder/ui';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from '../import-export-modal.module.css';
 
+import { Icon } from '../../../../../icon/icon';
 import { getStoreDataForIntegration } from '../../../../../store/slices/diagram-slice/actions';
 import { copy } from '../../../../../utils/copy';
 import { noop } from '../../../../../utils/noop';
@@ -32,7 +32,7 @@ export function ExportModal() {
     <div className={styles['container']}>
       <SyntaxHighlighterLazy value={storeData} onChange={noop} isDisabled />
       <div className={styles['actions']}>
-        <Button variant="primary" prefixIcon={<Icon name="Copy" />} onClick={handleCopy}>
+        <Button variant="primary" prefixIcon={<Icon icon={copyIcon} />} onClick={handleCopy}>
           {t('tooltips.copy')}
         </Button>
       </div>

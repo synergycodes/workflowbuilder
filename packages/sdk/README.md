@@ -84,7 +84,7 @@ To add custom overlays alongside the default layout, mount it explicitly:
 
 Each subcomponent is also exported under a named alias (`WorkflowBuilderEditorHeader`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
 
-If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBuilderState()`](https://www.workflowbuilder.io/docs/api/hooks/useworkflowbuilderstate/) and trigger save / import / export / settings / templates / read-only / theme / layout-direction / Clean up / Save as PDF / Publish from your own controls with [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-editor-header).
+If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBuilderState()`](https://www.workflowbuilder.io/docs/api/hooks/useworkflowbuilderstate/) and trigger save / import / export / settings / templates / loading a workflow of your own / read-only / theme / layout-direction / Clean up / Save as PDF / Publish from your own controls with [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-editor-header).
 
 ## `<WorkflowBuilder.Root>` props
 
@@ -111,14 +111,37 @@ If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBui
 | `logo`              | `WorkflowBuilderLogo`              | Replaces the built-in editor header logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                                                                                                      |
 | `logoHref`          | `string`                           | Wraps the editor header logo in a link opened in a new tab.                                                                                                                                                                                                                                                                                                                                         |
 | `layoutDirection`   | `'DOWN' \| 'RIGHT'`                | Initial flow direction.                                                                                                                                                                                                                                                                                                                                                                             |
+| `icons`             | `IconSet`                          | Icons that node types, templates and select options name, built with `defineIcons`. Only these are bundled; an unknown name renders a question mark and warns. Read when an icon renders: set it once, a later change does not refresh icons already on the canvas. See [Icons](#icons).                                                                                                            |
 | `initialNodes`      | `WorkflowBuilderNode[]`            | Starting diagram nodes.                                                                                                                                                                                                                                                                                                                                                                             |
 | `initialEdges`      | `WorkflowBuilderEdge[]`            | Starting diagram edges.                                                                                                                                                                                                                                                                                                                                                                             |
 | `isValidConnection` | `WorkflowBuilderIsValidConnection` | Validate connections as the user draws them. See [Connection validation](#connection-validation). **Stable reference required.**                                                                                                                                                                                                                                                                    |
 | `reactFlowProps`    | `WorkflowBuilderReactFlowProps`    | Advanced escape hatch for the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props). Treat as static config (runtime value changes may not apply immediately).                                                                                                                                                                                                    |
 | `builtInControls`   | `BuiltInControls`                  | Hides built-in controls by key (`logo`, `folderName`, `workflowName`, `version`, `save`, `cleanUp`, `saveAsPdf`, `publish`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
+| `edgeEndpoint`      | `EdgeEndpoint`                     | Terminator every edge ends with at its target, in the colour of the line: `'arrow'`, `'circle'` or `'none'` (default). Covers the edge drawn while connecting and custom edges drawn with `OptionalEdgePath` / `EdgePath`; an `endpoint` set on those wins.                                                                                                                                         |
 | `children`          | `ReactNode`                        | Custom layout. Omit for the default floating-overlay layout (editor header, palette, canvas, properties panel). See [Compose a custom layout](#compose-a-custom-layout).                                                                                                                                                                                                                            |
 
 Exact prop types come from the auto-generated [`WorkflowBuilderRootProps`](https://www.workflowbuilder.io/docs/api/core/workflowbuilderrootprops/) reference. For how and when to reach for each prop, see [Configuring the editor](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/).
+
+## Icons
+
+Node types, templates and select options name their icon (`icon: 'Lightning'`). Register the icons your data names, one file per icon from any `@iconify-icons/*` set, and only those are bundled:
+
+```tsx
+import lightningIcon from '@iconify-icons/ph/lightning';
+import { WorkflowBuilder, defineIcons } from '@workflowbuilder/sdk';
+
+const appIcons = defineIcons({ Lightning: lightningIcon });
+
+declare module '@workflowbuilder/sdk' {
+  interface Register {
+    icons: typeof appIcons;
+  }
+}
+
+<WorkflowBuilder.Root icons={appIcons} nodeTypes={nodeTypes} />;
+```
+
+The `Register` augmentation makes an unregistered name a type error. Own SVGs, icons fixed in code and icons registered by a plugin: see [Icons](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#icons).
 
 ## Persistence
 
@@ -145,7 +168,7 @@ Full guide: [Persistence strategies on the docs site](https://www.workflowbuilde
 
 The SDK exposes three extension points. Pass plugin functions to the `plugins` prop:
 
-- **Component decorators** (`registerComponentDecorator`). Inject UI into named slots: `OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalHooks` (invisible provider slot), `OptionalNodeContent` (receives `nodeId`). The editor header, the palette and the properties panel have no slots; own UI there uses the `…Content` components (see [The built-in interface](#the-built-in-interface-state-actions-and-your-own-ui) below). A decorator on a slot that 4.0 removed logs a warning naming its replacement and renders nothing.
+- **Component decorators** (`registerComponentDecorator`). Inject UI into named slots: `OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalHooks` (invisible provider slot), `OptionalNodeContent` (receives `nodeId`), and on canvas nodes only `OptionalNodeOverlay`, `OptionalNodeCorner` (holds the validation `Status`; a `wrapper` decorator can replace it), `OptionalNodeHeaderEnd` and `OptionalNodeFooter`, all receiving `nodeId`; a custom node template renders these four itself. `OptionalEdgePath` wraps the path of every built-in edge and receives `EdgePathProps`; a `wrapper` decorator renders it with `runState` / `lineType` to show a run, and with `tone` next to `runState` to change the colour of that run state; a `modifyProps` decorator sets `endpoint` to override the Root's `edgeEndpoint` for one edge without dropping other wrappers, and a custom edge renders `OptionalEdgePath` to get the same states. The editor header, the palette and the properties panel have no slots; own UI there uses the `…Content` components (see [The built-in interface](#the-built-in-interface-state-actions-and-your-own-ui) below). A decorator on a slot that 4.0 removed logs a warning naming its replacement and renders nothing.
 - **Function decorators** (`registerFunctionDecorator`). Observe or wrap SDK internals (e.g. `trackFutureChange`) before / after / wrapping the call. The workflow menu's Export and Import items are not one of them: add items next to them with `WorkflowMenuItem` and hide `export` / `import` through `builtInControls`.
 - **Translations** (`registerPluginTranslation`). Extend i18next keys with plugin-specific strings.
 
@@ -277,7 +300,7 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 }
 ```
 
-Available tokens: `--wb-public-background-color`, `--wb-public-canvas-grid-color` (the canvas dot grid; `transparent` hides it), `--wb-public-transition`, `--wb-public-font-family`, `--wb-public-font-family-mono`, plus scrollbar styling (`--wb-public-scroll-width`, `--wb-public-scroll-radius`, `--wb-public-scroll-thumb-color`, `--wb-public-scroll-track-color`), the snackbar stack's position (`--wb-public-snackbar-offset-bottom`, a CSS length from the viewport bottom to the lowest snackbar, default `20px`), and the default layout's outer spacing (`--wb-public-layout-spacing`, the gap between the canvas edge, the header and the side panels, a CSS length with a unit, default `0.75rem`). `--wb-public-font-family` controls the builder root and the Poppins-backed type roles; the proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor.
+Available tokens: `--wb-public-background-color`, `--wb-public-canvas-grid-color` (the canvas dot grid; `transparent` hides it), `--wb-public-transition`, `--wb-public-font-family`, `--wb-public-font-family-mono`, plus scrollbar styling (`--wb-public-scroll-width`, `--wb-public-scroll-radius`, `--wb-public-scroll-thumb-color`, `--wb-public-scroll-track-color`), the snackbar stack's position (`--wb-public-snackbar-offset-bottom`, a CSS length from the viewport bottom to the lowest snackbar, default `20px`), the default layout's outer spacing (`--wb-public-layout-spacing`, the gap between the canvas edge, the header and the side panels, a CSS length with a unit, default `0.75rem`) and the edge hit area (`--wb-public-edge-hit-width`, a unitless width in flow units, default `12`; `20` restores the hit area before 4.0). `--wb-public-font-family` controls the builder root and the Poppins-backed type roles; the proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor.
 
 Custom layouts passed as Root children and SDK-owned body portals join the builder's font scope. Content that a host or plugin portals elsewhere does not: CSS variables and font inheritance follow DOM ancestry, not the React tree. The same boundary applies to every token above. Modal, Menu, Tooltip, Select, and DatePicker surfaces mount under `document.body`, so an override scoped only to an app shell will not reach them; use `:root` or apply the overrides to the portal container too.
 

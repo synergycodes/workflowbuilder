@@ -10,7 +10,7 @@ export function usePaletteDragAndDrop(canDrag: boolean) {
 
   const ref = useRef<HTMLDivElement>(null);
 
-  function onMouseDown(type: string) {
+  function onPointerDown(type: string) {
     if (canDrag) {
       setDraggedItem({ type });
     }
@@ -28,7 +28,7 @@ export function usePaletteDragAndDrop(canDrag: boolean) {
     draggedItem,
     zoom,
     ref,
-    onMouseDown,
+    onPointerDown,
     onDragStart,
   };
 }

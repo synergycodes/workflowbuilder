@@ -1,7 +1,6 @@
 import { Select, type SelectBaseProps } from '@workflowbuilder/ui';
 
-import { Icon } from '@workflow-builder/icons';
-
+import { Icon } from '../../../../icon/icon';
 import type { PrimitiveFieldSchema } from '../../../../node/node-schema';
 import type { SelectControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';

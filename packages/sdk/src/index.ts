@@ -105,7 +105,10 @@ export {
   registerComponentDecorator,
   hasRegisteredComponentDecorator,
 } from './features/plugins-core/adapters/adapter-components';
-export type { ComponentDecoratorOptions } from './features/plugins-core/adapters/adapter-components';
+export type {
+  ComponentDecoratorOptions,
+  WorkflowBuilderDecoratorWrapperProps,
+} from './features/plugins-core/adapters/adapter-components';
 
 export { registerFunctionDecorator } from './features/plugins-core/adapters/adapter-functions';
 export type { FunctionDecoratorOptions, CallbackAfter } from './features/plugins-core/adapters/adapter-functions';
@@ -169,6 +172,9 @@ export { FormControlWithLabel } from './components/form/form-control-with-label/
 // `registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', …)`.
 export type { WorkflowBuilderCanvasProps } from './features/diagram/diagram';
 export { EnhancedBaseEdge } from './features/diagram/edges/enhanced-base-edge/enhanced-base-edge';
+export { EdgePath } from './features/diagram/edges/edge-path/edge-path';
+export type { EdgePathProps } from './features/diagram/edges/edge-path/edge-path';
+export { OptionalEdgePath } from './features/plugins-core/components/diagram/optional-edge-path';
 export { EdgeLabel } from './features/diagram/edges/edge-label-renderer/edge-label-renderer';
 export { LabelEdge } from './features/diagram/edges/label-edge/label-edge';
 export {
@@ -177,6 +183,13 @@ export {
 } from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';
+export {
+  NodeOverlaySlots,
+  OptionalNodeCorner,
+  OptionalNodeFooter,
+  OptionalNodeHeaderEnd,
+  OptionalNodeOverlay,
+} from './features/plugins-core/components/diagram/optional-node-run-status-slots';
 export type { WorkflowBuilderPropertiesPanelProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
 export { SyntaxHighlighterLazy } from './features/syntax-highlighter/components/syntax-highlighter-lazy';
 export type { WorkflowBuilderNodeTemplateProps } from './features/diagram/nodes/workflow-node-template/workflow-node-template';
@@ -282,23 +295,14 @@ export type { TranslationKey } from './features/i18n/i18next';
 // Icons
 // =============================================================================
 
-// Re-exported so consumer code (incl. plugin source distributions) resolves icons
-// entirely through @workflowbuilder/sdk without needing to install
-// @workflow-builder/icons separately. Icons is bundled into dist at build time
-// and inlined into dist/index.d.ts via vite-plugin-dts bundledPackages.
-
-/**
- * Renders an icon by name. Names are typed via {@link WBIcon} —
- * autocomplete shows every icon bundled with the SDK.
- *
- * @category Icons
- */
-export { Icon } from '@workflow-builder/icons';
-
-/**
- * Union of every icon name shipped with the SDK. Use it to constrain
- * props that accept an icon (`icon: WBIcon`).
- *
- * @category Icons
- */
-export type { WBIcon } from '@workflow-builder/icons';
+export { Icon } from './icon/icon';
+export {
+  defineIcons,
+  registerIcons,
+  type IconNamesOf,
+  type IconSet,
+  type PluginIconNames,
+  type Register,
+  type WBIcon,
+} from './icon/icon-registry';
+export type { IconData } from '@workflowbuilder/ui';

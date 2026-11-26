@@ -186,7 +186,7 @@ body:has(.suggestionsContainer) {
   gap: var(--wb-ds-space-100);
 
   svg {
-    fill: var(--wb-sdk-txt-ghost-primary-default);
+    color: var(--wb-sdk-txt-ghost-primary-default);
   }
 }
 

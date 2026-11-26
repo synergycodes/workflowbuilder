@@ -1,12 +1,12 @@
+import frameCornersIcon from '@iconify-icons/ph/frame-corners';
 import { Chip, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './dynamic-conditions-control.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { closeModal, openModal } from '../../../modals/stores/use-modal-store';
 import type { DynamicCondition, DynamicConditionsControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
@@ -50,7 +50,7 @@ function DynamicConditionsControl(props: DynamicConditionsControlProps) {
           onClick={openEditorModal}
           tooltip={t('title')}
           disabled={isDisabled}
-          prefixIcon={<Icon name="FrameCorners" size="small" />}
+          prefixIcon={<Icon icon={frameCornersIcon} size="small" />}
         />
       </div>
       <Dependencies conditions={data} onClick={openEditorModal} disabled={isDisabled} />

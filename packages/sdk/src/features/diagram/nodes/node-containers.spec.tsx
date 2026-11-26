@@ -10,7 +10,9 @@ import { NodeContainer } from './node-container';
 import { StartContainer } from './start-node-container';
 
 const templateMock = vi.hoisted(() => ({
-  Template: ({ accent }: { accent?: string }) => <span data-testid="template" data-accent={accent ?? ''} />,
+  Template: ({ accent, isAddDisabled }: { accent?: string; isAddDisabled?: boolean }) => (
+    <span data-testid="template" data-accent={accent ?? ''} data-add-disabled={String(isAddDisabled)} />
+  ),
 }));
 
 vi.mock('@workflowbuilder/ui', () => ({
@@ -61,3 +63,15 @@ describe.each(containers)('%s', (_name, Container) => {
     expect(renderContainer(Container)).toBe('');
   });
 });
+
+describe.each(Object.entries({ DecisionNodeContainer, AiNodeContainer }) as unknown as [string, Container][])(
+  '%s add button',
+  (_name, Container) => {
+    it.each([true, false])('passes the store isReadOnly %s as isAddDisabled', (isReadOnly) => {
+      useStore.setState({ isReadOnly });
+      renderContainer(Container);
+
+      expect(screen.getByTestId('template').dataset.addDisabled).toBe(String(isReadOnly));
+    });
+  },
+);

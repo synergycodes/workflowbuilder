@@ -1,0 +1,31 @@
+html[data-theme='light'] {
+  --ai-studio-status-color--completed: var(--wb-ds-colors-green-400);
+  /* missing token */
+  --ai-studio-status-color--running: var(--wb-ds-colors-acc1-500);
+  /* missing token */
+  --ai-studio-status-color--human: var(--wb-ds-colors-acc4-700);
+  /* missing token */
+  --ai-studio-log-detail-bg: var(--wb-ds-colors-gray-200);
+}
+
+html[data-theme='dark'] {
+  --ai-studio-status-color--completed: var(--wb-ds-colors-green-200);
+  /* missing token */
+  --ai-studio-status-color--running: var(--wb-ds-colors-acc1-400);
+  /* missing token */
+  --ai-studio-status-color--human: var(--wb-ds-colors-acc4-300);
+  /* missing token */
+  --ai-studio-log-detail-bg: var(--wb-ds-colors-gray-800);
+}
+
+:root {
+  --ai-studio-status-color--waiting: var(--wb-ds-ui-text-info-default);
+  --ai-studio-status-color--incomplete: var(--wb-ds-ui-text-warning-default);
+  --ai-studio-status-color--failed: var(--wb-ds-ui-text-critical-default);
+  --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
+  --ai-studio-status-bg--waiting: color-mix(in srgb, var(--ai-studio-status-color--waiting), transparent 85%);
+  --ai-studio-status-bg--incomplete: color-mix(in srgb, var(--ai-studio-status-color--incomplete), transparent 85%);
+  --ai-studio-status-bg--running: color-mix(in srgb, var(--ai-studio-status-color--running), transparent 85%);
+  --ai-studio-status-bg--human: color-mix(in srgb, var(--ai-studio-status-color--human), transparent 85%);
+  --ai-studio-status-bg--failed: color-mix(in srgb, var(--ai-studio-status-color--failed), transparent 85%);
+}

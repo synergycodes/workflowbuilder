@@ -352,6 +352,35 @@ describe('runGraph — topological scheduling', () => {
     expect(runner.contexts.E).toEqual({ D: 'd', B: 'out-B' });
   });
 
+  it('reports the port each node left through, so a client can tell a taken edge from a pruned one', async () => {
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' }, F: { throws: 'boom' }, C: { throws: 'soft' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('D'), trigger('B'), trigger('F', 'errorRoute'), trigger('R'), trigger('C', 'continue'), trigger('E')],
+        [
+          edge('e1', 'D', 'B', 'X'),
+          edge('e2', 'D', 'E', 'Y'),
+          edge('e3', 'B', 'F'),
+          edge('e4', 'F', 'R', 'errorRoute'),
+          edge('e5', 'R', 'C'),
+          edge('e6', 'C', 'E'),
+        ],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    const payloadOf = (type: string, nodeId: string) =>
+      events.events.find((event) => event.type === type && event.nodeId === nodeId)?.payload;
+    expect(payloadOf('node_completed', 'D')).toEqual({ output: 'd', nextPort: 'X' });
+    expect(payloadOf('node_completed', 'B')).toEqual({ output: 'out-B' });
+    expect(payloadOf('node_failed', 'F')).toEqual({ error: { message: 'boom' }, nextPort: 'errorRoute' });
+    expect(payloadOf('node_failed', 'C')).toEqual({ error: { message: 'soft' } });
+    expect(payloadOf('node_failed', 'C')).not.toHaveProperty('nextPort');
+  });
+
   it('skip propagates transitively — pruned branch with downstream chain stays dormant', async () => {
     // D picks X. C and C' are both reachable only via Y. Both must be skipped, even
     // though C' has incoming edge from C (its predecessor is also in the dead branch).
@@ -1616,7 +1645,11 @@ describe('runGraph: outcomes', () => {
     expect(events.statuses.at(-1)?.outcome).toEqual(escalated);
     expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
     const completed = events.events.filter((event) => event.type === 'node_completed').map((event) => event.payload);
-    expect(completed).toEqual([{ output: 'out-S' }, { output: 'second' }, { output: 'first' }]);
+    expect(completed).toEqual([
+      { output: 'out-S' },
+      { output: 'second', nextPort: 'gone-2' },
+      { output: 'first', nextPort: 'gone-1' },
+    ]);
   });
 
   it('an outcome on a completion that names no port is recorded too, and the graph routes as usual', async () => {

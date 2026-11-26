@@ -1,11 +1,10 @@
 import { Input, Select, TextArea } from '@workflowbuilder/ui';
 import { useCallback, useState } from 'react';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './add-ai-tool-form-content.module.css';
 
 import { FormControlWithLabel } from '../../../../../../components/form/form-control-with-label/form-control-with-label';
+import { Icon } from '../../../../../../icon/icon';
 import type { AiAgentTool } from '../../../../types/controls';
 import { toolOptions } from '../../select-options';
 
@@ -41,7 +40,7 @@ export function AddAiToolFormContent({ onSubmit, data }: ContentProps) {
     option.icon
       ? {
           ...option,
-          icon: <Icon name={option.icon} size="small" />,
+          icon: <Icon name={option.icon} />,
         }
       : option,
   );

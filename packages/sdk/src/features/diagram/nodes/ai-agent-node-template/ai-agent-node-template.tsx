@@ -1,16 +1,20 @@
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './ai-agent-node-template.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
+import {
+  NodeOverlaySlots,
+  OptionalNodeFooter,
+  OptionalNodeHeaderEnd,
+} from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
 import { getHandlesAlignment } from '../../handles/get-handles-alignment';
@@ -34,11 +38,13 @@ type Props = {
   selectedTools?: AiAgentTool[] | undefined;
   isValid?: boolean;
   layoutDirection?: LayoutDirection;
+  isAddDisabled?: boolean;
   onAddTool?: () => void;
 };
 
 export const AiAgentNodeTemplate = memo(
   ({
+    id,
     icon,
     // The agent had its gradient before accents existed; a definition without one keeps it.
     accent = 'violet-gradient',
@@ -52,6 +58,7 @@ export const AiAgentNodeTemplate = memo(
     selectedTools,
     isValid,
     layoutDirection = 'RIGHT',
+    isAddDisabled = false,
     onAddTool,
   }: Props) => {
     const { t } = useTranslation();
@@ -73,9 +80,9 @@ export const AiAgentNodeTemplate = memo(
             <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
             {isCanvasNode && <Collapsible.Button />}
+            {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
           <NodePanel.Content className={styles['content']} isVisible={isCanvasNode}>
-            <Status status={isValid === false ? 'invalid' : undefined} />
             <Collapsible.Content>
               <div className={styles['collapsible-content']}>
                 <SettingInfo
@@ -92,7 +99,7 @@ export const AiAgentNodeTemplate = memo(
                 />
               </div>
             </Collapsible.Content>
-            <ToolInfo onAddTool={onAddTool}>
+            <ToolInfo isAddDisabled={isAddDisabled} onAddTool={onAddTool}>
               {selectedTools?.map((tool, index) => {
                 const handleId = tool.sourceHandle;
 
@@ -102,6 +109,12 @@ export const AiAgentNodeTemplate = memo(
               })}
             </ToolInfo>
           </NodePanel.Content>
+          <NodePanel.Footer isVisible={isCanvasNode}>
+            <OptionalNodeFooter nodeId={id} />
+          </NodePanel.Footer>
+          <NodePanel.Overlay isVisible={isCanvasNode}>
+            <NodeOverlaySlots nodeId={id} isValid={isValid} />
+          </NodePanel.Overlay>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />

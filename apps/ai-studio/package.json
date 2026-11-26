@@ -13,6 +13,7 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
+    "@iconify-icons/ph": "catalog:",
     "@phosphor-icons/react": "^2.1.7",
     "@workflow-builder/types": "workspace:*",
     "@workflowbuilder/ui": "workspace:*",

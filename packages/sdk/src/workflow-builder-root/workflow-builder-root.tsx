@@ -9,11 +9,13 @@ import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
+import { EdgeEndpointContext } from '../features/diagram/edges/edge-endpoint-context';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
 import { initTheme } from '../hooks/theme';
+import { setRegisteredIcons } from '../icon/icon-registry';
 import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
 import { defaultOnLoad } from './default-on-load';
@@ -65,11 +67,13 @@ export function WorkflowBuilderRoot({
   logo,
   logoHref,
   layoutDirection,
+  icons,
   initialNodes,
   initialEdges,
   isValidConnection,
   reactFlowProps,
   builtInControls,
+  edgeEndpoint = 'none',
   children,
 }: WorkflowBuilderRootProps) {
   // Plugin / JsonForms boot — run once per Root lifetime on the first render
@@ -143,6 +147,7 @@ export function WorkflowBuilderRoot({
   setIsValidConnection(isValidConnection ?? null);
   setReactFlowProps(reactFlowProps ?? null);
   setAppBarBranding({ logo, logoHref });
+  setRegisteredIcons(icons ?? null);
 
   const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(integration);
 
@@ -160,7 +165,9 @@ export function WorkflowBuilderRoot({
         edges={initialEdges}
       >
         <ReactFlowProvider>
-          <RootShell builtInControls={builtInControls}>{children}</RootShell>
+          <EdgeEndpointContext.Provider value={edgeEndpoint}>
+            <RootShell builtInControls={builtInControls}>{children}</RootShell>
+          </EdgeEndpointContext.Provider>
         </ReactFlowProvider>
       </RuntimeIntegrationWrapper>
     </UiExtensionProvider>

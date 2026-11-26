@@ -31,11 +31,13 @@ Every prop is optional. The **Type** column links to the auto-generated [SDK API
 | `logo`              | `WorkflowBuilderLogo`                                                                    | Replaces the built-in editor header logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                                                                                                      |
 | `logoHref`          | `string`                                                                                 | Wraps the editor header logo (built-in or custom) in a link opened in a new tab.                                                                                                                                                                                                                                                                                                                    |
 | `layoutDirection`   | [`LayoutDirection`](/api/types/layoutdirection/)                                         | Initial flow direction, `'DOWN'` or `'RIGHT'`. Defaults to `'DOWN'`.                                                                                                                                                                                                                                                                                                                                |
+| `icons`             | [`IconSet`](/api/icons/iconset/)                                                         | Icons that node types, templates and select options refer to by name, built with `defineIcons`. Only these are bundled. Read when an icon renders: set it once, a later change does not refresh icons already on the canvas. See [Icons](#icons).                                                                                                                                                   |
 | `initialNodes`      | [`WorkflowBuilderNode[]`](/api/types/workflowbuildernode/)                               | Initial nodes for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                                                                                                        |
 | `initialEdges`      | [`WorkflowBuilderEdge[]`](/api/types/workflowbuilderedge/)                               | Initial edges for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                                                                                                        |
 | `isValidConnection` | [`WorkflowBuilderIsValidConnection`](/api/core/workflowbuilderisvalidconnection/)        | Validate connections as the user draws them. See [Connection validation](#connection-validation).                                                                                                                                                                                                                                                                                                   |
 | `reactFlowProps`    | [`WorkflowBuilderReactFlowProps`](/api/core/workflowbuilderreactflowprops/)              | Escape hatch forwarding extra props to the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props).                                                                                                                                                                                                                                                                 |
 | `builtInControls`   | [`BuiltInControls`](/api/core/builtincontrols/)                                          | Hides built-in controls by key (`logo`, `folderName`, `workflowName`, `version`, `save`, `cleanUp`, `saveAsPdf`, `publish`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
+| `edgeEndpoint`      | [`EdgeEndpoint`](/ui-api/edge/edgeendpoint/)                                             | Terminator at the target, in the line colour: `'arrow'`, `'circle'` or `'none'` (default). Covers built-in and connecting edges and custom edges on `OptionalEdgePath` / `EdgePath`; `EnhancedBaseEdge` takes `endpoint` with the `useEdgeStyle` style. Per edge: [Build a plugin](/guides/build-a-plugin/).                                                                                        |
 | `children`          | `ReactNode`                                                                              | Custom layout. Omit for the default floating-overlay layout. See [Compound subcomponents](#compound-subcomponents).                                                                                                                                                                                                                                                                                 |
 
 ## Compound subcomponents
@@ -95,7 +97,9 @@ function MyToolbar() {
     <header>
       <input value={workflowName} onChange={(event) => actions.setWorkflowName(event.target.value)} />
       <button onClick={actions.save}>Save</button>
-      <button onClick={actions.openImport}>Import</button>
+      <button disabled={isReadOnly} onClick={actions.openImport}>
+        Import
+      </button>
       <button onClick={actions.openExport}>Export</button>
       <button disabled={isReadOnly} onClick={actions.openTemplates}>
         Templates
@@ -110,13 +114,14 @@ function MyToolbar() {
 }
 ```
 
-`useWorkflowBuilderState()` returns `isReadOnly`, `theme`, `language`, `isPaletteOpen`, `isPropertiesPanelOpen`, `paletteFilter`, `layoutDirection`, `workflowName`, and for the supplied header controls `version`, `isCleanUpPending`, `isCanvasEmpty` and `availableActions`; see [`WorkflowBuilderState`](/api/hooks/workflowbuilderstate/) for the full shape. `useWorkflowBuilderActions()` returns a stable object, so you can pass any callback straight to an event handler. See [`WorkflowBuilderActions`](/api/hooks/workflowbuilderactions/) for the full action list. A few notes:
+`useWorkflowBuilderState()` returns `isReadOnly`, `theme`, `language`, `isPaletteOpen`, `isPropertiesPanelOpen`, `paletteFilter`, `layoutDirection`, `workflowName`, and for the supplied header controls `version`, `isCleanUpPending`, `isCanvasEmpty` and `availableActions`; see [`WorkflowBuilderState`](/api/hooks/workflowbuilderstate/) for the full shape. `useWorkflowBuilderActions()` returns a stable object, so an action that takes no arguments, such as `save` or `openTemplates`, can go straight to an event handler. See [`WorkflowBuilderActions`](/api/hooks/workflowbuilderactions/) for the full action list. A few notes:
 
 - Call both from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) through context, so outside Root `save()` logs an error and resolves to `'error'`. `deleteSelection` does nothing until `<WorkflowBuilder.Canvas />` has mounted.
 - Besides the editor header's commands, the actions hook also covers the palette and the properties panel: `togglePalette`/`setPaletteOpen`, `togglePropertiesPanel`/`setPropertiesPanelOpen`, `setPaletteFilter` (filters the palette's node list by a case-insensitive match on each item's translated label, without touching node definitions, validation or forms), `setLanguage`, and layout-direction control, which the editor header surfaces as the Clean up menu while `<EditorHeaderCleanUp>` is mounted: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
-- `openTemplates`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection` and `cleanUp` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openImport` and `openSettings`, which do change the persisted diagram (a full replace, and the global variables respectively) but are not read-only-guarded today. Hide them explicitly where that matters, e.g. `builtInControls={{ import: canEdit, settings: canEdit }}`.
+- `openTemplates`, `openImport`, `loadWorkflow`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection` and `cleanUp` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openSettings`, which does change the persisted global variables but is not read-only-guarded today. Hide it explicitly where that matters, e.g. `builtInControls={{ settings: canEdit }}`.
 - To select from your own controls, use `useSetSelection()`: `setSelection({ nodeIds, edgeIds })` replaces the selection as a click does, and returns `false` when the canvas lacks any of the ids.
 - The editor header also shows and edits the workflow name. Read it with `useWorkflowBuilderState()`'s `workflowName` and change it with `useWorkflowBuilderActions()`'s `setWorkflowName(name)`, up to 128 characters; a longer name is ignored (with a console warning) rather than truncated, and the call does nothing in read-only mode.
+- To put a diagram of your own into the editor, for example from your own template picker, call `loadWorkflow(model)` with a [`DiagramModel`](/api/types/diagrammodel/). It replaces the nodes, edges, name and layout direction the way the built-in template selector does: nodes snap to the canvas grid (`reactFlowProps.snapGrid`, 18 px by default; none with `snapToGrid: false`), the change is recorded for undo, and the view fits the new diagram if the canvas has mounted. Called before that, for example straight from `onLoad`, it leaves the fit to the canvas's own first fit (`reactFlowProps.fitView`, on by default). Global variables are kept. Pass the action itself only where the caller hands it a `DiagramModel`, as `onPick` does [below](#load-behavior). `onClick` would hand it the click event, so wrap it there: `onClick={() => actions.loadWorkflow(template)}`.
 
 ## Node types
 
@@ -144,6 +149,57 @@ The SDK ships no default palette — `nodeTypes` must be supplied for the palett
   integration={{ strategy: 'props', onDataSave }}
 />
 ```
+
+## Icons
+
+Node types, palette groups, templates and select options name their icon with a string, `icon: 'Lightning'`, because the name is saved with the diagram. The editor renders only icons it knows by name: the ones you register through the `icons` prop and a few built-in ones its own options use (`Gear`, `AiAgent`, `ClaudeLogo`, `StatusActive`, …). Only the icons you import end up in your bundle, and they render on the first frame.
+
+Install an icon set in the Iconify format, for example Phosphor, and register one file per icon:
+
+```bash
+pnpm add @iconify-icons/ph
+```
+
+```ts
+// src/icons.ts
+import lightningIcon from '@iconify-icons/ph/lightning';
+import timerIcon from '@iconify-icons/ph/timer';
+import { defineIcons } from '@workflowbuilder/sdk';
+
+export const appIcons = defineIcons({
+  Lightning: lightningIcon,
+  Timer: timerIcon,
+});
+
+declare module '@workflowbuilder/sdk' {
+  interface Register {
+    icons: typeof appIcons;
+  }
+}
+```
+
+```tsx
+<WorkflowBuilder.Root icons={appIcons} nodeTypes={nodeTypes} />
+```
+
+The `Register` augmentation types icon names against the set: `icon: 'Acorn'` in a node type is then a type error until you register `Acorn`. Without it any string type-checks. A name that is neither registered nor built in renders a question mark of the same size and logs one `console.warn` that says how to register it.
+
+Any `@iconify-icons/*` package works the same way, so you can mix sets; `Icon` does not rotate or flip glyphs, so pick icons that are not defined that way. For your own SVG files, build an Iconify JSON set once, for example with `importDirectory` from `@iconify/tools`, and take each icon out of it with `getIconData` from `@iconify/utils`:
+
+```ts
+import { getIconData } from '@iconify/utils';
+
+import brandIcons from './icons/brand.json';
+
+export const appIcons = defineIcons({
+  Lightning: lightningIcon,
+  HubspotLogo: getIconData(brandIcons, 'hubspot-logo')!,
+});
+```
+
+In your own components, an icon that is fixed in the code does not need a name: pass the imported data instead, `<Icon icon={timerIcon} />`. `name` is for names that come from data.
+
+A plugin registers the icons its own node types and templates name itself, with `registerIcons`, so the app's set does not list them: see [Icons in a plugin](/guides/build-a-plugin/#icons-in-a-plugin). An app icon of the same name wins over a plugin icon.
 
 ## Custom node and edge renderers
 
@@ -271,14 +327,14 @@ Today the runtime treats every non-empty resolution of `onDataSave` as "the save
 - `loadFailed` is `true` when the `api` load request failed, and always `false` for `localStorage` and `props`. After a failed load the editor stays usable but refuses to save for the rest of that Root mount, so nothing can overwrite the copy on the server that could not be loaded. What to show the user is up to you.
 - `actions` is the same object as [`useWorkflowBuilderActions()`](/api/hooks/useworkflowbuilderactions/), so `actions.save()` works inside the handler and `actions.openTemplates()` does nothing in read-only mode. You can keep `actions` after the handler returns, for example for a welcome screen or a ref outside Root: every action acts on the current editor, and once that Root unmounts every action does nothing and `save()` resolves `'error'`.
 
-Without `onLoad`, the builder opens the template selector for an empty diagram, unless the load failed. A custom handler replaces that default entirely, so the template selector opens only when the handler calls `actions.openTemplates()`. For example, to open the palette and show your own welcome screen that offers the templates:
+Without `onLoad`, the builder opens the template selector for an empty diagram, unless the load failed. A custom handler replaces that default entirely, so the template selector opens only when the handler calls `actions.openTemplates()`. For example, to open the palette and show your own welcome screen, which loads the diagram the user picks with `actions.loadWorkflow` (pass `actions.openTemplates` instead to offer the built-in selector):
 
 ```tsx
 <WorkflowBuilder.Root
   onLoad={({ isEmpty, loadFailed, actions }) => {
     if (loadFailed) return showLoadError();
     actions.setPaletteOpen(true);
-    if (isEmpty) showWelcome({ onPickTemplate: actions.openTemplates });
+    if (isEmpty) showWelcome({ onPick: actions.loadWorkflow });
   }}
 />
 ```

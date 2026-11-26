@@ -1,12 +1,12 @@
+import xIcon from '@iconify-icons/ph/x';
 import { NavButton, SnackbarType } from '@workflowbuilder/ui';
 import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mention, type MentionDataItem, MentionsInput } from 'react-mentions-ts';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './variable-text.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import type { VariableType } from '../../../../node/node-output-schema';
 import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
@@ -155,7 +155,7 @@ function SuggestionsContainer({
             event.stopPropagation();
             handleClose();
           }}
-          prefixIcon={<Icon name="X" />}
+          prefixIcon={<Icon icon={xIcon} />}
         />
       </div>
       {cloneElement(ul, {}, grouped)}

@@ -18,7 +18,7 @@
 // which vitest's node-side transformer can't process.
 import { act, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { StrictMode } from 'react';
+import { StrictMode, useContext } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -27,6 +27,9 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
+import { EdgeEndpointContext } from '../features/diagram/edges/edge-endpoint-context';
+import { Icon } from '../icon/icon';
+import { defineIcons } from '../icon/icon-registry';
 import { type PaletteItem, StatusType } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
@@ -227,6 +230,25 @@ describe('WorkflowBuilderRoot — react-flow config wiring', () => {
   });
 });
 
+describe('WorkflowBuilderRoot — edge endpoint', () => {
+  function Probe() {
+    return <span data-testid="endpoint">{useContext(EdgeEndpointContext)}</span>;
+  }
+
+  it.each([
+    [undefined, 'none'],
+    ['arrow', 'arrow'],
+  ] as const)('edgeEndpoint %s reaches the edges as %s', (edgeEndpoint, expected) => {
+    const { getByTestId } = render(
+      <WorkflowBuilderRoot edgeEndpoint={edgeEndpoint}>
+        <Probe />
+      </WorkflowBuilderRoot>,
+    );
+
+    expect(getByTestId('endpoint').textContent).toBe(expected);
+  });
+});
+
 describe('WorkflowBuilderRoot — node definitions', () => {
   it('loads node definitions on mount without a Palette', () => {
     const definition = { type: 'action', label: 'Action', icon: 'Plus', accent: 'green' } as PaletteItem;
@@ -251,5 +273,21 @@ describe('WorkflowBuilderRoot — node definitions', () => {
     expect(getByTestId('accent').textContent).toBe('green');
     expect(useStore.getState().fetchDataStatus).toBe(StatusType.Success);
     expect(paletteMock.getPaletteData).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('WorkflowBuilderRoot icons', () => {
+  it('renders an icon registered through the icons prop and a built-in icon by name', () => {
+    const icons = defineIcons({ Custom: { body: '<path d="M1 1"/>' } });
+
+    const { container } = render(
+      <WorkflowBuilderRoot icons={icons}>
+        <Icon name="Custom" data-testid="custom" />
+        <Icon name="Gear" data-testid="gear" />
+      </WorkflowBuilderRoot>,
+    );
+
+    expect(container.querySelector('[data-testid="custom"]')?.innerHTML).toBe('<path d="M1 1"></path>');
+    expect(container.querySelector('[data-testid="gear"]')?.innerHTML).not.toBe('');
   });
 });

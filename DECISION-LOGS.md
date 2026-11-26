@@ -2,8 +2,6 @@
 
 - _03.02.2025_: [Using Web Components for Framework-Agnostic Integration](./apps/demo/src/web-component-wrapper.decision-log.md)
 - _05.02.2025_: [Dynamic form generation for node properties](./packages/sdk/src/features/json-form/form-generation.decision-log.md)
-- _04.03.2025_: [Lazy-loaded Icons](./apps/icons/lazy-loaded-icons-04-03-2025.decision-log.md)
-- _08.04.2025_: [Lazy-loaded Icons](./apps/icons/lazy-loaded-icons-08-04-2025.decision-log.md)
 - _15.04.2025_: [Internationalization implementation with i18next](./packages/sdk/src/features/i18n/i18next.decision-log.md)
 - _26.05.2025_: [JSON Form Validation Strategy](./packages/sdk/src/features/json-form/form-validation.decision-log.md)
 - _05.03.2026_: [Independent docs deployment strategy](./apps/docs/docs-deployment.decision-log.md)
@@ -31,3 +29,4 @@
 - _01.10.2026_: [One model for the built-in interface: state, actions, builtInControls, …Content, …MenuItem](./packages/sdk/src/features/ui-extensions/ui-extensions.decision-log.md)
 - _21.10.2026_: [One vocabulary for the public API of `@workflowbuilder/sdk` 4.0](./packages/sdk/public-api-naming.decision-log.md)
 - _16.11.2026_: [One properties form per node](./packages/sdk/src/features/json-form/form-per-node.decision-log.md)
+- _19.11.2026_: [Icons registered by the app instead of lazy-loaded one by one](./packages/sdk/icon-registry.decision-log.md)

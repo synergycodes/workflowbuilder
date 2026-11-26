@@ -1,0 +1,45 @@
+---
+title: NodeRunBadge
+description: Run status label above the node's top-right corner.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeRunBadgeExample } from '../../../../components/ui-examples/run-status';
+
+`NodeRunBadge` is a size `m` [`BadgeLabel`](/ui-library/ui-components/badge-label/) placed 8px above
+the node, aligned to its right edge. It grows to the left and never wraps. `tone` picks one of seven
+colour pairs (`NodeRunTone`), with Light and Dark values, or a
+[custom tone](/ui-library/diagram-components/run-status/#custom-tone); `dimmed` lowers its opacity
+(Skipped).
+
+<NodeRunBadgeExample client:visible />
+
+## Usage
+
+Place it in [`NodePanel.Overlay`](/ui-library/diagram-components/node-panel/). Write the label in
+sentence case; the badge renders it uppercase.
+
+```tsx
+import { NodePanel, NodeRunBadge } from '@workflowbuilder/ui';
+
+<NodePanel.Overlay>
+  <NodeRunBadge tone="critical" label="Failed" />
+</NodePanel.Overlay>;
+```
+
+## Colours
+
+Each tone reads `--wb-public-node-run-status-bg-<tone>` and `--wb-public-node-run-status-fg-<tone>`,
+which colours the text and the glyph, from the palette shared by all run status parts (see
+[Run status colours](/ui-library/diagram-components/run-status/#colours)). The `inverse` tone renders the
+`BadgeLabel` Inverse variant, which reads `--wb-public-badge-label-background-color-inverse` and
+`--wb-public-badge-label-color-inverse`, so a global `BadgeLabel` recolour reaches it too.
+
+## Props
+
+<PropsTable slug="node-run-badge" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-run-badge" />

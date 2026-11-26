@@ -85,7 +85,7 @@
      render them as a neutral nav control so both arrows match each other and the
      rest of the calendar. */
   .calendar :global(.rdp-chevron) {
-    fill: var(--wb-public-date-picker-nav-color);
+    color: var(--wb-public-date-picker-nav-color);
   }
 
   .calendar :global(.rdp-day:not(.rdp-disabled):not(.rdp-selected) .rdp-day_button:hover) {

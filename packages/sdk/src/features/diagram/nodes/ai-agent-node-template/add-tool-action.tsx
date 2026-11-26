@@ -6,8 +6,11 @@ import type { AiAgentTool } from '../../../json-form/types/controls';
 import { closeModal } from '../../../modals/stores/use-modal-store';
 
 export function openAddToolModalForNode(nodeId: string) {
+  if (useStore.getState().isReadOnly) return;
+
   function handleSubmit(change: AiAgentTool) {
-    if (hasAnyValue(change)) {
+    // Read-only can switch on while the modal is open: AI Studio sets it when a run starts.
+    if (hasAnyValue(change) && !useStore.getState().isReadOnly) {
       const node = getStoreNode(nodeId);
       if (!node) return;
 

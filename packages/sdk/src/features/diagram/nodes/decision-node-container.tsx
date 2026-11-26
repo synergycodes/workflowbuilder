@@ -29,6 +29,7 @@ export const DecisionNodeContainer = memo(({ id, data, selected }: Props) => {
   const layoutDirection = useStore((store) => store.layoutDirection);
   const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
   const connectionBeingDragged = useStore((store) => store.connectionBeingDragged);
+  const isReadOnly = useStore((store) => store.isReadOnly);
 
   return (
     <NodeAsPortWrapper isConnecting={!!connectionBeingDragged} targetPortPosition={handleTargetPosition}>
@@ -43,6 +44,7 @@ export const DecisionNodeContainer = memo(({ id, data, selected }: Props) => {
         accent={accent}
         decisionBranches={decisionBranches}
         isValid={isValid}
+        isAddDisabled={isReadOnly}
         onAddBranch={() => addBranchToNode(id)}
       />
     </NodeAsPortWrapper>

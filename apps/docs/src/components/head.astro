@@ -70,7 +70,7 @@ const { head } = Astro.locals.starlightRoute as StarlightRouteData;
   // Autoplay videos don't restart after View Transitions DOM swap.
   // Re-trigger load + play for any autoplay video on the new page.
   document.addEventListener('astro:after-swap', () => {
-    for (const video of document.querySelectorAll('video[autoplay]')) {
+    for (const video of document.querySelectorAll<HTMLVideoElement>('video[autoplay]')) {
       video.load();
       video.play();
     }

@@ -12,11 +12,13 @@
 export const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
+  { slug: 'badge-label', name: 'BadgeLabel', propsType: 'BadgeLabelProps', dir: 'badge-label' },
   { slug: 'button', name: 'Button', propsType: ['LabelButtonProps', 'IconButtonProps'], dir: 'button' },
   { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
   { slug: 'chip', name: 'Chip', propsType: 'ChipProps', dir: 'chip' },
   { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
   { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
+  { slug: 'icon', name: 'Icon', propsType: 'IconProps', dir: 'icon' },
   { slug: 'icon-switch', name: 'IconSwitch', propsType: 'IconSwitchProps', dir: 'switch/icon-switch' },
   {
     slug: 'input',
@@ -85,9 +87,31 @@ export const COMPONENTS = [
     propsType: 'NodeAsPortWrapperProps',
     dir: 'node/node-as-port-wrapper',
   },
+  // The colour palette every run status part reads; the Run status page renders it.
+  { slug: 'run-status', name: 'Run status', propsType: null, dir: 'node/run-status' },
+  { slug: 'node-run-ring', name: 'NodeRunRing', propsType: 'NodeRunRingProps', dir: 'node/node-run-ring' },
+  { slug: 'node-run-veil', name: 'NodeRunVeil', propsType: 'NodeRunVeilProps', dir: 'node/node-run-veil' },
+  {
+    slug: 'node-run-progress',
+    name: 'NodeRunProgress',
+    propsType: 'NodeRunProgressProps',
+    dir: 'node/node-run-progress',
+  },
+  {
+    slug: 'node-run-indicator',
+    name: 'NodeRunIndicator',
+    propsType: ['NodeRunIndicatorIconProps', 'NodeRunIndicatorSpinnerProps'],
+    dir: 'node/node-run-indicator',
+  },
+  { slug: 'node-run-badge', name: 'NodeRunBadge', propsType: 'NodeRunBadgeProps', dir: 'node/node-run-badge' },
+  { slug: 'node-footer', name: 'NodeFooter', propsType: 'NodeFooterProps', dir: 'node/node-footer' },
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
   // Documented on the Edge page, which already renders the edge variables.
   { slug: 'use-edge-style', name: 'useEdgeStyle', propsType: 'UseEdgeStyleParams', dir: null },
+  { slug: 'edge-endpoint-marker', name: 'EdgeEndpointMarker', propsType: 'EdgeEndpointMarkerProps', dir: null },
   // Compound component - parts described in prose, variables generated.
   { slug: 'node-panel', name: 'NodePanel', propsType: null, dir: 'node/node-panel' },
 ];
+
+// Exports no documented prop links to, given a UI API Reference page anyway; the types they use come along.
+export const REFERENCE_EXPORTS = ['runStatusPresets', 'NODE_RUN_TONES', 'EDGE_RUN_TONES'];

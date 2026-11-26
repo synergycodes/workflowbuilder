@@ -1,3 +1,6 @@
+import arrowCounterClockwiseIcon from '@iconify-icons/ph/arrow-counter-clockwise';
+import playIcon from '@iconify-icons/ph/play';
+import stopIcon from '@iconify-icons/ph/stop';
 import { Icon, getStoreDataForIntegration } from '@workflowbuilder/sdk';
 import { Button, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
@@ -78,7 +81,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
             size="s"
             onClick={cancel}
             disabled={isStarting}
-            prefixIcon={<Icon name="Stop" />}
+            prefixIcon={<Icon icon={stopIcon} />}
           >
             Stop
           </Button>
@@ -88,7 +91,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
             variant="primary"
             size="s"
             onClick={handleExecute}
-            prefixIcon={<Icon name="Play" />}
+            prefixIcon={<Icon icon={playIcon} />}
           >
             Run
           </Button>
@@ -99,7 +102,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
             aria-label={resetTooltip}
             onClick={reset}
             tooltip={resetTooltip}
-            prefixIcon={<Icon name="ArrowCounterClockwise" />}
+            prefixIcon={<Icon icon={arrowCounterClockwiseIcon} />}
           />
         )}
       </div>
