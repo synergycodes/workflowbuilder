@@ -1,6 +1,6 @@
 ---
 title: Edge
-description: Edge label rendering and edge styling for the diagram canvas.
+description: Edge label rendering, edge styling and edge terminators for the diagram canvas.
 ---
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
@@ -8,9 +8,10 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { EdgeExample } from '../../../../components/ui-examples/edge';
 
 The edge building blocks give diagram edges a consistent look. `EdgeLabel` is a
-label primitive designed to sit on an edge, while the `useEdgeStyle` hook
-computes the stroke styles for the edge path itself. Both follow the styling
-conventions prepared for edges, so a custom edge type matches the built-in ones.
+label primitive designed to sit on an edge, the `useEdgeStyle` hook computes
+the stroke styles for the edge path itself, and `EdgeEndpointMarker` draws the
+terminator at its target. All three follow the styling conventions prepared for
+edges, so a custom edge type matches the built-in ones.
 
 <EdgeExample client:visible />
 
@@ -23,9 +24,30 @@ wrapper elements or layout adjustments because absolute positioning removes it
 from normal document flow.
 
 `useEdgeStyle` returns an object of CSS properties (`stroke`, `strokeWidth`,
-`transition`) that you apply directly to the SVG path element representing an
-edge. The package also exports the `EdgeState` and `EdgeLabelSize` types and the
-`EDGE_LABEL_SIZES` constant.
+`transition`, plus `strokeDasharray` and `animation` when the line is dashed or
+running) that you apply directly to the SVG path element representing an edge.
+Besides `state` and `isHovered` it takes `runState` (`pending`, `running`,
+`completed`, `outOfRun`) to show where the edge stands in an execution run,
+`tone` to pick the colour of that run state (see [Run tones](#run-tones)), and
+`lineType` (`solid`, `dashed`). The colour follows the first match of:
+`disabled`, then `runState` (with its `tone`), then `selected` / `temporary`,
+then hover, then the default. Once `runState` is set, hover, selection and the
+SDK's keyboard focus no longer change the colour: the run view is read-only, so
+during and after a run a focused edge shows no focus indicator. `running` always draws an animated `6 5` dash, even on a `dashed` edge;
+otherwise `dashed` draws a static `5 4` dash. A custom
+`--wb-public-edge-dash-running` needs `--wb-public-edge-dash-running-period` set
+to the sum of its pattern, or the dash jumps once per loop. Every edge is 1 px wide. The
+package also exports the `EdgeState`, `EdgeRunState`, `EdgeRunTone`,
+`EdgeRunToneName`, `EdgeLineType`, `EdgeEndpoint` and `EdgeLabelSize` types, the
+`EDGE_RUN_TONES` and `EDGE_LABEL_SIZES` constants.
+
+`EdgeEndpointMarker` draws the terminator where an edge reaches its target: an
+`arrow` that shows the flow direction, or a `circle` for a neutral attachment
+point. It is an SVG `<marker>` that you render next to the path, one per edge,
+with the same `style` as the path. It then has the colour of the line in every
+state, turns with the end of the path and is never dashed, so on a dashed line
+it can sit up to 5 px from the last dash. The SDK's `EdgePath`
+and `EnhancedBaseEdge` render it for you through their `endpoint` prop.
 
 ## Usage
 
@@ -84,6 +106,65 @@ function LabeledEdge({
 }
 ```
 
+To show an execution run, pass the edge's run state. A running edge gets the
+`active` colour and a dash that flows toward the target; under
+`prefers-reduced-motion: reduce` the dash stays still. An optional `tone`
+replaces the colour of the run state and keeps its behaviour, so a `running`
+edge with `tone="warning"` still animates.
+
+```tsx
+import { type EdgeRunState, type EdgeRunToneName, useEdgeStyle } from '@workflowbuilder/ui';
+import { BaseEdge, type Edge, type EdgeProps, getSmoothStepPath } from '@xyflow/react';
+
+type RunStateEdge = Edge<{ runState?: EdgeRunState; tone?: EdgeRunToneName }>;
+
+function RunEdge({
+  id,
+  data,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+}: EdgeProps<RunStateEdge>) {
+  const pathStyle = useEdgeStyle({ runState: data?.runState, tone: data?.tone });
+
+  const [edgePath] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+
+  return <BaseEdge id={id} path={edgePath} style={pathStyle} />;
+}
+
+// Rendered for an edge with data: { runState: 'running' } or { runState: 'running', tone: 'warning' }
+```
+
+To end the path with a terminator, render the marker next to it and point the
+path at the marker. The id has to be unique per edge, so `useId` fits.
+
+```tsx
+import { EdgeEndpointMarker, useEdgeStyle } from '@workflowbuilder/ui';
+import { BaseEdge, type EdgeProps, getSmoothStepPath } from '@xyflow/react';
+import { useId } from 'react';
+
+function ArrowEdge({ id, selected, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition }: EdgeProps) {
+  const markerId = useId();
+  const pathStyle = useEdgeStyle({ state: selected ? 'selected' : 'default' });
+
+  const [edgePath] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+
+  return (
+    <>
+      <EdgeEndpointMarker id={markerId} type="arrow" style={pathStyle} />
+      <BaseEdge id={id} path={edgePath} style={pathStyle} markerEnd={`url(#${markerId})`} />
+    </>
+  );
+}
+```
+
+Roots hydrated from server HTML and apps with separate React copies on one page
+(micro-frontends, embedded bundles) all start `useId` from the same id: give each a
+different `identifierPrefix`, or their marker ids can collide.
+
 ## EdgeLabel props
 
 `EdgeLabel` also forwards any remaining `HTMLDivElement` attributes (e.g.
@@ -93,13 +174,66 @@ function LabeledEdge({
 
 ## useEdgeStyle
 
-A hook that maps an edge's `state` and hover flag to the CSS properties for its
-SVG path.
+A hook that maps an edge's `state`, hover flag, `runState`, `tone` and `lineType` to
+the CSS properties for its SVG path.
 
 <PropsTable slug="use-edge-style" />
 
-Returns `{ stroke, strokeWidth, transition }` ready to spread onto a path's
-`style`.
+Returns `{ stroke, strokeWidth, transition }`, plus `strokeDasharray` and
+`animation` when they apply, ready to spread onto a path's `style`.
+
+## Run tones
+
+A tone is the colour of an edge in a run. `EDGE_RUN_TONES` lists the built-in
+ones; each reads its own `--wb-public-edge-run-status-stroke-<tone>` variable
+(see [CSS variables](#css-variables)). The list may grow in a minor release.
+
+Without `tone`, each run state uses its default:
+
+| `runState`  | Default tone |
+| ----------- | ------------ |
+| `pending`   | `default`    |
+| `running`   | `active`     |
+| `completed` | `success`    |
+| `outOfRun`  | `disabled`   |
+
+An explicit `tone` overrides the default, `tone="default"` included. Only
+`running` animates the dash, whatever the tone.
+
+- **A tone works only with `runState`.** It replaces the colour of the run
+  state, nothing more. Without `runState` it is ignored, so selection, hover
+  and focus stay visible outside a run.
+- **Selection is not shown under a run colour.** The run view is read-only, so
+  a selected, hovered or focused edge keeps its run colour.
+
+There is no built-in error tone: the design system shows a failed step on the
+node, not on the edge. Add your own if you need one.
+
+### Custom tone
+
+Define the variable for light and dark mode, then pass its name as `tone`:
+
+```css
+:root {
+  --wb-public-edge-run-status-stroke-error: #dc2626;
+}
+
+:root[data-theme='dark'] {
+  --wb-public-edge-run-status-stroke-error: #f87171;
+}
+```
+
+```tsx
+const pathStyle = useEdgeStyle({ runState: 'completed', tone: 'error' });
+// or, in an SDK edge: <EdgePath {...props} runState="completed" tone="error" />
+```
+
+A name outside `/^[a-z0-9-]+$/`, or one with no variable defined, falls back to
+the default tone of its `runState`.
+
+## EdgeEndpointMarker props
+
+<PropsTable slug="edge-endpoint-marker" />
 
 ## CSS variables
 

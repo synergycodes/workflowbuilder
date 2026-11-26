@@ -1,3 +1,4 @@
+import type { EdgeEndpoint } from '@workflowbuilder/ui';
 import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
 import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
 
@@ -9,6 +10,7 @@ import type {
 } from '../features/json-form/extension-registry';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import type { WorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
+import type { IconSet } from '../icon/icon-registry';
 import type { LayoutDirection, PaletteItemOrGroup, TemplateModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
 import type { OnSaveExternal } from '../types/integration';
@@ -190,7 +192,7 @@ export type WorkflowBuilderReactFlowProps = Omit<
 export type WorkflowBuilderLogo = string | { light: string; dark: string } | ReactElement;
 
 /**
- * Version shown in the editor header version chip.
+ * Version shown in the editor header version chip, supplied through `<EditorHeaderVersion>`.
  *
  * @category Core
  */
@@ -199,25 +201,6 @@ export type WorkflowBuilderVersion = {
   number: number;
   /** Marks the version as an unpublished draft. */
   isDraft: boolean;
-};
-
-/**
- * Host-wired editor header controls. Each renders only when its field is set.
- *
- * @category Core
- */
-export type WorkflowBuilderEditorHeaderOptions = {
-  /**
-   * Called with the chosen direction when the user picks Clean up. The SDK has already set and tracked the new
-   * direction before calling it; moving (and tracking) the nodes is the host's job.
-   */
-  onCleanUp?: (direction: LayoutDirection) => void | Promise<void>;
-  /** Called when the user picks Save as PDF in the workflow name menu. */
-  onSaveAsPdf?: () => void;
-  /** Version shown in the chip next to the workflow name. */
-  version?: WorkflowBuilderVersion;
-  /** Called when the user clicks Publish. */
-  onPublish?: () => void;
 };
 
 /**
@@ -271,9 +254,9 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * `EdgeProps` directly). The only SDK-specific step is registering it here
    * instead of via ReactFlow's `edgeTypes`. See ReactFlow's "Custom Edges"
    * guide: https://reactflow.dev/learn/customization/custom-edges. To match the
-   * built-in selection and hover look, reuse the exported `useLabelEdgeHover`
-   * and `EnhancedBaseEdge`, or restyle selection globally via the
-   * `--wb-public-edge-color-select` CSS variable. A custom edge does not inherit
+   * built-in look and get run states set by plugins, draw the path with the
+   * exported `OptionalEdgePath` (`hovered` from `useLabelEdgeHover`), or
+   * `EdgePath` without the slot. A custom edge does not inherit
    * the built-in self-connecting loop or label rendering.
    *
    * **Must be a stable reference** (same rationale as `nodeTemplates`).
@@ -307,10 +290,14 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   logo?: WorkflowBuilderLogo;
   /** Wraps the editor header logo (built-in or custom) in a link opened in a new tab. */
   logoHref?: string;
-  /** Host-wired editor header controls: Clean up, Save as PDF, version chip and Publish. Each renders only when its field is set. */
-  editorHeader?: WorkflowBuilderEditorHeaderOptions;
   /** Initial layout direction (`'RIGHT'` or `'DOWN'`). */
   layoutDirection?: LayoutDirection;
+  /**
+   * Icons that nodes, palette items and templates refer to by name, built with `defineIcons`.
+   * They render synchronously and only these end up in the bundle.
+   * Read when an icon renders: set it once, a later change does not refresh icons already on the canvas.
+   */
+  icons?: IconSet;
   /** Initial nodes rendered on first mount. */
   initialNodes?: WorkflowBuilderNode[];
   /** Initial edges rendered on first mount. */
@@ -333,10 +320,9 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
   /**
-   * Hides built-in controls of the editor header, the palette and the properties panel. Keys: `save`,
-   * `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`,
-   * `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`. Every key defaults to
-   * `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
+   * Hides built-in controls of the editor header, the palette and the properties panel; the keys are
+   * listed in {@link BuiltInControl}. Hiding `workflowName` (the title) also hides renaming. Every key defaults
+   * to `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
    * action stays reachable programmatically (e.g. `useWorkflowBuilderActions`), and its keyboard
    * shortcut (if any - e.g. the Delete key) keeps working. The palette starts collapsed, so hiding
    * `paletteToggle` means it never opens unless the app calls `setPaletteOpen(true)` itself, e.g.
@@ -352,4 +338,10 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * ```
    */
   builtInControls?: BuiltInControls;
+  /**
+   * Terminator every edge ends with at its target: `'arrow'`, `'circle'` or `'none'` (the default). It has
+   * the colour of the line in every state. Applies to the built-in edges, the edge drawn while connecting and any
+   * custom edge drawn with `OptionalEdgePath` or `EdgePath`; an `endpoint` passed to those wins for that edge.
+   */
+  edgeEndpoint?: EdgeEndpoint;
 }>;

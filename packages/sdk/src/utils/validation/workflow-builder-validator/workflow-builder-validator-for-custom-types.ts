@@ -90,6 +90,9 @@ function getValueAtPath(data: unknown, path: readonly string[]): unknown {
   return current;
 }
 
+// Same encoding as @cfworker/json-schema (not exported), so `mapOutputToErrorObjects` decodes both alike.
+const encodePointerSegment = (segment: string) => encodeURI(segment.replaceAll('~', '~0').replaceAll('/', '~1'));
+
 /**
  * Validates the custom-typed properties `splitCustomTypes` took out of the schema.
  * A present value passes as a date string (`HH:mm` for `time`) or as a single variable reference; a missing
@@ -116,9 +119,9 @@ export function getValidationForCustomTypes(fields: readonly CustomTypeField[]):
       if (!isValid) {
         errors.push({
           error: `Instance does not match type "${type}".`,
-          instanceLocation: `#/${path.join('/')}`,
+          instanceLocation: `#/${path.map(encodePointerSegment).join('/')}`,
           keyword: 'type',
-          keywordLocation: `#/properties/${path.join('/properties/')}/type`,
+          keywordLocation: `#/properties/${path.map(encodePointerSegment).join('/properties/')}/type`,
         });
       }
     }

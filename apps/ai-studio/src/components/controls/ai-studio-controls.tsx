@@ -1,3 +1,6 @@
+import arrowCounterClockwiseIcon from '@iconify-icons/ph/arrow-counter-clockwise';
+import playIcon from '@iconify-icons/ph/play';
+import stopIcon from '@iconify-icons/ph/stop';
 import { Icon, getStoreDataForIntegration } from '@workflowbuilder/sdk';
 import { Button, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
@@ -7,6 +10,8 @@ import styles from './ai-studio-controls.module.css';
 
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
+import { usePanelTop } from '../../hooks/use-panel-top';
+import { useReadOnlyHidesCanvasGrid } from '../../hooks/use-read-only-hides-canvas-grid';
 import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
 import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
 import { addNotice } from '../../stores/use-notices-store';
@@ -29,6 +34,8 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
   // A start waits for the backend; a second one meanwhile would leave two runs streaming into one view.
   const [isStarting, setIsStarting] = useState(false);
   useRunLocksCanvas();
+  useReadOnlyHidesCanvasGrid();
+  const panelTop = usePanelTop();
   const canRun = hasStartNode && !isRunView;
 
   const handleExecute = useCallback(async () => {
@@ -63,6 +70,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
       className={clsx(styles['container'], {
         [styles['container--visible']]: shouldShowControls,
       })}
+      style={{ top: panelTop }}
     >
       <div className={styles['panel']}>
         {isRunning || isStarting ? (
@@ -73,7 +81,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
             size="s"
             onClick={cancel}
             disabled={isStarting}
-            prefixIcon={<Icon name="Stop" />}
+            prefixIcon={<Icon icon={stopIcon} />}
           >
             Stop
           </Button>
@@ -83,7 +91,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
             variant="primary"
             size="s"
             onClick={handleExecute}
-            prefixIcon={<Icon name="Play" />}
+            prefixIcon={<Icon icon={playIcon} />}
           >
             Run
           </Button>
@@ -94,7 +102,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
             aria-label={resetTooltip}
             onClick={reset}
             tooltip={resetTooltip}
-            prefixIcon={<Icon name="ArrowCounterClockwise" />}
+            prefixIcon={<Icon icon={arrowCounterClockwiseIcon} />}
           />
         )}
       </div>

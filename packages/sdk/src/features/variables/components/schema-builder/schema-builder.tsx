@@ -1,12 +1,12 @@
-import { PlusCircle } from '@phosphor-icons/react';
+import infoIcon from '@iconify-icons/ph/info';
+import plusCircleIcon from '@iconify-icons/ph/plus-circle';
 import { Button, SnackbarType } from '@workflowbuilder/ui';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './schema-builder.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { filterEmpty } from '../../../../utils/array';
 import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { getNodesWithVariable } from '../../actions/get-nodes-with-variable';
@@ -110,7 +110,7 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
     <div className={styles['container']}>
       {variables.length === 0 && (
         <button className={styles['button-empty']} onClick={handleAddVariable} type="button">
-          <Icon name="Info" size="large" />
+          <Icon icon={infoIcon} size="large" />
           <span>{t('variables.addVariableToContinue')}</span>
         </button>
       )}
@@ -130,7 +130,7 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
         onClick={handleAddVariable}
         disabled={isDisabled}
       >
-        <PlusCircle />
+        <Icon icon={plusCircleIcon} />
         {t('workflowsSettings.tab.addVariable')}
       </Button>
     </div>

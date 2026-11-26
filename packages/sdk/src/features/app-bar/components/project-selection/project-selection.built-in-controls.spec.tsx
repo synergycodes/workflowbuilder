@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
 
@@ -85,6 +85,7 @@ describe('ProjectSelection builtInControls', () => {
 
   it('settings:true (the default) shows the caret and the Settings item', () => {
     renderProjectSelection({ settings: true });
+    expect(screen.getByText('Folder Name /')).not.toBeNull();
 
     openProjectMenu();
     expect(screen.getByText('Settings')).not.toBeNull();
@@ -96,6 +97,35 @@ describe('ProjectSelection builtInControls', () => {
     openProjectMenu();
     expect(screen.queryByText('Settings')).toBeNull();
     expect(screen.getByText('Duplicate')).not.toBeNull();
+  });
+
+  it('folderName:false hides only the folder label', () => {
+    renderProjectSelection({ folderName: false });
+
+    expect(screen.queryByText('Folder Name /')).toBeNull();
+    expect(screen.getByText('My Diagram')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Project actions' })).not.toBeNull();
+  });
+
+  it('workflowName:false hides the title and renaming, keeps the menu, and setWorkflowName still works', () => {
+    resetWithDocumentName();
+    renderInRoot(
+      <>
+        <RenameButton />
+        <ProjectSelection />
+      </>,
+      { builtInControls: { workflowName: false } },
+    );
+
+    expect(screen.queryByText('My Diagram')).toBeNull();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.getByText('Folder Name')).not.toBeNull();
+    expect(screen.queryByText('Folder Name /')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Project actions' })).not.toBeNull();
+
+    fireEvent.click(screen.getByText('Rename'));
+    expect(useStore.getState().workflowName).toBe('Renamed Elsewhere');
+    expect(screen.queryByText('Renamed Elsewhere')).toBeNull();
   });
 
   it('workflowRename:false renders a plain, non-interactive title; setWorkflowName still works through the action', () => {
@@ -133,5 +163,34 @@ describe('ProjectSelection builtInControls', () => {
 
     fireEvent.click(editableTitle);
     expect(screen.getByRole('textbox')).not.toBeNull();
+  });
+});
+
+describe('ProjectSelection in read-only mode', () => {
+  beforeEach(() => {
+    useModalStore.setState({ isOpen: false, modal: null });
+  });
+
+  it('shows Import disabled, and choosing it opens nothing', () => {
+    renderProjectSelection({});
+    act(() => useStore.setState({ isReadOnly: true }));
+
+    openProjectMenu();
+    const importItem = screen.getByRole('menuitem', { name: 'Import' });
+    expect(importItem.getAttribute('aria-disabled')).toBe('true');
+    expect(screen.getByRole('menuitem', { name: 'Export' }).getAttribute('aria-disabled')).toBeNull();
+
+    fireEvent.click(importItem);
+    expect(useModalStore.getState().isOpen).toBe(false);
+  });
+
+  it('opens the import modal from the menu while editable', () => {
+    renderProjectSelection({});
+
+    openProjectMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Import' }));
+
+    expect(useModalStore.getState().isOpen).toBe(true);
+    expect(useModalStore.getState().modal?.title).toBe(i18n.t('importExport.import'));
   });
 });

@@ -1,5 +1,6 @@
 import { Select as SelectBase } from '@base-ui/react/select';
-import { Check } from '@phosphor-icons/react';
+import checkBoldIcon from '@iconify-icons/ph/check-bold';
+import { Icon } from '@ui/components/icon';
 import type { ItemSize } from '@ui/shared/types/item-size';
 import clsx from 'clsx';
 
@@ -23,7 +24,7 @@ export function SelectOption({ icon, value, label, size = 'medium', disabled }: 
       {icon}
       {label}
       <SelectBase.ItemIndicator className={listItemStyles['indicator']}>
-        <Check weight="bold" />
+        <Icon icon={checkBoldIcon} />
       </SelectBase.ItemIndicator>
     </SelectBase.Item>
   );

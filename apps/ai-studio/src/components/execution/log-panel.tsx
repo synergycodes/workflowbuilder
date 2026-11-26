@@ -1,3 +1,4 @@
+import linkBreakIcon from '@iconify-icons/ph/link-break';
 import { CaretDown } from '@phosphor-icons/react';
 import { Icon, useSingleSelectedElement, useStore } from '@workflowbuilder/sdk';
 import { Chip } from '@workflowbuilder/ui';
@@ -180,11 +181,10 @@ export function ExecutionLogPanel() {
   const status = useExecutionStore((state) => state.status);
   const executionId = useExecutionStore((state) => state.executionId);
   const isCollapsed = useExecutionStore((state) => state.isLogCollapsed);
-  // Clicking a node (incl. its flag marker) selects it on the canvas; the
-  // highlight derives from that selection, so it clears on deselect.
+  // The highlight derives from the canvas selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
-  const { leftOffset } = useLeftPanelAnchor();
-  const { rightOffset } = useRightPanelAnchor();
+  const { leftEdge } = useLeftPanelAnchor();
+  const { rightEdge } = useRightPanelAnchor();
   const [dock, setDock] = useState<HTMLElement | null>(null);
   useSnackbarOffset(dock);
 
@@ -284,8 +284,8 @@ export function ExecutionLogPanel() {
       className={clsx(styles['dock'], { [styles['dock--collapsed']]: isCollapsed })}
       style={
         {
-          '--log-dock-left': `${leftOffset}px`,
-          '--log-dock-right': `${rightOffset}px`,
+          '--log-dock-left': `${leftEdge}px`,
+          '--log-dock-right': `${rightEdge}px`,
           '--log-body-height': bodyHeight === undefined ? undefined : `${bodyHeight}px`,
         } as React.CSSProperties
       }
@@ -324,7 +324,7 @@ export function ExecutionLogPanel() {
         <Chip
           label={runStatus.label}
           size="l"
-          prefixIcon={status === 'incomplete' ? <Icon name="LinkBreak" /> : undefined}
+          prefixIcon={status === 'incomplete' ? <Icon icon={linkBreakIcon} /> : undefined}
           className={clsx(styles['chip'], styles[`chip--${runStatus.tone}`])}
         />
       </div>

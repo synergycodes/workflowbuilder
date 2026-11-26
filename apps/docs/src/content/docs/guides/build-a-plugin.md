@@ -64,22 +64,103 @@ type ComponentDecoratorOptions<P = object> =
 - **`place`** — where to render relative to the slot's host:
   - `'before'` (default) — render your content before the host.
   - `'after'` — render after.
-  - `'wrapper'` — wrap the host entirely (your `content` receives the host as children).
-- **`content`** — the React component to render.
+  - `'wrapper'` — wrap the host entirely. Your `content` receives `props` (the host's props after `modifyProps`), `component` (the undecorated host, to render it again with other props) and `children` (the host already rendered). Return `children` to keep the host, or something else to replace it. Type it with `WorkflowBuilderDecoratorWrapperProps<Props>`.
+- **`content`** — the React component to render. With `'before'` and `'after'` it receives only `props`.
 - **`modifyProps`** — function receiving the host's props, returning modified props.
-- **`priority`** — higher = rendered first. Default `0`.
+- **`priority`** — higher = rendered first. Default `0`. For wrappers, see [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot).
 - **`name`** — unique identifier within the slot; prevents duplicate registration across calls.
+
+### Setting props or wrapping a slot
+
+Set props through `modifyProps`: it runs before every wrapper, so it composes with any of them. Keep `place: 'wrapper'` for logic that needs hooks, and let only one wrapper per slot render `component`, because `component` is always the bare host without the other decorators. With several wrappers the highest `priority` wraps deepest. A wrapper that replaces content with the lowest `priority` discards the output of every other wrapper on that slot while it replaces; give it the highest `priority` to keep the other wrappers around what it renders.
 
 ### Available slots
 
-| Slot name                | Where it renders                        |
-| ------------------------ | --------------------------------------- |
-| `OptionalAppChildren`    | App-level children (portals, providers) |
-| `OptionalEdgeProperties` | Edge properties panel                   |
-| `OptionalHooks`          | Invisible provider/hook slot            |
-| `OptionalNodeContent`    | Inside nodes (receives `nodeId` prop)   |
+| Slot name                | Where it renders                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
+| `OptionalAppChildren`    | App-level children (portals, providers)                                                     |
+| `OptionalEdgeProperties` | Edge properties panel                                                                       |
+| `OptionalHooks`          | Invisible provider/hook slot                                                                |
+| `OptionalNodeContent`    | Inside nodes (receives `nodeId` prop)                                                       |
+| `OptionalNodeOverlay`    | Layer over the whole canvas node, empty by default, for a ring, veil or progress (`nodeId`) |
+| `OptionalNodeCorner`     | Top-right corner of the canvas node; holds the validation `Status` by default (`nodeId`)    |
+| `OptionalNodeHeaderEnd`  | End of the canvas node's header, empty by default, for a run indicator (`nodeId`)           |
+| `OptionalNodeFooter`     | Below the canvas node's content, empty by default, for a `NodeFooter` (`nodeId`)            |
+| `OptionalEdgePath`       | Path of every built-in edge; draws `EdgePath` by default (`EdgePathProps`)                  |
 
 The editor header, the palette and the properties panel have no slots: see [Built-in interface: hide, move, add](#built-in-interface-hide-move-add). A decorator registered on one of the slots that 4.0 removed logs a warning naming its replacement and renders nothing; the 4.0 changelog lists them.
+
+The four node slots render on the canvas only, not on palette entries, and only the built-in node templates render them: a [custom node template](/guides/add-a-custom-node/#7-optional-custom-node-template) has to render them itself. `OptionalNodeOverlay` and `OptionalNodeCorner` sit inside `NodePanel.Overlay`, a layer positioned absolutely over the whole node, so their content positions itself. The layer is `pointer-events: none`, so interactive content in these slots sets `pointer-events: auto`. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render as siblings of it inside the overlay, not in the corner:
+
+```tsx
+import {
+  type OptionalNodeCorner,
+  type WorkflowBuilderDecoratorWrapperProps,
+  registerComponentDecorator,
+} from '@workflowbuilder/sdk';
+import { NodeRunBadge, type NodeRunStatusPreset, runStatusPresets } from '@workflowbuilder/ui';
+
+// Your app's own run state.
+import { useExecutionStore } from './execution-store';
+
+type CornerProps = React.ComponentProps<typeof OptionalNodeCorner>;
+
+// Your app's run states mapped to presets; `idle` has none.
+const presetByStatus: Partial<Record<string, NodeRunStatusPreset>> = {
+  running: runStatusPresets.running,
+  completed: runStatusPresets.completed,
+  failed: runStatusPresets.failed,
+};
+
+registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
+  place: 'wrapper',
+  name: 'run-badge',
+  content: ({ props, children }: WorkflowBuilderDecoratorWrapperProps<CornerProps>) => {
+    const state = useExecutionStore((s) => s.nodeStates[props.nodeId]);
+    // `idle` nodes have an entry too: without a preset check every node loses its validation badge once a run starts.
+    const preset = state && presetByStatus[state.status];
+    return preset ? <NodeRunBadge {...preset.badge} /> : children;
+  },
+});
+```
+
+`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` (and `sourceHandle`, to tell a branch the run took from one it pruned) and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. To recolour a run state it also passes `tone`: a name from `EDGE_RUN_TONES` or a custom tone defined in CSS (see [Edge](/ui-library/diagram-components/edge/#run-tones)). `tone` without `runState` is ignored, and edge tones are a separate list from node tones, so keep one status-to-tone map per element. Rendering `component` drops any wrapper inside it, so give this decorator a high `priority`: the highest one wraps innermost. Nothing is written to the edge data, the store or undo history:
+
+```tsx
+import {
+  type EdgePathProps,
+  type WorkflowBuilderDecoratorWrapperProps,
+  registerComponentDecorator,
+} from '@workflowbuilder/sdk';
+
+// Your app's own run state, mapped to an EdgeRunState or undefined.
+import { edgeRunState, useExecutionStore } from './execution-store';
+
+registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+  place: 'wrapper',
+  name: 'edge-run-path',
+  priority: 100,
+  content: ({ props, component: Path, children }: WorkflowBuilderDecoratorWrapperProps<EdgePathProps>) => {
+    const runState = useExecutionStore((s) =>
+      edgeRunState(s.nodeStates[props.source], s.nodeStates[props.target], props.sourceHandle),
+    );
+    return runState ? <Path {...props} runState={runState} /> : children;
+  },
+});
+```
+
+`edgeEndpoint` on `<WorkflowBuilder.Root>` sets the terminator at the target end (`arrow`, `circle`, or `none` by default), in the colour of the line, for the built-in edges, the edge drawn while connecting and custom edges drawn with `OptionalEdgePath` / `EdgePath`. A custom edge on `EnhancedBaseEdge` passes `endpoint` together with the path `style` from `useEdgeStyle`. The built-in edges do not draw `edge.markerEnd`, because a React Flow marker keeps one colour in every state. To override the terminator for one edge, set `endpoint` through `modifyProps`, so it composes with the run wrapper above (see [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot)):
+
+```tsx
+registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+  name: 'loop-back-endpoint',
+  modifyProps: (props) => (props.edgeId === 'loop-back' ? { ...props, endpoint: 'circle' } : props),
+});
+```
+
+A custom edge template renders `<OptionalEdgePath edgeId={id} source={source} target={target} sourceHandle={sourceHandleId} path={path} state={selected ? 'selected' : 'default'} hovered={hovered} />` to get the same states, or `EdgePath` when it wants no slot.
+
+A second plugin that changes the path shares this slot with the run-state wrapper; [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot) says how the two compose.
 
 ### Example
 
@@ -136,8 +217,9 @@ Your own UI in the editor header, the palette and the properties panel does **no
 | run a command from your own control | an action from `useWorkflowBuilderActions()`, e.g. `openTemplates()`         |
 | hide a built-in control             | a key in `builtInControls` on `<WorkflowBuilder.Root>`                       |
 | add your own UI                     | a component rendered under `<WorkflowBuilder.Root>`: `…Content`, `…MenuItem` |
+| supply what only your app can do    | an `EditorHeader…` supply component: Clean up, Save as PDF, version, Publish |
 
-Six `…Content` components cover the editor header, palette and properties-panel areas: `EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`. Two `…MenuItem` components add an item to a built-in menu behind a separator: `WorkflowMenuItem` (the menu next to the workflow name, after Export, Import and Settings) and `PropertiesPanelMenuItem`. Render any of them anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component, or inside a node's properties form.
+Six `…Content` components cover the editor header, palette and properties-panel areas: `EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`. Two `…MenuItem` components add an item to a built-in menu behind a separator: `WorkflowMenuItem` (the menu next to the workflow name, after Export, Import, Save as PDF and Settings) and `PropertiesPanelMenuItem`. Render any of them anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component, or inside a node's properties form.
 
 ### Hide a control and rebuild it in your own order
 
@@ -209,6 +291,34 @@ function ShareControls() {
 }
 ```
 
+### What only your app can provide: Clean up, Save as PDF, version, Publish
+
+Four editor header controls run something the SDK cannot do on its own: moving the nodes, producing a PDF, knowing the version, publishing it. Your app supplies each one with a component that renders nothing; while it is mounted, the built-in control shows and its action runs what you supplied:
+
+| Component                              | Shows                                           | Action                         | Key in `builtInControls` |
+| -------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------ |
+| `<EditorHeaderCleanUp onCleanUp>`      | Clean up (and its items in a narrow header's ⋮) | `cleanUp(direction?)`          | `cleanUp`                |
+| `<EditorHeaderSaveAsPdf onSaveAsPdf>`  | Save as PDF in the workflow menu                | `saveAsPdf()`                  | `saveAsPdf`              |
+| `<EditorHeaderVersion number isDraft>` | the version chip                                | none; `state.version` holds it | `version`                |
+| `<EditorHeaderPublish onPublish>`      | Publish, enabled for a draft version            | `publish()`                    | `publish`                |
+
+```tsx
+import { EditorHeaderCleanUp, EditorHeaderPublish, EditorHeaderVersion, WorkflowBuilder } from '@workflowbuilder/sdk';
+
+<WorkflowBuilder.Root>
+  <WorkflowBuilder.DefaultLayout />
+  <EditorHeaderCleanUp onCleanUp={(direction) => runLayout(direction)} />
+  <EditorHeaderVersion number={version.number} isDraft={version.isDraft} />
+  <EditorHeaderPublish onPublish={publishDraft} />
+</WorkflowBuilder.Root>;
+```
+
+A plugin supplies them the same way as any other UI, through a component it mounts in `OptionalAppChildren`, so a layout plugin can supply only Clean up and a PDF plugin only Save as PDF.
+
+- **Clean up**: a direction different from the current one is set and tracked for undo before `onCleanUp` runs; moving (and tracking) the nodes is your job. While a promise `onCleanUp` returns is pending, Clean up shows as busy and ignores further calls; `state.isCleanUpPending` tells a custom control the same. It is disabled on an empty canvas (`state.isCanvasEmpty`) and does nothing in read-only mode.
+- **Publish** runs only while the supplied version is a draft, also when you call `publish()` yourself.
+- **`state.availableActions`** says which of `cleanUp`, `saveAsPdf` and `publish` is supplied, so a control you build yourself can show exactly when the built-in one would. Hide the built-in with its key and the supply keeps working: `builtInControls={{ cleanUp: false }}` plus your own button calling `cleanUp()`.
+
 ### Boundaries
 
 These are deliberate limits of the model, not bugs:
@@ -219,10 +329,12 @@ These are deliberate limits of the model, not bugs:
 - **Hiding is not blocking.** `builtInControls={{ delete: false }}` removes the button; the Delete key and `deleteSelection()` keep working. Only read-only mode blocks deletion as a whole. `reactFlowProps={{ deleteKeyCode: null }}` disables the key alone: `deleteSelection()` and a decorator's `onDeleteClick` still delete through the same confirmation.
 - **Hiding is app-wide, not per-node.** `builtInControls` hides a control for the whole app; it cannot protect one specific node from deletion. For that, set `deletable: false` on the node itself (a React Flow property), which also blocks the Delete key for that node.
 - **Hiding `paletteToggle` or `propertiesPanelToggle` leaves no way back for the user.** The palette starts collapsed, so hiding `paletteToggle` means it never opens at all unless the app calls `setPaletteOpen(true)` itself. To start with the palette open, call `actions.setPaletteOpen(true)` from [`onLoad`](/guides/configuring-the-editor/#load-behavior). Either sidebar, once collapsed, has only its own expand button (also hidden) to reopen it; an app that hides either toggle must give the user another way in, e.g. a button calling `setPaletteOpen(true)` or `setPropertiesPanelOpen(true)`.
-- **Read-only mode blocks the actions that change the persisted model**: `openTemplates`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection`. Every other action, including `save`, `openExport`, the theme and palette/panel toggles, the palette filter and the language switch, always runs. One exception is not guarded today: `openImport` replaces the whole diagram without checking `isReadOnly`. Hide it explicitly where that matters: `builtInControls={{ import: canEdit }}`. `openSettings` still opens, but the global variables are then read-only inside the modal. A custom button that changes the diagram checks `isReadOnly` itself; the SDK only guards its own actions.
+- **Read-only mode blocks the actions that change the persisted model**: `openTemplates`, `openImport`, `loadWorkflow`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection`, `cleanUp`. Every other action, including `save`, `openExport`, the theme and palette/panel toggles, the palette filter and the language switch, always runs. `openSettings` still opens, but the global variables are then read-only inside the modal. A custom button that changes the diagram checks `isReadOnly` itself; the SDK only guards its own actions.
 - **Content from a node's properties form lives with the form.** It mounts only while the panel is expanded and that tab is active, and unmounts with the form; content meant to be always present belongs in the app tree instead.
 - **An empty area, or a menu with no items, disappears**, and a collapsed sidebar shows only its title and the expand button; its own header content and menu disappear with the rest.
 - **Two `…Content` components in the same area both render; nothing merges them.** Two buttons added from two different places both show up, in mount order.
+- **One supply of each kind is in use: the one mounted last.** A second one logs a warning, and when it unmounts the earlier one is in use again. Plugins mount after your app's own children, so a plugin's supply wins over yours: to use your own `<EditorHeaderSaveAsPdf>`, leave out the plugin that supplies Save as PDF.
+- **A plugin's decorators outlive its Root.** What a plugin registers stays registered after the Root that ran it unmounts, so a later Root without that plugin still renders it. Pass the same `plugins` to Roots that follow each other, or render the supply components in the app tree, which belongs to one Root.
 - **A `…MenuItem` may repeat a built-in label.** Every registered row is keyed by its own identity, so a second "Export" next to the built-in one shows as a separate row rather than colliding with it. Whether two rows with the same text make sense is the app's call.
 - **A canvas node template is the wrong place** for any of these components: it renders once per node on the canvas, not once for the app.
 
@@ -306,3 +418,25 @@ registerPluginTranslation({
 ```
 
 Equivalent to passing `translations` via `<WorkflowBuilder.Root jsonForm={{ translations }} />`. Use whichever is more convenient for your plugin's lifecycle.
+
+## Icons in a plugin
+
+A plugin whose node types, templates or select options name icons registers them in its initializer with `registerIcons`, so the app does not have to list them and removing the plugin removes its icons too. Augment `PluginIconNames` with the same set to type the names; every plugin adds its own, and they count once the app augments `Register` (see [Icons](/guides/configuring-the-editor/#icons)).
+
+```ts
+import coinsIcon from '@iconify-icons/ph/coins';
+import ticketIcon from '@iconify-icons/ph/ticket';
+import { type IconNamesOf, defineIcons, registerIcons } from '@workflowbuilder/sdk';
+
+const pricingIcons = defineIcons({ Coins: coinsIcon, Ticket: ticketIcon });
+
+declare module '@workflowbuilder/sdk' {
+  interface PluginIconNames extends IconNamesOf<typeof pricingIcons> {}
+}
+
+export function plugin(): void {
+  registerIcons(pricingIcons);
+}
+```
+
+An app icon of the same name wins over a plugin icon. Icons fixed in the plugin's components do not need registering: pass the imported data, `<Icon icon={coinsIcon} />`.

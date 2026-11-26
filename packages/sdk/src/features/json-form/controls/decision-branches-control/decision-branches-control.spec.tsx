@@ -6,7 +6,11 @@ vi.mock('./branch-card/branch-card', () => ({
 }));
 
 vi.mock('../../../diagram/nodes/components/placeholder-button/placeholder-button', () => ({
-  PlaceholderButton: () => <button type="button">add</button>,
+  PlaceholderButton: ({ disabled }: { disabled?: boolean }) => (
+    <button type="button" disabled={disabled}>
+      add
+    </button>
+  ),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -39,5 +43,21 @@ describe('DecisionBranchesControl', () => {
     const wrapper = getAllByTestId('branch-card')[0].parentElement;
     expect(wrapper?.className).toContain('branches');
     expect(container.querySelectorAll('[data-testid="branch-card"]')).toHaveLength(2);
+  });
+
+  it.each([true, false])('disables Add branch unless enabled (enabled: %s)', (enabled) => {
+    const Control = decisionBranchesControlRenderer.renderer as unknown as React.ComponentType<Record<string, unknown>>;
+    const { getByRole } = render(
+      <Control
+        data={[]}
+        handleChange={() => {}}
+        path="decisionBranches"
+        enabled={enabled}
+        errors=""
+        uischema={{ type: 'DecisionBranches', scope: '#/properties/decisionBranches' }}
+      />,
+    );
+
+    expect((getByRole('button', { name: 'add' }) as HTMLButtonElement).disabled).toBe(!enabled);
   });
 });

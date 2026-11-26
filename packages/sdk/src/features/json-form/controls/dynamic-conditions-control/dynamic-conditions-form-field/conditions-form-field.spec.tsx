@@ -6,7 +6,7 @@ import type { DynamicCondition } from '../../../../../types/controls';
 import '../../../../i18n/index';
 import { ConditionsFormField } from './conditions-form-field';
 
-vi.mock('@workflow-builder/icons', () => ({ Icon: () => null }));
+vi.mock('../../../../../icon/icon', () => ({ Icon: () => null }));
 vi.mock('../../../../../features/variables/components/variable-text/variable-text', () => ({
   VariableText: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
     <input aria-label="left operand" value={value} onChange={(event) => onChange(event.target.value)} />

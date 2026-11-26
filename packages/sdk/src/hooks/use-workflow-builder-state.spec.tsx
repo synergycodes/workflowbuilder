@@ -3,9 +3,14 @@ import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import '../features/i18n/index';
+import { EditorHeaderSaveAsPdf } from '../features/ui-extensions/components/editor-header-save-as-pdf';
+import { EditorHeaderVersion } from '../features/ui-extensions/components/editor-header-version';
+import { renderInRoot } from '../features/ui-extensions/test-utils';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { setTheme } from './theme';
 import { type WorkflowBuilderState, useWorkflowBuilderState } from './use-workflow-builder-state';
+
+function noop() {}
 
 function renderState() {
   const seen: WorkflowBuilderState[] = [];
@@ -127,6 +132,61 @@ describe('useWorkflowBuilderState', () => {
     const state = renderState();
 
     expect(state.current().workflowName).toBe('');
+  });
+
+  it('isCanvasEmpty follows the store', () => {
+    const state = renderState();
+    expect(state.current().isCanvasEmpty).toBe(true);
+
+    act(() => useStore.setState({ nodes: [{ id: 'a' }] as never }));
+
+    expect(state.current().isCanvasEmpty).toBe(false);
+  });
+
+  it('outside a Root nothing is supplied', () => {
+    const state = renderState();
+
+    expect(state.current().version).toBeNull();
+    expect(state.current().isCleanUpPending).toBe(false);
+    expect(state.current().availableActions).toEqual({ cleanUp: false, saveAsPdf: false, publish: false });
+  });
+
+  it('isCleanUpPending follows the Root registry', () => {
+    const seen: WorkflowBuilderState[] = [];
+    function Consumer() {
+      seen.push(useWorkflowBuilderState());
+      return null;
+    }
+    const { registry } = renderInRoot(<Consumer />);
+
+    act(() => registry.setCleanUpPending(true));
+
+    expect(seen.at(-1)!.isCleanUpPending).toBe(true);
+  });
+
+  it('keeps its identity with header supplies mounted while nothing changed', () => {
+    const seen: WorkflowBuilderState[] = [];
+    function Consumer() {
+      seen.push(useWorkflowBuilderState());
+      return null;
+    }
+    // Fresh elements each call: rerendering the same element object would skip Consumer entirely.
+    const tree = () => (
+      <>
+        <Consumer />
+        <EditorHeaderVersion number={1} isDraft />
+        <EditorHeaderSaveAsPdf onSaveAsPdf={noop} />
+      </>
+    );
+    const { rerender } = renderInRoot(tree());
+    const settled = seen.at(-1)!;
+    const rendersBefore = seen.length;
+
+    rerender(tree());
+
+    expect(seen.length).toBeGreaterThan(rendersBefore);
+    expect(seen.at(-1)).toBe(settled);
+    expect(settled.availableActions.saveAsPdf).toBe(true);
   });
 
   it('returns the same object while nothing changed', () => {

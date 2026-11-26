@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 type Options = {
   withControlOrMeta?: boolean;
+  withShift?: boolean;
   skipTarget?: boolean;
 };
 
@@ -12,11 +13,15 @@ type Options = {
  * Defaults to firing only when the diagram canvas (body / `.react-flow__*`)
  * has focus — text inputs are excluded so typing in a property field
  * doesn't accidentally trigger keyboard shortcuts. Pass `skipTarget: true`
- * to listen globally and `withControlOrMeta: true` to require Ctrl / Cmd
- * to also be down.
+ * to listen globally, `withControlOrMeta: true` to require Ctrl / Cmd
+ * to also be down, and `withShift: true` to require Shift alone.
+ *
+ * `keyCode` matches either `event.key` (`'a'`, `'='`) or `event.code`
+ * (`'Digit1'`). Use a code with `withShift`: Shift changes `event.key`
+ * per keyboard layout (`Shift+1` is `!` on US), the code stays `Digit1`.
  *
  * @param keyCode - xyflow `KeyCode` (single key string or combo).
- * @param options - Optional `skipTarget` / `withControlOrMeta` flags.
+ * @param options - Optional `skipTarget` / `withControlOrMeta` / `withShift` flags.
  * @returns `true` while the key is pressed; `false` otherwise.
  *
  * @category Hooks
@@ -30,9 +35,10 @@ export function useKeyPress(keyCode: KeyCode, options?: Options): boolean {
     (event: KeyboardEvent, pressed: boolean) => {
       const ctrlOrMeta = event.ctrlKey || event.metaKey;
       const canHandleClick =
-        event.key === keyCode &&
+        (event.key === keyCode || event.code === keyCode) &&
         (options?.skipTarget || isReactFlowDiagramTarget(event.target)) &&
-        (!options?.withControlOrMeta || ctrlOrMeta);
+        (!options?.withControlOrMeta || ctrlOrMeta) &&
+        (!options?.withShift || (event.shiftKey && !ctrlOrMeta && !event.altKey));
 
       if (canHandleClick) {
         event.preventDefault();

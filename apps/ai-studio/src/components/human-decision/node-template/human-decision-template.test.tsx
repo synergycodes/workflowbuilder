@@ -8,16 +8,29 @@ import { applyEvent, applySnapshot, resetExecution, useExecutionStore } from '..
 import { nodeEvent, snapshotFrame } from '../../../test/execution-history';
 import { HumanDecisionNodeTemplate } from './human-decision-template';
 
-// The slot is observed through a marker element; the real one renders its children unchanged.
+// The slots are observed through marker elements; the real ones render their children unchanged.
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
-  return {
-    ...actual,
-    Icon: () => null,
-    OptionalNodeContent: ({ nodeId, children }: { nodeId: string; children?: ReactNode }) => (
-      <div data-optional-node-content={nodeId}>{children}</div>
-    ),
-  };
+  const slots = Object.fromEntries(
+    [
+      ['OptionalNodeContent', 'content'],
+      ['OptionalNodeHeaderEnd', 'header-end'],
+      ['OptionalNodeFooter', 'footer'],
+    ].map(([component, name]) => [
+      component,
+      ({ nodeId, children }: { nodeId: string; children?: ReactNode }) => (
+        <div data-slot={name} data-node-id={nodeId}>
+          {children}
+        </div>
+      ),
+    ]),
+  );
+  const NodeOverlaySlots = (props: { nodeId: string; isValid?: boolean }) => (
+    <div data-slot="overlay-slots" data-node-id={props.nodeId}>
+      <actual.NodeOverlaySlots {...props} />
+    </div>
+  );
+  return { ...actual, ...slots, NodeOverlaySlots, Icon: () => null };
 });
 
 declare global {
@@ -170,14 +183,34 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(container.querySelector('[style*="--wb-public-node-icon-color-violet"]')).not.toBeNull();
   });
 
-  it('renders the actions inside the OptionalNodeContent slot, where the execution markers mount', () => {
+  it('renders the actions inside the OptionalNodeContent slot', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
     );
 
-    const slot = container.querySelector('[data-optional-node-content="human-1"]');
+    const slot = container.querySelector('[data-slot="content"][data-node-id="human-1"]');
     expect(slot).not.toBeNull();
     expect(slot?.querySelectorAll('.react-flow__handle.source')).toHaveLength(2);
+  });
+
+  it('puts the overlay slots in the node overlay with the validation status, the header-end slot last', () => {
+    render(
+      <HumanDecisionNodeTemplate
+        id="human-1"
+        icon="UserCheck"
+        label="Human decision"
+        description=""
+        isValid={false}
+        data={data}
+      />,
+    );
+
+    const overlaySlots = container.querySelector('[data-slot="overlay-slots"][data-node-id="human-1"]');
+    expect(overlaySlots?.parentElement?.className).toMatch(/overlay/);
+    expect(overlaySlots?.querySelector('[class*="status-container--invalid"]')).toBeInstanceOf(HTMLElement);
+    expect(container.querySelector('[data-slot="content"] [class*="status-container"]')).toBeNull();
+    const headerEnd = container.querySelector('[data-slot="header-end"][data-node-id="human-1"]');
+    expect(headerEnd?.parentElement?.lastElementChild).toBe(headerEnd);
   });
 
   it('follows the layout direction: handles hang below and above in a top-down diagram', () => {
@@ -196,13 +229,13 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(handles(container, 'target').map((handle) => handle.dataset['handlepos'])).toEqual(['top']);
   });
 
-  it('shows only the header in the palette preview: no handles, no slot', () => {
+  it('shows only the header in the palette preview: no handles, no slots', () => {
     render(
       <HumanDecisionNodeTemplate id="" icon="UserCheck" label="Human decision" description="" showHandles={false} />,
     );
 
     expect(container.querySelectorAll('.react-flow__handle')).toHaveLength(0);
-    expect(container.querySelector('[data-optional-node-content]')).toBeNull();
+    expect(container.querySelector('[data-slot]')).toBeNull();
     expect(container.textContent).toContain('Human decision');
   });
 
@@ -229,16 +262,45 @@ describe('HumanDecisionNodeTemplate', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
     );
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
     expect(decideButton()).toBeUndefined();
 
     parkOnHuman1();
-    expect(container.textContent).toContain('Waiting for decision');
-    expect(decideButton()).toBeDefined();
+    expect(container.textContent).toContain('Decision needed');
+    expect(decideButton()?.closest('[data-slot="footer"][data-node-id="human-1"]')).not.toBeNull();
 
     act(() => applyEvent(nodeEvent('node_completed', 'human-1')));
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
     expect(decideButton()).toBeUndefined();
+  });
+
+  it('clears the wait and Decide on Reset', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+    expect(decideButton()).toBeDefined();
+
+    act(() => resetExecution());
+
+    expect(container.textContent).not.toContain('Decision needed');
+    expect(decideButton()).toBeUndefined();
+  });
+
+  it('keeps each action port in its content row while the wait shows in the footer', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+
+    const footer = container.querySelector('[data-slot="footer"]');
+    expect(footer?.contains(decideButton()!)).toBe(true);
+    const sources = handles(container, 'source');
+    expect(sources.map((handle) => handle.parentElement?.textContent)).toEqual(['Approve', 'Reject']);
+    for (const handle of sources) {
+      expect(handle.closest('[data-slot="content"]')).not.toBeNull();
+      expect(footer?.contains(handle)).toBe(false);
+    }
   });
 
   it('keeps the wait off while the run is cancelling, since the backend refuses a decision then', () => {
@@ -248,7 +310,7 @@ describe('HumanDecisionNodeTemplate', () => {
 
     act(() => applySnapshot(snapshotFrame('cancelling')));
 
-    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(container.textContent).not.toContain('Decision needed');
   });
 
   it('names Decide after its node, and a press on it does not drag the node', () => {

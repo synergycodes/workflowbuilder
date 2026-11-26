@@ -1,19 +1,23 @@
+import downloadSimpleIcon from '@iconify-icons/ph/download-simple';
+import exportIcon from '@iconify-icons/ph/export';
 import type { MenuItemProps } from '@workflowbuilder/ui';
 import i18n from 'i18next';
 
-import { Icon } from '@workflow-builder/icons';
+import type { WorkflowBuilderActions } from '../../../hooks/use-workflow-builder-actions';
+import { Icon } from '../../../icon/icon';
 
-import { openExportModal } from '../../integration/components/import-export/export-modal/open-export-modal';
-import { openImportModal } from '../../integration/components/import-export/import-modal/open-import-modal';
-
-export function getExportImportItems(visible: { export: boolean; import: boolean }): MenuItemProps[] {
+export function getExportImportItems(
+  visible: { export: boolean; import: boolean },
+  { openExport, openImport }: Pick<WorkflowBuilderActions, 'openExport' | 'openImport'>,
+  isReadOnly: boolean,
+): MenuItemProps[] {
   return [
     ...(visible.export
       ? [
           {
             label: i18n.t('importExport.export'),
-            icon: <Icon name="Export" />,
-            onClick: openExportModal,
+            icon: <Icon icon={exportIcon} />,
+            onClick: openExport,
           },
         ]
       : []),
@@ -21,8 +25,9 @@ export function getExportImportItems(visible: { export: boolean; import: boolean
       ? [
           {
             label: i18n.t('importExport.import'),
-            icon: <Icon name="DownloadSimple" />,
-            onClick: openImportModal,
+            icon: <Icon icon={downloadSimpleIcon} />,
+            onClick: openImport,
+            disabled: isReadOnly,
           },
         ]
       : []),

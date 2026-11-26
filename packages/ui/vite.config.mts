@@ -17,12 +17,14 @@ const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 const componentEntries = [
   'accordion',
   'avatar',
+  'badge-label',
   'button',
   'checkbox',
   'chip',
   'collapsible',
   'date-picker',
   'edge',
+  'icon',
   'input',
   'menu',
   'modal',
@@ -38,7 +40,7 @@ const componentEntries = [
   'tooltip',
 ] as const;
 
-const externalPackages = ['@base-ui/react', '@phosphor-icons/react', 'react-textarea-autosize'];
+const externalPackages = ['@base-ui/react', 'react-textarea-autosize'];
 const externalModules = new Set(['react', 'react-dom', 'react/jsx-runtime']);
 
 function getEntries(): Record<string, string> {
@@ -136,7 +138,7 @@ export default defineConfig({
     libInjectCss(),
     // A stray *.spec.mts in the ts program stalls this build for 15+ minutes
     // with no output - keep every spec shape excluded.
-    dts({ entryRoot: 'src', exclude: ['**/*.spec.{ts,tsx,mts}', 'vitest.setup.ts'] }),
+    dts({ entryRoot: 'src', exclude: ['**/*.spec.{ts,tsx,mts}', 'vitest.setup.ts', '**/test-utils.ts'] }),
     copyTokenStyles(),
     combineCssBundle(rootDirectory),
     ...(process.env.BUNDLE_STATS ? bundleStatsPlugins() : []),

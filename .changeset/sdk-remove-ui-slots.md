@@ -11,4 +11,4 @@ The 3.x way of extending the editor header, the palette and the properties panel
 - `onDuplicateClick` on `ProjectSelectionProps` -> `WorkflowMenuItem`;
 - `onMenuHeaderClick` on `WorkflowBuilderPropertiesPanelProps` -> `PropertiesPanelMenuItem`;
 - the `PropertiesPanelFooter` alias -> `PropertiesPanelFooterContent`;
-- `ProjectSelection`, `ProjectSelectionProps` and the `'ProjectSelection'` slot -> no direct replacement: menu items go through `WorkflowMenuItem`, `builtInControls` hides `settings` and `workflowRename`, and an own title is built from `useWorkflowBuilderState().workflowName` with `setWorkflowName` and `openSettings` from `useWorkflowBuilderActions()`.
+- `ProjectSelection`, `ProjectSelectionProps` and the `'ProjectSelection'` slot -> no direct replacement: menu items go through `WorkflowMenuItem`, `builtInControls` hides `settings` and `workflowRename`, the built-in title hides with `builtInControls={{ workflowName: false, folderName: false }}`, and an own title is built from `useWorkflowBuilderState().workflowName` with `setWorkflowName` and `openSettings` from `useWorkflowBuilderActions()`.

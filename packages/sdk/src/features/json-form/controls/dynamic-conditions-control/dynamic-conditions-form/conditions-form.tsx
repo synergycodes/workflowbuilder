@@ -1,8 +1,7 @@
+import plusCircleIcon from '@iconify-icons/ph/plus-circle';
 import { Button } from '@workflowbuilder/ui';
 import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-import { Icon } from '@workflow-builder/icons';
 
 import styles from './conditions-form.module.css';
 
@@ -10,6 +9,7 @@ import type { DynamicCondition } from '../../../../../features/json-form/types/c
 import { closeModal } from '../../../../../features/modals/stores/use-modal-store';
 import { useSingleSelectedElement } from '../../../../../features/properties-bar/use-single-selected-element';
 import { VARIABLES_TYPES_NOT_PRIMITIVE } from '../../../../../features/variables/constants';
+import { Icon } from '../../../../../icon/icon';
 import { useStore } from '../../../../../store/store';
 import { useNodeVariables } from '../../../../variables/hooks/use-node-variables';
 import { getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
@@ -116,7 +116,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
           size="s"
           variant="ghost-secondary"
           shape="square"
-          prefixIcon={<Icon name="PlusCircle" />}
+          prefixIcon={<Icon icon={plusCircleIcon} />}
           aria-label={t('conditions.add')}
           onClick={addCondition}
           disabled={isReadOnly}

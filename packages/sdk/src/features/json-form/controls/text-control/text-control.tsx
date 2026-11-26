@@ -5,6 +5,9 @@ import type { TextControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
+// `FieldSchema` admits only `number`, but a schema from outside the SDK may say `integer`.
+const NUMBER_TYPES: ReadonlySet<string> = new Set(['number', 'integer']);
+
 function TextControl(props: TextControlProps) {
   const { schema, uischema, enabled, data, required, errors, path, handleChange } = props;
 
@@ -12,7 +15,7 @@ function TextControl(props: TextControlProps) {
   const { placeholder, disabled } = uischema;
   const isDisabled = !enabled || disabled === true;
 
-  const isNumberInput = type === 'number';
+  const isNumberInput = NUMBER_TYPES.has(type);
   const hasErrors = errors.length > 0;
 
   const [inputValue, setInputValue] = useState<string>('');

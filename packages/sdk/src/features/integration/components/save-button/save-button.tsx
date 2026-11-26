@@ -1,30 +1,25 @@
+import floppyDiskIcon from '@iconify-icons/ph/floppy-disk';
 import { NavButton } from '@workflowbuilder/ui';
-import { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
-import { IntegrationContext } from '../integration-variants/context/integration-context-wrapper';
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { Icon } from '../../../../icon/icon';
 import { SavingStatus } from '../saving-status/saving-status';
 
 export function SaveButton() {
   const { t } = useTranslation();
-  const { onSave } = useContext(IntegrationContext);
-
-  function handleSave() {
-    onSave({ isAutoSave: false });
-  }
+  const { save } = useWorkflowBuilderActions();
 
   return (
     <NavButton
       aria-label={t('tooltips.save')}
       size="s"
-      onClick={handleSave}
+      onClick={() => void save()}
       tooltip={t('tooltips.save')}
       prefixIcon={
         <>
           <SavingStatus />
-          <Icon name="FloppyDisk" />
+          <Icon icon={floppyDiskIcon} />
         </>
       }
     />

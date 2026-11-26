@@ -1,13 +1,13 @@
+import xIcon from '@iconify-icons/ph/x';
 import { NavButton, SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mention, type MentionDataItem, MentionsInput, type MentionsInputProps } from 'react-mentions-ts';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './variable-text.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { getNodeByIdAction } from '../../../../store-get-actions/stores/use-store-get-actions';
 import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY, variableTypeInfoByType } from '../../constants';
@@ -168,7 +168,7 @@ export function VariableText({
             <NavButton
               aria-label={t('common.close')}
               tooltip={t('common.close')}
-              prefixIcon={<Icon name="X" />}
+              prefixIcon={<Icon icon={xIcon} />}
               onMouseDown={(event: React.MouseEvent) => {
                 event.stopPropagation();
                 handleClose();

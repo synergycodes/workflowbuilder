@@ -1,10 +1,10 @@
+import minusCircleIcon from '@iconify-icons/ph/minus-circle';
 import i18n from 'i18next';
 import { useCallback } from 'react';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './modal-schema-builder-variable-config.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { closeModal, openModal } from '../../../modals/stores/use-modal-store';
 import {
   PaneRemoveVariable,
@@ -32,7 +32,7 @@ function ModalSchemaBuilderVariableRemoval(props: Props) {
 export function openModalSchemaBuilderVariableRemoval(props: Props) {
   openModal({
     content: <ModalSchemaBuilderVariableRemoval {...props} />,
-    icon: <Icon name="MinusCircle" />,
+    icon: <Icon icon={minusCircleIcon} />,
     title: i18n.t('workflowsSettings.tab.removeVariable'),
   });
 }

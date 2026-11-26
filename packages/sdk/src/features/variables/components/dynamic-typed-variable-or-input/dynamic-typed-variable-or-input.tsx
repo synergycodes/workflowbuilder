@@ -1,14 +1,16 @@
+import bracketsCurlyIcon from '@iconify-icons/ph/brackets-curly';
+import pencilSimpleIcon from '@iconify-icons/ph/pencil-simple';
 import { NavButton, Tooltip } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
 import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './dynamic-typed-variable-or-input.module.css';
 
 import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
+import { Icon } from '../../../../icon/icon';
 import { getIsStringVariableReference } from '../../utils/keys/get-is-string-variable-reference';
 import { DynamicTypedInput } from '../dynamic-typed-input/dynamic-typed-input';
 import { VariableSelect } from '../variable-select/variable-select';
@@ -89,7 +91,7 @@ export function DynamicTypedVariableOrInput({
             onClick={handleToggleMode}
             disabled={isDisabled}
           >
-            <Icon name="PencilSimple" />
+            <Icon icon={pencilSimpleIcon} />
           </NavButton>
         }
       />
@@ -117,7 +119,7 @@ export function DynamicTypedVariableOrInput({
           >
             <Tooltip>
               <Tooltip.Trigger>
-                <Icon name="BracketsCurly" />
+                <Icon icon={bracketsCurlyIcon} />
               </Tooltip.Trigger>
               <Tooltip.Content>{t('variables.pickVariable')}</Tooltip.Content>
             </Tooltip>

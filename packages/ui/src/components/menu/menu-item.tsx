@@ -1,5 +1,6 @@
 import { Menu as MenuBase } from '@base-ui/react/menu';
-import { Check } from '@phosphor-icons/react';
+import checkBoldIcon from '@iconify-icons/ph/check-bold';
+import { Icon } from '@ui/components/icon';
 import clsx from 'clsx';
 
 import listItemSize from '@ui/shared/styles/list-item-size.module.css';
@@ -35,7 +36,7 @@ export function MenuItem({
         {icon}
         {label}
         <MenuBase.RadioItemIndicator className={listItemStyles['indicator']}>
-          <Check weight="bold" />
+          <Icon icon={checkBoldIcon} />
         </MenuBase.RadioItemIndicator>
       </MenuBase.RadioItem>
     );

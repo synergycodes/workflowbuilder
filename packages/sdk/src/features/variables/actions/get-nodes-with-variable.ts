@@ -1,5 +1,4 @@
-import type { WBIcon } from '@workflow-builder/icons';
-
+import type { WBIcon } from '../../../icon/icon-registry';
 import { getStoreNodes } from '../../../store/slices/diagram-slice/actions';
 import type { MaybeVariableReference } from '../types';
 import { getVariableReferences } from '../utils/keys/get-variable-references';

@@ -51,7 +51,7 @@ function DecisionBranchesControl(props: DecisionBranchesControlProps) {
           enabled={!isDisabled}
         />
       ))}
-      <PlaceholderButton onClick={onAddBranch} label={t('decisionBranches.addBranch')} />
+      <PlaceholderButton onClick={onAddBranch} label={t('decisionBranches.addBranch')} disabled={isDisabled} />
     </div>
   );
 }

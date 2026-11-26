@@ -11,7 +11,7 @@ type RenderInRootOptions = {
 };
 
 /**
- * Renders `ui` under `StrictMode` inside the providers `RootShell` sets up, and returns the Testing
+ * Renders `ui` under `StrictMode` inside the UI extension providers the Root sets up, and returns the Testing
  * Library result plus the Root's registry. `rerender` keeps the providers, so the registry survives.
  */
 export function renderInRoot(

@@ -1,12 +1,12 @@
+import plusIcon from '@iconify-icons/ph/plus';
 import { Button } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './pane-list.module.css';
 
+import { Icon } from '../../../../../../icon/icon';
 import { useStore } from '../../../../../../store/store';
 import { GlobalVariablePreview } from '../../../../components/variable-preview/wrappers/variable-preview-global';
 import { TabHeader } from '../../../global/tab/tab-header';
@@ -35,7 +35,7 @@ export function PaneList({ className, setActivePane, isReadOnly }: Props) {
         <Button
           variant="ghost-secondary"
           size="xs"
-          prefixIcon={<Icon name="Plus" />}
+          prefixIcon={<Icon icon={plusIcon} />}
           onClick={() => setActivePane(VARIABLE_PANE.ADD)}
           disabled={isReadOnly}
         >

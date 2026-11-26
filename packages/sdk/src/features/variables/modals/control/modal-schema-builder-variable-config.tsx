@@ -1,11 +1,12 @@
+import pencilSimpleIcon from '@iconify-icons/ph/pencil-simple';
+import plusCircleIcon from '@iconify-icons/ph/plus-circle';
 import { SnackbarType } from '@workflowbuilder/ui';
 import i18n from 'i18next';
 import { useCallback } from 'react';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './modal-schema-builder-variable-config.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { labelToSnakeCase } from '../../../../utils/text';
 import { closeModal, openModal } from '../../../modals/stores/use-modal-store';
@@ -55,7 +56,7 @@ function ModalSchemaBuilderVariableConfig(props: Props) {
 export function openModalSchemaBuilderVariableConfig(props: Props) {
   openModal({
     content: <ModalSchemaBuilderVariableConfig {...props} />,
-    icon: <Icon name={props.variant === VARIABLE_FORM_VARIANT.ADD ? 'PlusCircle' : 'PencilSimple'} />,
+    icon: <Icon icon={props.variant === VARIABLE_FORM_VARIANT.ADD ? plusCircleIcon : pencilSimpleIcon} />,
     title:
       props.variant === VARIABLE_FORM_VARIANT.ADD
         ? i18n.t('workflowsSettings.tab.addVariable')

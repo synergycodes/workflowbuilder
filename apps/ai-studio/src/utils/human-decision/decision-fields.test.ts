@@ -54,6 +54,7 @@ describe('fieldRows', () => {
       ['replyDraft', 'Reply draft'],
       ['internalReasoning', 'Internal reasoning'],
       ['note', 'note'],
+      ['quantity', 'quantity'],
     ]);
   });
 
@@ -92,7 +93,7 @@ describe('sourceHintOf', () => {
   it('a source that declares only fields the form cannot show', () => {
     const unshowable = {
       type: 'object',
-      properties: { lines: { type: 'array', items: { type: 'string' } }, quantity: { type: 'integer' } },
+      properties: { lines: { type: 'array', items: { type: 'string' } }, quantity: { type: ['integer', 'null'] } },
     };
 
     expect(sourceHintOf('draft-1', 1, fieldRows(unshowable, empty))).toBe('noFields');
@@ -119,7 +120,7 @@ describe('isEveryFieldHidden', () => {
 
 describe('fieldModeOf', () => {
   it('reads every field of the palette preset as Hidden', () => {
-    expect(keysOf(empty).map((key) => fieldModeOf(empty, key))).toEqual(Array.from({ length: 5 }, () => 'hidden'));
+    expect(keysOf(empty).map((key) => fieldModeOf(empty, key))).toEqual(Array.from({ length: 6 }, () => 'hidden'));
   });
 
   it('reads the contract: left out is Hidden, readOnly is Read-only, listed in required is Required', () => {
@@ -137,6 +138,7 @@ describe('fieldModeOf', () => {
       'required',
       'readOnly',
       'editable',
+      'hidden',
       'hidden',
       'hidden',
     ]);
@@ -211,8 +213,11 @@ describe('withFieldMode', () => {
   it('drops a stored field of a type the editor cannot show once another field is picked', () => {
     const stored: JsonSchema = {
       type: 'object',
-      properties: { quantity: { type: 'integer' }, refundAmount: { type: 'number', title: 'Refund amount' } },
-      required: ['quantity'],
+      properties: {
+        lines: { type: 'array', items: { type: 'string' } },
+        refundAmount: { type: 'number', title: 'Refund amount' },
+      },
+      required: ['lines'],
     };
 
     const next = pick(stored, 'refundAmount', 'editable');

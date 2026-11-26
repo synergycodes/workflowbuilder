@@ -1,13 +1,18 @@
 import i18n from 'i18next';
 
+import { trackFutureChange } from '../features/changes-tracker/stores/use-changes-tracker-store';
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
+import { isCleanUpBlocked, isVersionPublishable } from '../features/ui-extensions/header-action-rules';
+import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
 import { openModalWorkflowSettings } from '../features/variables/modals/global/modal-settings';
+import { type LayoutDirection, layoutDirections } from '../node/common';
 import { getStoreSelection } from '../store/slices/diagram-selection/actions';
 import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
 import { useStore } from '../store/store';
 import type { DidSaveStatus } from '../types/integration';
+import { loadDiagramModel } from './load-diagram-model';
 import { getTheme, setTheme } from './theme';
 import { fitDiagramView } from './use-fit-view';
 import type { WorkflowBuilderActions } from './use-workflow-builder-actions';
@@ -17,28 +22,44 @@ const MAX_WORKFLOW_NAME_LENGTH = 128;
 type ActionsSession = {
   save: () => Promise<DidSaveStatus>;
   isActive: () => boolean;
+  /** Where the editor header's host supplies are registered; `null` outside a Root. */
+  registry: UiExtensionRegistry | null;
 };
 
 const store = () => useStore.getState();
 
-export function createWorkflowBuilderActions({ save, isActive }: ActionsSession): WorkflowBuilderActions {
+function isLayoutDirection(value: unknown): value is LayoutDirection {
+  return (layoutDirections as readonly unknown[]).includes(value);
+}
+
+// `cleanUp` never rejects, and the built-in discards its promise, so a host bug would otherwise leave no trace.
+function reportCleanUpFailure(error: unknown) {
+  console.error('[@workflowbuilder/sdk] The supplied Clean up failed:', error);
+}
+
+export function createWorkflowBuilderActions({ save, isActive, registry }: ActionsSession): WorkflowBuilderActions {
   const whileActive =
     <A extends unknown[]>(action: (...parameters: A) => void) =>
     (...parameters: A) => {
       if (isActive()) action(...parameters);
     };
-  const whileEditable = <A extends unknown[]>(action: (...parameters: A) => void) =>
-    whileActive((...parameters: A) => {
-      if (!store().isReadOnly) action(...parameters);
-    });
+  const canEdit = () => isActive() && !store().isReadOnly;
+  const whileEditable =
+    <A extends unknown[]>(action: (...parameters: A) => void) =>
+    (...parameters: A) => {
+      if (canEdit()) action(...parameters);
+    };
+  // Busy starts only after the host returns, so without this a `cleanUp()` inside `onCleanUp` recurses.
+  let isCleanUpHostRunning = false;
 
   return {
     save,
 
     openSettings: whileActive(openModalWorkflowSettings),
-    openImport: whileActive(openImportModal),
+    openImport: whileEditable(openImportModal),
     openExport: whileActive(openExportModal),
     openTemplates: whileActive(openTemplateSelectorModal),
+    loadWorkflow: whileEditable(loadDiagramModel),
 
     toggleReadOnly: whileActive(() => store().setReadOnly(!store().isReadOnly)),
     setReadOnly: whileActive((value: boolean) => store().setReadOnly(value)),
@@ -93,6 +114,50 @@ export function createWorkflowBuilderActions({ save, isActive }: ActionsSession)
       }
 
       store().setWorkflowName(name);
+    }),
+
+    cleanUp: async (direction?: LayoutDirection) => {
+      const { isReadOnly, nodes } = store();
+      const isBlocked = isCleanUpBlocked({ isReadOnly, isCanvasEmpty: nodes.length === 0 });
+      if (!isActive() || !registry || isBlocked || isCleanUpHostRunning) return;
+      const onCleanUp = registry.getHeaderSupply('cleanUp');
+      if (!onCleanUp || registry.isCleanUpPending()) return;
+
+      const current = store().layoutDirection;
+      // `cleanUp` passed straight as an `onClick` receives the click event here.
+      const next = isLayoutDirection(direction) ? direction : current;
+      if (next !== current) {
+        trackFutureChange('layoutDirection', { direction: next });
+        store().setLayoutDirection(next);
+      }
+
+      let result: void | Promise<void>;
+      isCleanUpHostRunning = true;
+      try {
+        result = onCleanUp(next);
+      } catch (error) {
+        reportCleanUpFailure(error);
+        return;
+      } finally {
+        isCleanUpHostRunning = false;
+      }
+      if (!(result instanceof Promise)) return;
+
+      registry.setCleanUpPending(true);
+      try {
+        await result;
+      } catch (error) {
+        reportCleanUpFailure(error);
+      } finally {
+        registry.setCleanUpPending(false);
+      }
+    },
+
+    saveAsPdf: whileActive(() => registry?.getHeaderSupply('saveAsPdf')?.()),
+
+    publish: whileActive(() => {
+      if (registry && isVersionPublishable(registry.getHeaderSupply('version')))
+        registry.getHeaderSupply('publish')?.();
     }),
   };
 }

@@ -25,7 +25,16 @@ import { AiStudioControls } from './ai-studio-controls';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
-  return { ...actual, Icon: ({ name }: { name: string }) => <i data-icon={name} /> };
+  const { namedIcon } = await import('../../test/named-icon');
+  const { default: playIcon } = await import('@iconify-icons/ph/play');
+  const { default: stopIcon } = await import('@iconify-icons/ph/stop');
+  const { default: arrowCounterClockwiseIcon } = await import('@iconify-icons/ph/arrow-counter-clockwise');
+  const namesByIcon = new Map([
+    [playIcon, 'Play'],
+    [stopIcon, 'Stop'],
+    [arrowCounterClockwiseIcon, 'ArrowCounterClockwise'],
+  ]);
+  return { ...actual, Icon: namedIcon(namesByIcon) };
 });
 
 const address = vi.hoisted(() => ({ leaveRunView: vi.fn() }));
@@ -46,6 +55,8 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 function setRunStatus(status: ExecutionStatus) {
   act(() => applySnapshot(snapshotFrame(status, [])));
 }
+
+const gridColor = () => document.documentElement.style.getPropertyValue('--wb-public-canvas-grid-color');
 
 describe('AiStudioControls', () => {
   let container: HTMLDivElement;
@@ -93,6 +104,8 @@ describe('AiStudioControls', () => {
   const labelOf = (name: string) => buttonOf(name)?.getAttribute('aria-label');
 
   const isVisible = () => container.firstElementChild?.classList.contains(styles['container--visible']!);
+
+  const panelTop = () => (container.firstElementChild as HTMLElement | null)?.style.top;
 
   const deleteStartNode = () => {
     startNode.exists = false;
@@ -317,15 +330,72 @@ describe('AiStudioControls', () => {
     expect(labelOf('ArrowCounterClockwise')).toBe('Reset');
   });
 
-  it('keeps the canvas read-only while it shows a run, ended or not, and gives it back on reset', () => {
+  it('keeps the canvas read-only and its grid hidden while it shows a run, ended or not, and gives both back on reset', () => {
     setRunStatus('waiting');
     expect(useStore.getState().isReadOnly).toBe(true);
+    expect(gridColor()).toBe('transparent');
 
     setRunStatus('completed');
     expect(useStore.getState().isReadOnly).toBe(true);
+    expect(gridColor()).toBe('transparent');
 
     act(() => resetExecution());
     expect(useStore.getState().isReadOnly).toBe(false);
+    expect(gridColor()).toBe('');
+  });
+
+  describe('position', () => {
+    let bounds: HTMLDivElement;
+    let boundsTop: number;
+    const observers = new Map<Element, () => void>();
+
+    function reportResize(target: Element) {
+      const callback = observers.get(target);
+      if (!callback) throw new Error('No ResizeObserver watches this element');
+      callback();
+    }
+
+    beforeEach(() => {
+      boundsTop = 82;
+      bounds = document.createElement('div');
+      bounds.id = 'viewport-bounds';
+      bounds.getBoundingClientRect = () => ({ top: boundsTop }) as DOMRect;
+      document.body.prepend(bounds);
+      observers.clear();
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          private readonly targets = new Set<Element>();
+          constructor(private readonly callback: () => void) {}
+          observe(target: Element) {
+            this.targets.add(target);
+            observers.set(target, this.callback);
+          }
+          disconnect() {
+            for (const target of this.targets) observers.delete(target);
+            this.targets.clear();
+          }
+        },
+      );
+      act(() => root.unmount());
+      root = createRoot(container);
+      render();
+    });
+
+    afterEach(() => {
+      bounds.remove();
+    });
+
+    it('starts at the top of the viewport bounds, where the side panels start', () => {
+      expect(panelTop()).toBe('82px');
+    });
+
+    it('follows the panels down when the header wraps onto a second row', () => {
+      boundsTop = 118;
+      act(() => reportResize(bounds));
+
+      expect(panelTop()).toBe('118px');
+    });
   });
 
   describe('without a start node', () => {

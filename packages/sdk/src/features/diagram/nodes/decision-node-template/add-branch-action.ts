@@ -4,6 +4,8 @@ import { createDecisionBranch } from '../../../json-form/controls/decision-branc
 import type { DecisionBranch } from '../../../json-form/types/controls';
 
 export function addBranchToNode(nodeId: string) {
+  if (useStore.getState().isReadOnly) return;
+
   const node = getStoreNode(nodeId);
   if (!node) return;
 

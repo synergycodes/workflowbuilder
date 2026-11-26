@@ -3,6 +3,8 @@ import { type CSSProperties, ReactNode } from 'react';
 
 import styles from './node-icon.module.css';
 
+import { isCssNamePart } from '../../../shared/utils/css-name';
+
 /**
  * Color of a node icon, named by hue. `violet-gradient` is a gradient with a white glyph. Any other
  * name reads `--wb-public-node-icon-color-<name>` and `--wb-public-node-icon-container-background-color-<name>`.
@@ -11,14 +13,11 @@ import styles from './node-icon.module.css';
  */
 export type NodeIconAccent = 'blue' | 'green' | 'orange' | 'violet' | 'gray' | 'violet-gradient' | (string & {});
 
-// The name is spliced into CSS variable names, so anything else counts as no accent.
-const ACCENT_NAME = /^[a-z0-9-]+$/;
-
 export type NodeIconProps = {
   icon: ReactNode;
   /**
-   * Tints the container, hides its border and colors the glyph; `disabled` overrides it and
-   * keeps the border. Without it the icon keeps the default color.
+   * Tints the container and colors the glyph; `disabled` overrides it. Without it the icon keeps
+   * the default color.
    */
   accent?: NodeIconAccent;
   /** Muted glyph and container of the Node Disabled variant. */
@@ -27,16 +26,10 @@ export type NodeIconProps = {
 };
 
 export function NodeIcon({ icon, accent, disabled = false, className }: NodeIconProps) {
-  const isAccented = accent !== undefined && ACCENT_NAME.test(accent);
-
   return (
     <div
-      className={clsx(
-        styles['container'],
-        { [styles['accented']]: isAccented, [styles['disabled']]: disabled },
-        className,
-      )}
-      style={isAccented ? accentStyle(accent) : undefined}
+      className={clsx(styles['container'], { [styles['disabled']]: disabled }, className)}
+      style={isCssNamePart(accent) ? accentStyle(accent) : undefined}
     >
       {icon}
     </div>

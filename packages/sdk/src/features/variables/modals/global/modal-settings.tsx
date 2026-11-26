@@ -1,10 +1,10 @@
+import gearIcon from '@iconify-icons/ph/gear';
 import i18n from 'i18next';
 import { useCallback, useState } from 'react';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './modal-settings.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { useStore } from '../../../../store/store';
 import { openModal } from '../../../modals/stores/use-modal-store';
 import { SETTINGS_TABS, type SettingsTab } from './constants';
@@ -46,7 +46,7 @@ export function openModalWorkflowSettings() {
 
   openModal({
     content: <ModalWorkflowSettings isReadOnly={isReadOnly} />,
-    icon: <Icon name="Gear" />,
+    icon: <Icon icon={gearIcon} />,
     title: i18n.t('workflowsSettings.modalTitle'),
   });
 }

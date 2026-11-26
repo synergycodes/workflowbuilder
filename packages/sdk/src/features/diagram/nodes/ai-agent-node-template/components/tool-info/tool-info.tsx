@@ -7,17 +7,18 @@ import { PlaceholderButton } from '../../../components/placeholder-button/placeh
 import { NodeInfoWrapper } from '../node-info-wrapper/node-wrapper-info';
 
 type Props = PropsWithChildren<{
+  isAddDisabled?: boolean;
   onAddTool?: () => void;
 }>;
 
-export function ToolInfo({ children, onAddTool }: Props) {
+export function ToolInfo({ children, isAddDisabled = false, onAddTool }: Props) {
   const { t } = useTranslation(undefined, { keyPrefix: 'aiTools' });
 
   return (
     <NodeInfoWrapper label={t('title')}>
       <div className={styles['tools-container']}>
         {children}
-        <PlaceholderButton label={t('addTool')} onClick={onAddTool} />
+        <PlaceholderButton label={t('addTool')} onClick={onAddTool} disabled={isAddDisabled} />
       </div>
     </NodeInfoWrapper>
   );

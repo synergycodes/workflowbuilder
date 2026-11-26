@@ -131,7 +131,7 @@ throw new PermanentNodeExecutionError('auth_rejected', 'API key rejected');
 throw new TransientNodeExecutionError('rate_limited', 'Rate limited');
 ```
 
-A permanent failure is not retried at all. A transient one retries up to the profile's `maximumAttempts`, and so does anything thrown unclassified. The error code and the attempt it died on land in the `node_failed` event.
+A permanent failure is not retried at all. A transient one retries up to the profile's `maximumAttempts`, and so does anything thrown unclassified. The error code and the attempt it died on land in the `node_failed` event. `node_completed` and `node_failed` also carry `nextPort`, the edge the run left the node through; how to read it, including runs recorded before it existed, is in the execution-core README under ["Per-node error policy"](https://github.com/synergycodes/workflowbuilder/blob/main/packages/execution-core/README.md#per-node-error-policy).
 
 ### Cancellation and Worker crashes
 

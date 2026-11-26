@@ -1,0 +1,158 @@
+---
+title: Run status
+description: The thirteen design-system run statuses, composed from NodeRunRing, NodeRunIndicator, NodeRunBadge, NodeRunProgress and NodeRunVeil.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import { NodeRunCustomToneExample, RunStatusExample } from '../../../../components/ui-examples/run-status';
+
+A node's run status is drawn with independent parts, each with its own `tone`:
+
+- [`NodeRunRing`](/ui-library/diagram-components/node-run-ring/) - line and halo around the node.
+- [`NodeRunIndicator`](/ui-library/diagram-components/node-run-indicator/) - circle at the end of the header.
+- [`NodeRunBadge`](/ui-library/diagram-components/node-run-badge/) - label above the top-right corner.
+- [`NodeRunVeil`](/ui-library/diagram-components/node-run-veil/) and
+  [`NodeRunProgress`](/ui-library/diagram-components/node-run-progress/) - for skipped and
+  progress-reporting steps.
+
+The library does not know what a status means: the application decides which parts to draw.
+`runStatusPresets` holds the parts of the thirteen statuses of the design system. An application whose
+statuses match spreads a preset onto the parts; one with its own statuses composes the parts itself.
+
+<RunStatusExample client:visible />
+
+Switch the docs theme to see the Dark values. With reduced motion, spinners stop with the arc on top, the
+`heartbeat` halo stays static and the `waiting` halo is hidden.
+
+## Usage
+
+```tsx
+import {
+  NodeDescription,
+  NodeIcon,
+  NodePanel,
+  NodeRunBadge,
+  NodeRunIndicator,
+  NodeRunRing,
+  type NodeRunStatus,
+  NodeRunVeil,
+  runStatusPresets,
+} from '@workflowbuilder/ui';
+import type { ReactNode } from 'react';
+
+type RunStatusNodeProps = { icon: ReactNode; label: string; status: NodeRunStatus };
+
+function RunStatusNode({ icon, label, status }: RunStatusNodeProps) {
+  const preset = runStatusPresets[status];
+
+  return (
+    <NodePanel.Root selected={false}>
+      <NodePanel.Header>
+        <NodeIcon icon={icon} />
+        <NodeDescription label={label} />
+        {preset.indicator && <NodeRunIndicator {...preset.indicator} />}
+      </NodePanel.Header>
+      <NodePanel.Overlay>
+        <NodeRunRing {...preset.ring} />
+        {preset.veil && <NodeRunVeil />}
+        <NodeRunBadge {...preset.badge} />
+      </NodePanel.Overlay>
+    </NodePanel.Root>
+  );
+}
+```
+
+Each preset part has the shape of its component's props. The presets are read-only; to use your own
+copy, spread the part into a new object, for example `{ ...preset.badge, label: t('run.waiting') }`.
+A label holds only the status name: text built from run data, such as `Waiting · since 10:30` or
+`Rejected · by Ewa`, is up to the application.
+Six statuses also carry `footer`, the default message of a
+[`NodeFooter`](/ui-library/diagram-components/node-footer/): `{preset.footer && <NodeFooter {...preset.footer} />}`.
+
+The badge sits in its node's stacking context, so a node rendered later that overlaps it can cover it.
+
+## Statuses
+
+| Status            | Key               | Ring              | Indicator                      | Badge                                       | Footer                            |
+| ----------------- | ----------------- | ----------------- | ------------------------------ | ------------------------------------------- | --------------------------------- |
+| Running           | `running`         | info, `static`    | info, spinner                  | info                                        | none                              |
+| No signal         | `noSignal`        | warning, `static` | warning, `slow` spinner        | warning, Question                           | none                              |
+| Retrying          | `retrying`        | warning, `static` | warning, spinner               | warning, ArrowClockwise                     | none                              |
+| Completed         | `completed`       | success           | success, Check                 | success                                     | none                              |
+| Incomplete        | `incomplete`      | success           | success, Check                 | warning, LinkBreak                          | none                              |
+| Failed            | `failed`          | critical          | critical, Warning              | critical                                    | critical, Step failed             |
+| Rejected          | `rejected`        | inverse           | neutral, `iconTone` inverse, X | inverse                                     | none                              |
+| Waiting for human | `waitingForHuman` | human, `waiting`  | human, Clock                   | human                                       | human, Decision needed            |
+| Waiting external  | `waitingExternal` | info, `waiting`   | info, Clock                    | info                                        | info, Waiting for external system |
+| Waiting until     | `waitingUntil`    | neutral           | neutral, Clock                 | neutral                                     | neutral, Waiting for timer        |
+| Partial join      | `partialJoin`     | neutral           | neutral, Clock                 | neutral                                     | neutral, Waiting for inputs       |
+| Cancelled         | `cancelled`       | neutral           | neutral, X                     | neutral                                     | neutral, Run cancelled            |
+| Skipped           | `skipped`         | neutral           | none                           | neutral, SkipForward, dimmed; `NodeRunVeil` | none                              |
+
+A running step that reports progress adds `NodeRunProgress` and switches the halo to `heartbeat`.
+
+## Colours
+
+Each tone has one palette that every part reads: `--wb-public-node-run-status-stroke-<tone>` for the
+ring line, `-halo-<tone>` for the ring halo (`info`, `warning` and `human` only; the other tones have
+none), `-bg-<tone>` and `-fg-<tone>` for the indicator circle and glyph and for the badge, and
+`-fg-<tone>` for the `NodeFooter` message and icon. They default to the run status tokens
+`--wb-ds-canvas-run-status-*`, which switch with the theme. The `inverse` badge reads the
+`BadgeLabel` Inverse variables instead.
+
+Override a palette variable on `:root` (and `:root[data-theme='dark']`) to recolour a tone in every
+part, or on one part with a `className`:
+
+```css
+.ring-queued {
+  --wb-public-node-run-status-stroke-info: #7c3aed;
+}
+```
+
+<CssVariablesTable slug="run-status" />
+
+## Custom tone
+
+`tone` takes the built-in names in `NODE_RUN_TONES` (type `NodeRunTone`) or a name of your own. To add
+a tone, define its palette and pass the name as `tone`:
+
+```css
+:root {
+  --wb-public-node-run-status-stroke-paused: #7c3aed;
+  --wb-public-node-run-status-halo-paused: #ede9fe;
+  --wb-public-node-run-status-bg-paused: #ede9fe;
+  --wb-public-node-run-status-fg-paused: #5b21b6;
+}
+
+:root[data-theme='dark'] {
+  /* the same names, dark values */
+}
+```
+
+```tsx
+<NodeRunRing tone="paused" halo="static" />
+<NodeRunIndicator tone="paused" icon={<Pause />} />
+<NodeRunBadge tone="paused" label="Paused" />
+```
+
+<NodeRunCustomToneExample client:visible />
+
+Define `stroke`, `bg` and `fg`; `halo` only if the ring uses one. Each variable falls back on its own:
+
+| Part                    | Variable                                            | Fallback          |
+| ----------------------- | --------------------------------------------------- | ----------------- |
+| Ring line               | `--wb-public-node-run-status-stroke-<tone>`         | `stroke-neutral`  |
+| Ring halo               | `--wb-public-node-run-status-halo-<tone>`           | `transparent`     |
+| Indicator circle        | `--wb-public-node-run-status-bg-<tone>`             | `bg-neutral`      |
+| Indicator glyph         | `--wb-public-node-run-status-fg-<iconTone ?? tone>` | `fg-neutral`      |
+| Badge background / text | `--wb-public-node-run-status-{bg,fg}-<tone>`        | `{bg,fg}-neutral` |
+
+The `inverse` badge has no fallback: it renders the `BadgeLabel` Inverse variant. A name that does not
+match `/^[a-z0-9-]+$/` (for example `My Tone`) uses the fallback. Edges have their own tone list, see
+[Edge](/ui-library/diagram-components/edge/).
+
+## Accessibility
+
+The indicator, the progress bar and the badge glyph are hidden from assistive technology; the badge text
+carries the status. Put the status into the node's accessible name (for example `Send email, Failed`) and
+announce changes from one `aria-live="polite"` region, not on every heartbeat.

@@ -1,6 +1,7 @@
 import { Dialog } from '@base-ui/react/dialog';
-import { X } from '@phosphor-icons/react';
+import xIcon from '@iconify-icons/ph/x';
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
+import { Icon } from '@ui/components/icon';
 import type { WithIcon } from '@ui/shared/types/with-icon';
 import clsx from 'clsx';
 import { type ReactNode, forwardRef } from 'react';
@@ -105,7 +106,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                   )}
                 </div>
               </div>
-              {onClose && <NavButton aria-label={closeLabel} onClick={onClose} prefixIcon={<X />} />}
+              {onClose && <NavButton aria-label={closeLabel} onClick={onClose} prefixIcon={<Icon icon={xIcon} />} />}
             </div>
 
             {children && <div className={styles['content']}>{children}</div>}

@@ -94,6 +94,18 @@ describe('RegisteredMenuItem', () => {
     expect(clicks).toEqual([2]);
   });
 
+  it("runs onClick without the menu's click event", () => {
+    const onClick = vi.fn();
+    const { registry } = renderInRoot(
+      <RegisteredMenuItem menu="project" componentName="WorkflowMenuItem" label="Tidy" onClick={onClick} />,
+    );
+
+    const registered = registry.getMenuItems('project')[0].onClick as (event: unknown) => void;
+    registered(new MouseEvent('click'));
+
+    expect(onClick).toHaveBeenCalledWith();
+  });
+
   it('an item without onClick registers none, and gains one when the prop appears', () => {
     const onClick = vi.fn();
     function Producer({ withHandler }: { withHandler: boolean }) {

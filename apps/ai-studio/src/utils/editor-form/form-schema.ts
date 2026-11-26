@@ -39,9 +39,7 @@ export function invalidFieldsOf(errors?: readonly SchemaError[]): ReadonlySet<st
     const missing = error.params['missingProperty'];
     // A field's own error points into it; a missing required field is reported on the object that holds it.
     if (segment !== undefined) {
-      // The editor's validator reports a URI fragment, so a key with a space or a letter like `ł` arrives
-      // percent-encoded. Decoded here until the SDK does it (follow-up: sdk-validator-instance-path).
-      fields.add(decodePointerSegment(decodeURI(segment)));
+      fields.add(decodePointerSegment(segment));
     } else if (typeof missing === 'string') {
       fields.add(missing);
     }

@@ -3,6 +3,31 @@
   --wb-public-edge-color-select: var(--wb-ds-canvas-edge-stroke-active);
   --wb-public-edge-color-hover: var(--wb-ds-canvas-edge-stroke-hover);
   --wb-public-edge-color: var(--wb-ds-canvas-edge-stroke-default);
-  --wb-public-edge-stroke-width-select: 3;
-  --wb-public-edge-stroke-width: 2;
+  --wb-public-edge-run-status-stroke-default: var(--wb-ds-canvas-edge-stroke-default);
+  --wb-public-edge-run-status-stroke-active: var(--wb-ds-canvas-edge-stroke-active);
+  --wb-public-edge-run-status-stroke-success: var(--wb-ds-canvas-edge-stroke-success);
+  --wb-public-edge-run-status-stroke-warning: var(--wb-ds-canvas-edge-stroke-warning);
+  --wb-public-edge-run-status-stroke-disabled: var(--wb-ds-canvas-edge-stroke-disabled);
+  --wb-public-edge-stroke-width: var(--wb-ds-canvas-edge-stroke-regular);
+  --wb-public-edge-dash-running: 6 5;
+  /* Sum of the running dash pattern: change it together with --wb-public-edge-dash-running. */
+  --wb-public-edge-dash-running-period: 11;
+  --wb-public-edge-dash-dashed: 5 4;
+  --wb-public-edge-animation-running: wb-edge-dash-flow 0.5s linear infinite;
+}
+
+/* The build layers only top-level :root rules; these need ui.base explicitly. */
+@layer ui.base {
+  /* One negative period per loop, so the dash travels toward the target without a jump. */
+  @keyframes wb-edge-dash-flow {
+    to {
+      stroke-dashoffset: calc(-1 * var(--wb-public-edge-dash-running-period));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --wb-public-edge-animation-running: none;
+    }
+  }
 }

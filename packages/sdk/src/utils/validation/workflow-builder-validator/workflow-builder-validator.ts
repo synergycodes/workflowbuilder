@@ -52,12 +52,13 @@ const REQUIRED_PROPERTY_REGEX = /required property "(.+)"/;
  * Key differences between the two formats:
  * - instanceLocation uses '#' prefix (e.g. "#/duration") → instancePath without it (e.g. "/duration")
  * - Root location is "#" in cfworker → "" in Ajv
+ * - instanceLocation is passed through encodeURI (e.g. "#/reply%20draft") → instancePath is decoded ("/reply draft")
  * - cfworker has no `params` object → we construct it (needed for `required` errors)
  */
 function mapOutputToErrorObjects(errors: OutputUnit[]): ErrorObject[] {
   return errors.map((output) => {
     // Strip '#' prefix: "#/duration/delayAmount" → "/duration/delayAmount", "#" → ""
-    const instancePath = output.instanceLocation === '#' ? '' : output.instanceLocation.slice(1);
+    const instancePath = output.instanceLocation === '#' ? '' : decodeURI(output.instanceLocation.slice(1));
     const params: Record<string, unknown> = {};
 
     if (output.keyword === 'required') {

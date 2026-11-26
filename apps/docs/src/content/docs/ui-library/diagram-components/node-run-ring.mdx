@@ -1,0 +1,57 @@
+---
+title: NodeRunRing
+description: Run status line and halo around a node.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeRunRingExample } from '../../../../components/ui-examples/run-status';
+
+`NodeRunRing` draws a run status over the node: a 1px line in the colour of its `tone` on top of the
+node stroke, and an optional halo outside the node. It is one of the run status parts; the
+[Run status](/ui-library/diagram-components/run-status/) page shows how they combine.
+
+<NodeRunRingExample client:visible />
+
+## Usage
+
+Place it in [`NodePanel.Overlay`](/ui-library/diagram-components/node-panel/). The line is an inset
+shadow on an absolutely positioned layer, so the node keeps its size.
+
+```tsx
+import { NodePanel, NodeRunRing } from '@workflowbuilder/ui';
+
+<NodePanel.Overlay>
+  <NodeRunRing tone="info" halo="static" />
+</NodePanel.Overlay>;
+```
+
+## Halo
+
+- `static` - a 3px halo.
+- `heartbeat` - pulses between 3px and 6px every 1.4s; a running step that reports progress.
+- `waiting` - pulses between 3px and 7px every 1.8s; a step waiting for a person or a service.
+
+Only `info`, `warning` and `human` have a halo colour; on the other tones the halo is transparent.
+With reduced motion, `heartbeat` stays a static 3px halo and `waiting` shows no halo.
+
+## Selected node
+
+The ring covers the selected stroke, so a selected node under it keeps only its focus ring as the sign of
+selection (see [`NodePanel` states](/ui-library/diagram-components/node-panel/#states)).
+
+## Colours
+
+The line reads `--wb-public-node-run-status-stroke-<tone>` and the halo
+`--wb-public-node-run-status-halo-<tone>`, from the palette shared by all run status parts (see
+[Run status colours](/ui-library/diagram-components/run-status/#colours)). `tone` is a `NodeRunTone` or
+a name of your own; an undefined line falls back to `neutral` and an undefined halo to transparent (see
+[Custom tone](/ui-library/diagram-components/run-status/#custom-tone)).
+
+## Props
+
+<PropsTable slug="node-run-ring" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-run-ring" />

@@ -1,15 +1,18 @@
-import { CaretDown, Network, TreeStructure } from '@phosphor-icons/react';
+import caretDownIcon from '@iconify-icons/ph/caret-down';
+import networkIcon from '@iconify-icons/ph/network';
+import treeStructureIcon from '@iconify-icons/ph/tree-structure';
 import { Menu, type MenuItemProps, NavButton } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 import appBarStyles from '../../app-bar.module.css';
 import styles from './clean-up-button.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { useCleanUp } from './use-clean-up';
 
 export function CleanUpButton() {
   const { t } = useTranslation();
-  const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp, arrange } = useCleanUp();
+  const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp } = useCleanUp();
 
   if (!isAvailable) {
     return null;
@@ -19,12 +22,12 @@ export function CleanUpButton() {
     {
       label: t('header.cleanUp.arrangeHorizontally'),
       selected: layoutDirection === 'RIGHT',
-      onClick: () => arrange('RIGHT'),
+      onClick: () => cleanUp('RIGHT'),
     },
     {
       label: t('header.cleanUp.arrangeVertically'),
       selected: layoutDirection === 'DOWN',
-      onClick: () => arrange('DOWN'),
+      onClick: () => cleanUp('DOWN'),
     },
   ];
 
@@ -40,8 +43,14 @@ export function CleanUpButton() {
         aria-busy={isPending}
         aria-label={label}
         tooltip={label}
-        prefixIcon={layoutDirection === 'DOWN' ? <Network /> : <TreeStructure />}
-        onClick={() => cleanUp(layoutDirection)}
+        prefixIcon={
+          layoutDirection === 'DOWN' ? (
+            <Icon icon={networkIcon} size="inherit" />
+          ) : (
+            <Icon icon={treeStructureIcon} size="inherit" />
+          )
+        }
+        onClick={() => cleanUp()}
       />
       <Menu items={items}>
         <Menu.TriggerButton
@@ -51,7 +60,7 @@ export function CleanUpButton() {
           aria-label={t('header.cleanUp.chooseDirection')}
           tooltip={t('header.cleanUp.chooseDirection')}
         >
-          <CaretDown />
+          <Icon icon={caretDownIcon} size="inherit" />
         </Menu.TriggerButton>
       </Menu>
     </div>

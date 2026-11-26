@@ -36,7 +36,8 @@ export async function subscribe(executionId: string, callback: Subscriber): Prom
 
   return () => {
     subs!.delete(callback);
-    if (subs!.size === 0) {
+    // A stream's cleanup can run twice; by then a newer stream may own a fresh set under this id.
+    if (subs!.size === 0 && subscribers.get(executionId) === subs) {
       subscribers.delete(executionId);
     }
   };

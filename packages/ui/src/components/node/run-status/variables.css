@@ -1,0 +1,29 @@
+/* One palette per tone, read by NodeRunRing (stroke, halo), NodeRunIndicator (bg, fg) and NodeRunBadge (bg, fg). */
+:root {
+  --wb-public-node-run-status-stroke-info: var(--wb-ds-canvas-run-status-stroke-info);
+  --wb-public-node-run-status-stroke-success: var(--wb-ds-canvas-run-status-stroke-success);
+  --wb-public-node-run-status-stroke-warning: var(--wb-ds-canvas-run-status-stroke-warning);
+  --wb-public-node-run-status-stroke-critical: var(--wb-ds-canvas-run-status-stroke-critical);
+  --wb-public-node-run-status-stroke-human: var(--wb-ds-canvas-run-status-stroke-human);
+  --wb-public-node-run-status-stroke-neutral: var(--wb-ds-canvas-run-status-stroke-neutral);
+  --wb-public-node-run-status-stroke-inverse: var(--wb-ds-canvas-run-status-stroke-inverse);
+
+  --wb-public-node-run-status-halo-info: var(--wb-ds-canvas-run-status-halo-info);
+  --wb-public-node-run-status-halo-warning: var(--wb-ds-canvas-run-status-halo-warning);
+  --wb-public-node-run-status-halo-human: var(--wb-ds-canvas-run-status-halo-human);
+
+  --wb-public-node-run-status-bg-info: var(--wb-ds-canvas-run-status-bg-info);
+  --wb-public-node-run-status-bg-success: var(--wb-ds-canvas-run-status-bg-success);
+  --wb-public-node-run-status-bg-warning: var(--wb-ds-canvas-run-status-bg-warning);
+  --wb-public-node-run-status-bg-critical: var(--wb-ds-canvas-run-status-bg-critical);
+  --wb-public-node-run-status-bg-human: var(--wb-ds-canvas-run-status-bg-human);
+  --wb-public-node-run-status-bg-neutral: var(--wb-ds-canvas-run-status-bg-neutral);
+
+  --wb-public-node-run-status-fg-info: var(--wb-ds-canvas-run-status-fg-info);
+  --wb-public-node-run-status-fg-success: var(--wb-ds-canvas-run-status-fg-success);
+  --wb-public-node-run-status-fg-warning: var(--wb-ds-canvas-run-status-fg-warning);
+  --wb-public-node-run-status-fg-critical: var(--wb-ds-canvas-run-status-fg-critical);
+  --wb-public-node-run-status-fg-human: var(--wb-ds-canvas-run-status-fg-human);
+  --wb-public-node-run-status-fg-neutral: var(--wb-ds-canvas-run-status-fg-neutral);
+  --wb-public-node-run-status-fg-inverse: var(--wb-ds-canvas-run-status-fg-inverse);
+}

@@ -11,12 +11,6 @@ tmp
 # air-gap bundle from deploy/ai-studio/pack-offline.sh, if written into the checkout
 ai-studio-offline/
 
-# Emitted declarations from `pnpm --filter @workflow-builder/icons build`
-# (prepare hook). Root + src/ locations are outside `dist/` so need explicit
-# patterns. `global.d.ts` is a source file — don't ignore.
-apps/icons/index.d.ts
-apps/icons/src/*.d.ts
-
 # dependencies
 node_modules
 
@@ -66,6 +60,10 @@ CLAUDE.local.md
 .worktrees/
 
 .playwright-mcp/
+
+# Playwright output of apps/e2e: traces, screenshots, stack logs, the HTML report
+apps/e2e/test-results/
+apps/e2e/playwright-report/
 
 # TypeDoc-generated API reference under apps/docs (built from packages/sdk's
 # barrel by `starlight-typedoc` at `astro build` / `astro dev`). Output is

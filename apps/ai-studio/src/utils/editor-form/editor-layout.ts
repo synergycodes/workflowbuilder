@@ -5,10 +5,10 @@ type EditorControl = { type: 'Text' | 'TextArea' | 'Switch'; scope: string; labe
 
 type EditorLayout = { type: 'VerticalLayout'; elements: EditorControl[] };
 
-// The editor's controls are keyed on its own element types, not on JsonForms' generic `Control`. No `integer`:
-// the SDK text box hands it over as a string, which fails its schema (follow-up: sdk-text-control-integer).
+// The editor's controls are keyed on its own element types, not on JsonForms' generic `Control`.
 const CONTROL_BY_TYPE = new Map<string, EditorControl['type']>([
   ['number', 'Text'],
+  ['integer', 'Text'],
   ['string', 'TextArea'],
   ['boolean', 'Switch'],
 ]);
@@ -22,7 +22,7 @@ function isAddressable(key: string): boolean {
 }
 
 // Structured output types an optional field as `[type, 'null']`. The text area and the switch hand over their own
-// type, so those two are shown; the text box parses only `number`, so a nullable number is not.
+// type, so those two are shown; the text box hands over no `null`, so a nullable number or integer is not.
 function shownType(type: unknown): string | undefined {
   if (typeof type === 'string') {
     return type;
@@ -60,8 +60,6 @@ export function editorLayout(schema: unknown): EditorLayout {
       return [];
     }
     const title = field['title'];
-    // The SDK label translates any text that is an i18n key, so an untitled key like `validation` shows
-    // i18next's notice instead (follow-up: sdk-label-i18n-object-keys).
     return [{ type, scope: `#/properties/${encodePointerSegment(key)}`, label: hasText(title) ? title : key }];
   });
   return { type: 'VerticalLayout', elements };

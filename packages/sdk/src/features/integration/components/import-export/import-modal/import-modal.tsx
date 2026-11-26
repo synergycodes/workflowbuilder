@@ -1,13 +1,14 @@
+import downloadSimpleIcon from '@iconify-icons/ph/download-simple';
 import { Button, SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from '../import-export-modal.module.css';
 
+import { Icon } from '../../../../../icon/icon';
 import { setStoreDataFromIntegration } from '../../../../../store/slices/diagram-slice/actions';
+import { useStore } from '../../../../../store/store';
 import { showTranslatedSnackbar } from '../../../../../utils/show-translated-snackbar';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
 import { closeModal } from '../../../../modals/stores/use-modal-store';
@@ -27,6 +28,12 @@ export function ImportModal() {
 
   const handleImport = useCallback(
     ({ shouldIgnoreWarnings }: { shouldIgnoreWarnings: boolean }) => {
+      // Read-only can switch on while the modal is open: AI Studio sets it when a run starts.
+      if (useStore.getState().isReadOnly) {
+        closeModal();
+        return;
+      }
+
       const { errors, warnings, validatedIntegrationData } = validateIntegrationData(jsonToParse);
 
       setJsonValidation({
@@ -71,7 +78,7 @@ export function ImportModal() {
         {warnings.length > 0 && errors.length === 0 && (
           <Button
             variant="secondary"
-            prefixIcon={<Icon name="DownloadSimple" />}
+            prefixIcon={<Icon icon={downloadSimpleIcon} />}
             onClick={() => handleImport({ shouldIgnoreWarnings: true })}
           >
             {t('importExport.ignoreAndImport')}
@@ -79,7 +86,7 @@ export function ImportModal() {
         )}
         <Button
           variant="primary"
-          prefixIcon={<Icon name="DownloadSimple" />}
+          prefixIcon={<Icon icon={downloadSimpleIcon} />}
           onClick={() => handleImport({ shouldIgnoreWarnings: false })}
         >
           {t('importExport.import')}

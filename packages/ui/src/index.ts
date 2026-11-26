@@ -4,12 +4,14 @@ import './styles/typography.css';
 
 export * from './components/accordion';
 export * from './components/avatar';
+export * from './components/badge-label';
 export * from './components/button';
 export * from './components/checkbox';
 export * from './components/chip';
 export * from './components/collapsible';
 export * from './components/date-picker';
 export * from './components/edge';
+export * from './components/icon';
 export * from './components/input';
 export * from './components/menu';
 export * from './components/modal';

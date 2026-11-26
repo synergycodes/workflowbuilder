@@ -54,6 +54,7 @@ const STRICT_TYPEDOC = {
   excludeNotDocumented: true,
   treatWarningsAsErrors: true,
   entryFileName: '_readme',
+  logLevel: 'Warn',
 };
 
 const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID || '';

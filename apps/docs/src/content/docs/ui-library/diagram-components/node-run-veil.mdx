@@ -1,0 +1,37 @@
+---
+title: NodeRunVeil
+description: Dims a node, for example a skipped step.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeRunVeilExample } from '../../../../components/ui-examples/run-status';
+
+`NodeRunVeil` lays a translucent layer over the whole node. The Skipped
+[run status](/ui-library/diagram-components/run-status/) uses it.
+
+<NodeRunVeilExample client:visible />
+
+## Usage
+
+Place it in [`NodePanel.Overlay`](/ui-library/diagram-components/node-panel/), after the parts it
+should dim.
+
+```tsx
+import { NodePanel, NodeRunRing, NodeRunVeil } from '@workflowbuilder/ui';
+
+<NodePanel.Overlay>
+  <NodeRunRing tone="neutral" />
+  <NodeRunVeil />
+</NodePanel.Overlay>;
+```
+
+Like the other run status parts, it passes HTML attributes such as `className` to its `span`.
+
+## Props
+
+<PropsTable slug="node-run-veil" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-run-veil" />
