@@ -28,15 +28,15 @@ export const useIntegrationStore = create<IntegrationStore>()(
 
 export function loadData(
   loadData: Partial<IntegrationDataFormat>,
-  { loadFailed = false }: { loadFailed?: boolean } = {},
+  { loadFailed = false, restored = false }: { loadFailed?: boolean; restored?: boolean } = {},
 ): { isEmpty: boolean } {
   const hasAnyData = Object.values(loadData).some(Boolean);
   const isEmpty = !loadData.nodes?.length;
   if (hasAnyData) {
     setStoreDataFromIntegration(loadData);
   }
-  // A name alone is applied silently: the welcome template selector follows for an empty diagram.
-  if (!isEmpty && !loadFailed) {
+  // Initial props are not a restore. A restored name alone stays silent: the template selector follows.
+  if (restored && !isEmpty && !loadFailed) {
     showTranslatedSnackbar({
       title: 'restoreDiagramSuccess',
       variant: SnackbarType.SUCCESS,

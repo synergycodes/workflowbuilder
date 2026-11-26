@@ -342,9 +342,50 @@ describe('WorkflowBuilderRoot onLoad', () => {
 
     await renderRoot({ name: 'demo' });
 
-    const restoreToasts = vi
-      .mocked(showTranslatedSnackbar)
-      .mock.calls.filter(([options]) => options.title === 'restoreDiagramSuccess');
-    expect(restoreToasts).toHaveLength(1);
+    expect(restoreToasts()).toHaveLength(1);
+  });
+
+  it('with nothing in localStorage the initial nodes load without the "restored" snackbar', async () => {
+    await renderRoot({ initialNodes: [storedNode] });
+
+    expect(useStore.getState().nodes.map(({ id }) => id)).toEqual(['stored']);
+    expect(restoreToasts()).toHaveLength(0);
+  });
+
+  it('a diagram with nodes from the api load endpoint shows the "restored" snackbar', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ nodes: [storedNode], edges: [] }))),
+    );
+
+    await renderRoot({ integration: apiIntegration });
+
+    expect(restoreToasts()).toHaveLength(1);
+  });
+
+  it.each(['', 'null'])(
+    'an api load answering %j loads the initial nodes without the "restored" snackbar',
+    async (body) => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response(body)),
+      );
+
+      await renderRoot({ integration: apiIntegration, initialNodes: [storedNode] });
+
+      expect(useStore.getState().nodes.map(({ id }) => id)).toEqual(['stored']);
+      expect(restoreToasts()).toHaveLength(0);
+    },
+  );
+
+  it('the props strategy loads the initial nodes without the "restored" snackbar', async () => {
+    await renderRoot({ integration: { strategy: 'props', onDataSave: vi.fn() }, initialNodes: [storedNode] });
+
+    expect(useStore.getState().nodes.map(({ id }) => id)).toEqual(['stored']);
+    expect(restoreToasts()).toHaveLength(0);
   });
 });
+
+function restoreToasts() {
+  return vi.mocked(showTranslatedSnackbar).mock.calls.filter(([options]) => options.title === 'restoreDiagramSuccess');
+}
