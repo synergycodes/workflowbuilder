@@ -11,7 +11,7 @@ const AVATAR =
 export function AvatarExample() {
   return (
     <ComponentPreview>
-      <Avatar username="Ada Lovelace" imageUrl={AVATAR} size="large" />
+      <Avatar username="Ada Lovelace" imageUrl={AVATAR} size="l" />
     </ComponentPreview>
   );
 }

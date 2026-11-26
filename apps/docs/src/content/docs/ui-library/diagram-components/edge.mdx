@@ -26,7 +26,7 @@ from normal document flow.
 `useEdgeStyle` returns an object of CSS properties (`stroke`, `strokeWidth`,
 `transition`, plus `strokeDasharray` and `animation` when the line is dashed or
 running) that you apply directly to the SVG path element representing an edge.
-Besides `state` and `isHovered` it takes `runState` (`pending`, `running`,
+Besides `state` and `hovered` it takes `runState` (`pending`, `running`,
 `completed`, `outOfRun`) to show where the edge stands in an execution run,
 `tone` to pick the colour of that run state (see [Run tones](#run-tones)), and
 `lineType` (`solid`, `dashed`). The colour follows the first match of:
@@ -74,7 +74,7 @@ function LabeledEdge({
   const [hovered, setHovered] = useState(false);
   const state: EdgeState = selected ? 'selected' : 'default';
 
-  const pathStyle = useEdgeStyle({ state, isHovered: hovered });
+  const pathStyle = useEdgeStyle({ state, hovered });
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
@@ -91,7 +91,7 @@ function LabeledEdge({
       {data?.label && (
         <EdgeLabelRenderer>
           <EdgeLabel
-            isHovered={hovered}
+            hovered={hovered}
             state={state}
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
             onMouseEnter={() => setHovered(true)}

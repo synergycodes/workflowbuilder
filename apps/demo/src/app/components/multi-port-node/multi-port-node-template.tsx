@@ -47,7 +47,7 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
               <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
               <NodeDescription label={label} description={description} disabled={disabled} />
             </NodePanel.Header>
-            <NodePanel.Handles isVisible={showHandles}>
+            <NodePanel.Handles visible={showHandles}>
               <Handle id={handleTargetTopId} type="target" position={Position.Top} />
               <Handle id={handleTargetLeftId} type="target" position={Position.Left} />
               <Handle id={handleSourceBottomId} type="source" position={Position.Bottom} />

@@ -32,7 +32,7 @@ export const DecisionNodeContainer = memo(({ id, data, selected }: Props) => {
   const isReadOnly = useStore((store) => store.isReadOnly);
 
   return (
-    <NodeAsPortWrapper isConnecting={!!connectionBeingDragged} targetPortPosition={handleTargetPosition}>
+    <NodeAsPortWrapper connecting={!!connectionBeingDragged} targetPortPosition={handleTargetPosition}>
       <DecisionNodeTemplate
         id={id}
         selected={selected}

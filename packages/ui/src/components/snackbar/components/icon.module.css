@@ -18,7 +18,7 @@
         color: var(--wb-public-snackbar-success-icon-color);
       }
 
-      &.error {
+      &.critical {
         color: var(--wb-public-snackbar-error-icon-color);
       }
 

@@ -1,7 +1,6 @@
 import { Select as SelectBase } from '@base-ui/react/select';
-import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
-import type { ReactNode, SyntheticEvent } from 'react';
+import { type ReactNode, type SyntheticEvent, useRef } from 'react';
 
 import selectButtonStyles from './select-button/select-button.module.css';
 import style from './select.module.css';
@@ -25,7 +24,7 @@ export type SelectBaseProps = {
   className?: string;
   /**
    * Size of the select input
-   * @default 'medium'
+   * @default 'm'
    */
   size?: ItemSize;
   /**
@@ -37,11 +36,6 @@ export type SelectBaseProps = {
    */
   items: SelectItem[];
   /**
-   * Whether the select has an error
-   * @default false
-   */
-  error?: boolean;
-  /**
    * The controlled value of the select.
    */
   value?: SelectValueType;
@@ -52,7 +46,7 @@ export type SelectBaseProps = {
   /**
    * Callback fired when the value of the select changes.
    */
-  onChange?: (event: SyntheticEvent | Event | null, value: SelectValueType) => void;
+  onValueChange?: (value: SelectValueType, event: SyntheticEvent | Event | null) => void;
   /**
    * Whether the select is disabled.
    */
@@ -62,7 +56,7 @@ export type SelectBaseProps = {
    */
   name?: string;
   /**
-   * Whether the user must choose a value before submitting a form.
+   * Whether the user must choose a value before submitting a form. Also adds the required marker next to the label.
    */
   required?: boolean;
   /**
@@ -79,10 +73,6 @@ export type SelectBaseProps = {
    */
   state?: FieldState;
   /**
-   * Adds the required marker next to the label.
-   */
-  isRequired?: boolean;
-  /**
    * Identifies the control; a generated id is used when omitted.
    */
   id?: string;
@@ -93,42 +83,33 @@ export type SelectBaseProps = {
  */
 export function Select({
   className,
-  size = 'medium',
+  size = 'm',
   items,
   placeholder,
-  error = false,
   value,
   defaultValue,
-  onChange,
+  onValueChange,
   disabled,
   name,
   required,
   label,
   helperText,
   state = 'default',
-  isRequired,
   id,
 }: SelectBaseProps) {
-  const fieldState: FieldState = error ? 'critical' : state;
+  const uncontrolledValue = useRef(defaultValue);
   const triggerClassName = clsx(
     selectButtonStyles['container'],
     {
-      [selectButtonStyles['container--error']]: fieldState === 'critical',
+      [selectButtonStyles['container--error']]: state === 'critical',
     },
     inputFontStyles[size],
-    fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
+    fieldControlSizeStyles[size],
     className,
   );
 
   return (
-    <Field
-      id={id}
-      label={label}
-      helperText={helperText}
-      isRequired={isRequired ?? required}
-      state={fieldState}
-      disabled={disabled}
-    >
+    <Field id={id} label={label} helperText={helperText} required={required} state={state} disabled={disabled}>
       {({ controlId, describedBy, required: isFieldRequired }) => (
         <div className={style['container']}>
           <SelectBase.Root
@@ -137,15 +118,20 @@ export function Select({
             disabled={disabled}
             name={name}
             required={required}
+            readOnly={state === 'read-only'}
             onValueChange={(nextValue, eventDetails) => {
-              onChange?.(eventDetails.event ?? null, nextValue as SelectValueType);
+              // Base UI reports a click on the selected item as a change.
+              const currentValue = value === undefined ? uncontrolledValue.current : value;
+              if (nextValue === currentValue) return;
+              uncontrolledValue.current = nextValue as SelectValueType;
+              onValueChange?.(nextValue as SelectValueType, eventDetails.event ?? null);
             }}
           >
             <SelectBase.Trigger
               id={controlId}
               aria-describedby={describedBy}
               aria-required={isFieldRequired}
-              aria-invalid={fieldState === 'critical' || undefined}
+              aria-invalid={state === 'critical' || undefined}
               className={triggerClassName}
               render={<SelectButton />}
             >

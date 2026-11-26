@@ -12,7 +12,7 @@ export function DatePickerExample() {
         value={date ?? undefined}
         placeholder="dd/mm/yyyy"
         valueFormat="dd-MM-yyyy"
-        onChange={(next) => setDate((next as Date | null) ?? null)}
+        onValueChange={(next) => setDate((next as Date | null) ?? null)}
       />
     </ComponentPreview>
   );

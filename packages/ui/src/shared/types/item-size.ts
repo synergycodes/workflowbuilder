@@ -5,4 +5,4 @@ import type { Size } from './size';
  *
  * @category Shared
  */
-export type ItemSize = Extract<Size, 'large' | 'medium' | 'small'>;
+export type ItemSize = Extract<Size, 'l' | 'm' | 's'>;

@@ -1,6 +1,5 @@
 import { Popover } from '@base-ui/react/popover';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
-import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
@@ -26,16 +25,15 @@ import type { DatePickerProps, DatePickerType } from './types';
  */
 export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(function DatePicker(
   {
-    inputSize = 'medium',
+    size = 'm',
     valueFormat = 'DD/MM/YYYY',
     placeholder = 'dd/mm/yyyy',
     type = 'default',
     value,
     defaultValue,
-    error = false,
     disabled,
     readOnly,
-    onChange,
+    onValueChange,
     minDate,
     maxDate,
     id,
@@ -45,7 +43,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     label,
     helperText,
     state = 'default',
-    isRequired,
+    required,
   },
   ref,
 ) {
@@ -71,9 +69,9 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
       if (!isControlled) {
         setInternalValue(next);
       }
-      onChange?.(next);
+      onValueChange?.(next);
     },
-    [isControlled, onChange],
+    [isControlled, onValueChange],
   );
 
   // react-day-picker does not derive the visible month from `selected`.
@@ -92,14 +90,12 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     return matchers.length === 0 ? undefined : matchers;
   }, [minDate, maxDate]);
 
-  const fieldState = error ? 'critical' : state;
-
   const triggerClassName = clsx(
-    inputFontStyles[inputSize],
-    fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[inputSize]],
+    inputFontStyles[size],
+    fieldControlSizeStyles[size],
     styles['container'],
     {
-      [styles['container--error']]: fieldState === 'critical',
+      [styles['container--error']]: state === 'critical',
       [styles['container--placeholder']]: triggerLabel === null,
     },
     className,
@@ -174,13 +170,15 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     </>
   );
 
+  const isReadOnly = readOnly || state === 'read-only';
+
   return (
-    <Field id={id} label={label} helperText={helperText} isRequired={isRequired} state={fieldState} disabled={disabled}>
-      {({ controlId, describedBy, required }) => (
+    <Field id={id} label={label} helperText={helperText} required={required} state={state} disabled={disabled}>
+      {({ controlId, describedBy, required: fieldRequired }) => (
         <Popover.Root
-          open={disabled || readOnly ? false : open}
+          open={disabled || isReadOnly ? false : open}
           onOpenChange={(nextOpen) => {
-            if (disabled || readOnly) return;
+            if (disabled || isReadOnly) return;
             setOpen(nextOpen);
             if (!nextOpen) {
               setRangeDraft(undefined);
@@ -191,14 +189,14 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
             ref={ref}
             id={controlId}
             aria-describedby={describedBy}
-            aria-required={required}
+            aria-required={fieldRequired}
             type="button"
             disabled={disabled}
             aria-label={ariaLabel}
             aria-labelledby={ariaLabelledby}
-            aria-readonly={readOnly || undefined}
-            aria-invalid={fieldState === 'critical' || undefined}
-            data-state={readOnly ? 'read-only' : fieldState}
+            aria-readonly={isReadOnly || undefined}
+            aria-invalid={state === 'critical' || undefined}
+            data-state={isReadOnly ? 'read-only' : state}
             className={triggerClassName}
           >
             <span className={styles['trigger-label']}>{triggerLabel ?? placeholder}</span>

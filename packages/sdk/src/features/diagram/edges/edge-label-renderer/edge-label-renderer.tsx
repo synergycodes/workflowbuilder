@@ -60,7 +60,7 @@ export function EdgeLabel({
       <Label
         data-edge-label-id={id}
         style={style}
-        isHovered={hovered}
+        hovered={hovered}
         state={selected ? 'selected' : 'default'}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}

@@ -38,11 +38,11 @@ const ANIMATION = 'var(--wb-public-edge-animation-running)';
 
 const ROWS: [string, UseEdgeStyleParams, string, string | undefined, string | undefined][] = [
   ['default', {}, 'var(--wb-public-edge-color)', undefined, undefined],
-  ['hover', { isHovered: true }, 'var(--wb-public-edge-color-hover)', undefined, undefined],
+  ['hover', { hovered: true }, 'var(--wb-public-edge-color-hover)', undefined, undefined],
   ['selected', { state: 'selected' }, 'var(--wb-public-edge-color-select)', undefined, undefined],
   [
     'selected + hover',
-    { state: 'selected', isHovered: true },
+    { state: 'selected', hovered: true },
     'var(--wb-public-edge-color-select)',
     undefined,
     undefined,
@@ -68,7 +68,7 @@ const ROWS: [string, UseEdgeStyleParams, string, string | undefined, string | un
   ['completed', { runState: 'completed' }, 'var(--wb-public-edge-run-status-stroke-success)', undefined, undefined],
   [
     'completed + hover',
-    { runState: 'completed', isHovered: true },
+    { runState: 'completed', hovered: true },
     'var(--wb-public-edge-run-status-stroke-success)',
     undefined,
     undefined,
@@ -91,7 +91,7 @@ const ROWS: [string, UseEdgeStyleParams, string, string | undefined, string | un
   ['dashed without run', { lineType: 'dashed' }, 'var(--wb-public-edge-color)', DASH_DASHED, undefined],
   [
     'pending + hover',
-    { runState: 'pending', isHovered: true },
+    { runState: 'pending', hovered: true },
     'var(--wb-public-edge-run-status-stroke-default)',
     undefined,
     undefined,
@@ -112,9 +112,9 @@ describe('useEdgeStyle', () => {
   });
 
   it('drops the colour transition on hover and keeps it once a run state is set', () => {
-    expect(styleFor({ isHovered: true }).transition).toBe('none');
+    expect(styleFor({ hovered: true }).transition).toBe('none');
     expect(styleFor({}).transition).toBe('stroke var(--wb-public-transition)');
-    expect(styleFor({ runState: 'completed', isHovered: true }).transition).toBe('stroke var(--wb-public-transition)');
+    expect(styleFor({ runState: 'completed', hovered: true }).transition).toBe('stroke var(--wb-public-transition)');
   });
 });
 
@@ -142,7 +142,7 @@ describe('useEdgeStyle tone', () => {
   it.each([
     ['default', {}, 'var(--wb-public-edge-color)'],
     ['selected', { state: 'selected' }, 'var(--wb-public-edge-color-select)'],
-    ['hover', { isHovered: true }, 'var(--wb-public-edge-color-hover)'],
+    ['hover', { hovered: true }, 'var(--wb-public-edge-color-hover)'],
   ] as const)('a tone without a run state keeps the %s colour', (_, params, stroke) => {
     expect(styleFor({ ...params, tone: 'warning' }).stroke).toBe(stroke);
   });

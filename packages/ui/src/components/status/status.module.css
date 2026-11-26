@@ -25,7 +25,7 @@
       fill: currentColor;
     }
 
-    &.status-container--invalid {
+    &.status-container--critical {
       color: var(--wb-public-status-invalid-color);
       background: var(--wb-public-status-invalid-background-color);
     }

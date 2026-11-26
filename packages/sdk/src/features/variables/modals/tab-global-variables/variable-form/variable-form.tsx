@@ -97,9 +97,9 @@ export function VariableForm(props: Props) {
         <Select
           value={formData.type}
           items={optionsType}
-          onChange={(_, value) => handleInputUpdate('type', value as VariableDefinition['type'])}
+          onValueChange={(value) => handleInputUpdate('type', value as VariableDefinition['type'])}
           disabled={isEditionLimited}
-          error={formData.fieldsWithErrors.has('type')}
+          state={formData.fieldsWithErrors.has('type') ? 'critical' : 'default'}
         />
       </FormControlWithLabel>
       <FormControlWithLabel label="variables.defaultValue" required={!['string'].includes(formData.type)}>

@@ -1,4 +1,4 @@
-import { NavButton, SnackbarType } from '@workflowbuilder/ui';
+import { NavButton } from '@workflowbuilder/ui';
 import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mention, type MentionDataItem, MentionsInput } from 'react-mentions-ts';
@@ -239,7 +239,7 @@ export function VariableText({
         showTranslatedSnackbar({
           title: 'variablesListIsEmpty',
           subtitle: 'variables.variablesListIsEmptyHint',
-          variant: SnackbarType.WARNING,
+          tone: 'warning',
         });
       }
 

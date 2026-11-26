@@ -12,7 +12,7 @@ type SelectOptionProps = SelectItem & {
   size?: ItemSize;
 };
 
-export function SelectOption({ icon, value, label, size = 'medium', disabled }: SelectOptionProps) {
+export function SelectOption({ icon, value, label, size = 'm', disabled }: SelectOptionProps) {
   return (
     <SelectBase.Item
       className={clsx(listItemStyles['list-item'], listItemSize[size])}

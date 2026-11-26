@@ -1,4 +1,3 @@
-import { SnackbarType } from '@workflowbuilder/ui';
 import type { OnConnect, OnConnectEnd, OnConnectStart } from '@xyflow/react';
 import { useCallback } from 'react';
 
@@ -16,7 +15,7 @@ export function useConnect() {
       if (isReadOnly) {
         showTranslatedSnackbar({
           title: 'cantEditReadOnlyMode',
-          variant: SnackbarType.WARNING,
+          tone: 'warning',
         });
 
         return;

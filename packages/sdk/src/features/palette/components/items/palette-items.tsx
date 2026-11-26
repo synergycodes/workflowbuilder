@@ -38,7 +38,7 @@ export function PaletteItems({
               key={group.label}
               className={styles['accordion']}
               label={translateIfPossible(group.label) || group.label}
-              isOpen={isFiltering ? true : undefined}
+              open={isFiltering ? true : undefined}
               defaultOpen={group.isOpen}
             >
               <div className={styles['accordion-content']}>

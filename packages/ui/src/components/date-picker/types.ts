@@ -36,10 +36,10 @@ export type DatePickerValue = Date | [Date, Date] | Date[] | string | null | und
  */
 export type DatePickerProps = {
   /**
-   * Size variant of the trigger input.
-   * @default 'medium'
+   * Size of the trigger input.
+   * @default 'm'
    */
-  inputSize?: ItemSize;
+  size?: ItemSize;
   /**
    * Disable the picker. The trigger button is not interactive and the
    * popover cannot be opened.
@@ -57,7 +57,7 @@ export type DatePickerProps = {
    * - `range`   -> `[from, to]` once both dates are selected, otherwise `null`
    * - `multiple`-> the array of selected `Date`s (empty array allowed)
    */
-  onChange?: (value: Date | [Date, Date] | Date[] | null) => void;
+  onValueChange?: (value: Date | [Date, Date] | Date[] | null) => void;
   /**
    * The earliest selectable date (inclusive).
    */
@@ -96,9 +96,9 @@ export type DatePickerProps = {
    */
   state?: FieldState;
   /**
-   * Adds the required marker next to the label.
+   * Adds the required marker next to the label and sets `aria-required` on the trigger.
    */
-  isRequired?: boolean;
+  required?: boolean;
 
   /**
    * Format string used to render the selected date(s) in the trigger.
@@ -139,10 +139,4 @@ export type DatePickerProps = {
    * Controlled selected value. When set, the picker becomes controlled.
    */
   value?: Date | [Date, Date] | Date[] | string;
-  /**
-   * Render the trigger in an error state.
-   *
-   * @default false
-   */
-  error?: boolean;
 };

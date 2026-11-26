@@ -30,7 +30,7 @@ function Example() {
       state={hasError ? 'critical' : 'default'}
       label="Project name"
       helperText={hasError ? 'Enter at least three characters' : 'Shown throughout the workspace'}
-      isRequired
+      required
       placeholder="Type something"
       value={value}
       onChange={(event) => setValue(event.target.value)}

@@ -6,7 +6,7 @@ import type { WorkflowBuilderDecoratorWrapperProps } from '../../plugins-core/ad
 
 vi.mock('@workflowbuilder/ui', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  Status: ({ status }: { status?: string }) => (status ? <span data-testid="status" /> : null),
+  Status: ({ tone }: { tone?: string }) => (tone ? <span data-testid="status" /> : null),
 }));
 
 vi.mock('@xyflow/react', () => ({

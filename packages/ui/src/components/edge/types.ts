@@ -1,13 +1,13 @@
 import { SIZES, Size } from '../../shared/types/size';
 import { rangeBetween } from '../../shared/utils/arrays';
 
-export const EDGE_LABEL_SIZES = rangeBetween(SIZES, 'extra-small', 'medium');
+export const EDGE_LABEL_SIZES = rangeBetween(SIZES, 'xs', 'm');
 /**
  * Size of an edge label.
  *
  * @category Edge
  */
-export type EdgeLabelSize = Extract<Size, 'extra-small' | 'small' | 'medium'>;
+export type EdgeLabelSize = Extract<Size, 'xs' | 's' | 'm'>;
 
 /**
  * State an edge is drawn in. `temporary` marks an edge that is not part of the diagram yet, such as one being drawn.

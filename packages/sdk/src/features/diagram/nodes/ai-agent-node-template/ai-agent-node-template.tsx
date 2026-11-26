@@ -32,7 +32,6 @@ type Props = {
   selected?: boolean;
   /** Render the Node Disabled variant (palette entries that cannot be added). */
   disabled?: boolean;
-  isConnecting?: boolean;
   showHandles?: boolean;
   chatModel?: ItemOption | undefined;
   memoryModel?: ItemOption | undefined;
@@ -83,7 +82,7 @@ export const AiAgentNodeTemplate = memo(
             {isCanvasNode && <Collapsible.Button />}
             {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
-          <NodePanel.Content className={styles['content']} isVisible={isCanvasNode}>
+          <NodePanel.Content className={styles['content']} visible={isCanvasNode}>
             <Collapsible.Content>
               <div className={styles['collapsible-content']}>
                 <SettingInfo
@@ -110,13 +109,13 @@ export const AiAgentNodeTemplate = memo(
               })}
             </ToolInfo>
           </NodePanel.Content>
-          <NodePanel.Footer isVisible={isCanvasNode}>
+          <NodePanel.Footer visible={isCanvasNode}>
             <OptionalNodeFooter nodeId={id} />
           </NodePanel.Footer>
-          <NodePanel.Overlay isVisible={isCanvasNode}>
+          <NodePanel.Overlay visible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
-          <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
+          <NodePanel.Handles visible={isCanvasNode} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
           </NodePanel.Handles>

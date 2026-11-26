@@ -33,7 +33,7 @@ afterEach(() => {
 describe('SnackbarContainer', () => {
   it('gives the bottom-centre stack its own class', () => {
     act(() => {
-      showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+      showSnackbar({ tone: 'info', title: 'Waiting for decision', autoHideDuration: null });
     });
 
     const stack = document.querySelector('.notistack-SnackbarContainer');
@@ -44,7 +44,7 @@ describe('SnackbarContainer', () => {
 
   it('fades each snackbar in where it stands rather than sliding it up from the viewport bottom', () => {
     act(() => {
-      showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+      showSnackbar({ tone: 'info', title: 'Waiting for decision', autoHideDuration: null });
     });
     act(() => vi.advanceTimersByTime(180));
 
@@ -58,7 +58,7 @@ describe('SnackbarContainer', () => {
   // jsdom does no hit-testing, so the style stands in for the ignored second click.
   it('lets a closing snackbar take no clicks while it fades out in place', () => {
     act(() => {
-      showSnackbar({ key: 'decision', variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+      showSnackbar({ key: 'decision', tone: 'info', title: 'Waiting for decision', autoHideDuration: null });
     });
     act(() => vi.advanceTimersByTime(180));
     act(() => closeSnackbar('decision'));
@@ -98,7 +98,7 @@ describe('SnackbarContainer', () => {
   // `flex-end` is the top, and `margin-top` the top snackbar's, only because notistack lays the stack out bottom-up.
   it('keeps notistack stacking the bottom-centre snackbars bottom-up', () => {
     act(() => {
-      showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+      showSnackbar({ tone: 'info', title: 'Waiting for decision', autoHideDuration: null });
     });
 
     const stack = document.querySelector<HTMLElement>('.notistack-SnackbarContainer');
@@ -108,7 +108,7 @@ describe('SnackbarContainer', () => {
 
   it('subtracts the padding notistack puts around each snackbar', () => {
     act(() => {
-      showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+      showSnackbar({ tone: 'info', title: 'Waiting for decision', autoHideDuration: null });
     });
 
     const wrapper = document.querySelector<HTMLElement>('.notistack-CollapseWrapper');

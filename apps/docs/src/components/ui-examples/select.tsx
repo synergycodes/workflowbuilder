@@ -14,7 +14,7 @@ export function SelectExample() {
 
   return (
     <ComponentPreview>
-      <Select items={ITEMS} value={model} placeholder="Choose a model" onChange={(_event, next) => setModel(next)} />
+      <Select items={ITEMS} value={model} placeholder="Choose a model" onValueChange={(next) => setModel(next)} />
     </ComponentPreview>
   );
 }

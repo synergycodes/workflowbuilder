@@ -36,7 +36,7 @@ export function LanguageSelector() {
 
   return (
     <>
-      <Menu items={languageItems} size="small">
+      <Menu items={languageItems} size="s">
         <NavButton
           size="xs"
           className={styles['language-selector']}

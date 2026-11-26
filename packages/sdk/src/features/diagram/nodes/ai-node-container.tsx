@@ -49,7 +49,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
 
   return (
     <NodeAsPortWrapper
-      isConnecting={!!connectionBeingDragged}
+      connecting={!!connectionBeingDragged}
       targetPortPosition={Position.Left}
       offset={{ x: 0, y: 145 }}
     >

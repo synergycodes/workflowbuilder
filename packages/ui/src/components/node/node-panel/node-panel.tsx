@@ -57,33 +57,33 @@ const Header = memo(function Header({ children, className }: PropsWithChildren<{
 const Content = memo(function Content({
   children,
   className,
-  isVisible = true,
-}: PropsWithChildren<{ className?: string; isVisible?: boolean }>) {
-  return isVisible && <div className={clsx(nodeStyles['content-container'], className)}>{children}</div>;
+  visible = true,
+}: PropsWithChildren<{ className?: string; visible?: boolean }>) {
+  return visible && <div className={clsx(nodeStyles['content-container'], className)}>{children}</div>;
 });
 
 /** A sibling of Content, so it stays visible when the content is hidden or collapsed. */
-const Footer = memo(function Footer({ children, isVisible = true }: PropsWithChildren<{ isVisible?: boolean }>) {
-  return <>{isVisible && children}</>;
+const Footer = memo(function Footer({ children, visible = true }: PropsWithChildren<{ visible?: boolean }>) {
+  return <>{visible && children}</>;
 });
 
 const Handles = memo(function Handles({
   children,
-  isVisible = true,
+  visible = true,
 }: PropsWithChildren<{
-  isVisible?: boolean;
+  visible?: boolean;
   alignment?: 'center' | 'header';
 }>) {
-  return <>{isVisible && children}</>;
+  return <>{visible && children}</>;
 });
 
 /** Covers the whole node and lets pointer events through; a child that needs them sets `pointer-events: auto`. */
 const Overlay = memo(function Overlay({
   children,
   className,
-  isVisible = true,
-}: PropsWithChildren<{ className?: string; isVisible?: boolean }>) {
-  return isVisible && <div className={clsx(nodeStyles['overlay'], className)}>{children}</div>;
+  visible = true,
+}: PropsWithChildren<{ className?: string; visible?: boolean }>) {
+  return visible && <div className={clsx(nodeStyles['overlay'], className)}>{children}</div>;
 });
 
 const Root = memo(function Root({ selected, disabled = false, children, className }: Props) {

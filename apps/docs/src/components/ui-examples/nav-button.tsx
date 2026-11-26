@@ -9,11 +9,11 @@ export function NavButtonExample() {
       <ComponentPreview.Stack>
         <ComponentPreview.Row>
           <NavButton prefixIcon={<House />}>Square</NavButton>
-          <NavButton variant="round" prefixIcon={<House />}>
+          <NavButton shape="round" prefixIcon={<House />}>
             Round
           </NavButton>
           <NavButton aria-label="Plain" variant="plain" prefixIcon={<House />} />
-          <NavButton isSelected prefixIcon={<House />} suffixIcon={<ArrowRight />}>
+          <NavButton selected prefixIcon={<House />} suffixIcon={<ArrowRight />}>
             Selected
           </NavButton>
         </ComponentPreview.Row>

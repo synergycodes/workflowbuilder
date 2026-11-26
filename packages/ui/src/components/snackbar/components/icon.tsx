@@ -4,21 +4,21 @@ import { clsx } from 'clsx';
 
 import styles from './icon.module.css';
 
-import { SnackbarVariant } from '../types';
+import type { SnackbarTone } from '../types';
 
 type IconProps = WithIcon & {
   isCentered: boolean;
-  variant: SnackbarVariant;
+  tone: SnackbarTone;
 };
 
-export function Icon({ icon, isCentered, variant }: IconProps) {
+export function Icon({ icon, isCentered, tone }: IconProps) {
   return (
     <div
       className={clsx(styles['container'], {
         [styles['center']]: isCentered,
       })}
     >
-      {icon ?? <Info className={clsx(styles['status'], styles[variant])} />}
+      {icon ?? <Info className={clsx(styles['status'], styles[tone])} />}
     </div>
   );
 }

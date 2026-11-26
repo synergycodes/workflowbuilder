@@ -24,7 +24,7 @@ export function TextAreaExample() {
           state="critical"
           label="Summary"
           helperText="A summary is required"
-          isRequired
+          required
           placeholder="Critical text area"
           value={summary}
           onChange={(event) => setSummary(event.target.value)}

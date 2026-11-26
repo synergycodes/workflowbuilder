@@ -66,7 +66,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
             <NodeDescription label={label} description={description} disabled={disabled} />
             {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
-          <NodePanel.Content isVisible={isCanvasNode}>
+          <NodePanel.Content visible={isCanvasNode}>
             <OptionalNodeContent nodeId={id}>
               {actions.length > 0 && (
                 <div className={clsx(styles['actions'], { [styles['actions--vertical']]: isHorizontal })}>
@@ -80,15 +80,15 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
               )}
             </OptionalNodeContent>
           </NodePanel.Content>
-          <NodePanel.Footer isVisible={isCanvasNode}>
+          <NodePanel.Footer visible={isCanvasNode}>
             <OptionalNodeFooter nodeId={id}>
               <DecisionWaitingFooter nodeId={id} nodeLabel={label} />
             </OptionalNodeFooter>
           </NodePanel.Footer>
-          <NodePanel.Overlay isVisible={isCanvasNode}>
+          <NodePanel.Overlay visible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
-          <NodePanel.Handles isVisible={isCanvasNode} alignment={isHorizontal ? 'header' : 'center'}>
+          <NodePanel.Handles visible={isCanvasNode} alignment={isHorizontal ? 'header' : 'center'}>
             <Handle
               id={getHandleId({ handleType: 'target' })}
               type="target"

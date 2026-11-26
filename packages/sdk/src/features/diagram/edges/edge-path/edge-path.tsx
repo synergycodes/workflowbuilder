@@ -43,7 +43,7 @@ export type EdgePathProps = {
  * @category Components
  */
 export function EdgePath({ edgeId, path, state, hovered, runState, tone, lineType, endpoint }: EdgePathProps) {
-  const style = useEdgeStyle({ state, isHovered: hovered, runState, tone, lineType });
+  const style = useEdgeStyle({ state, hovered, runState, tone, lineType });
   const rootEndpoint = useContext(EdgeEndpointContext);
 
   return (

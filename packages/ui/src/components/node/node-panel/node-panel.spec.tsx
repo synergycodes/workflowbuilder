@@ -66,10 +66,10 @@ describe('NodePanel.Overlay', () => {
     expect(shell.querySelector('[data-testid="ring"]')).not.toBeNull();
   });
 
-  it('renders nothing when isVisible is false', () => {
+  it('renders nothing when visible is false', () => {
     const shell = render(
       <NodePanel.Root selected={false}>
-        <NodePanel.Overlay isVisible={false}>
+        <NodePanel.Overlay visible={false}>
           <span data-testid="ring" />
         </NodePanel.Overlay>
       </NodePanel.Root>,
@@ -120,7 +120,7 @@ describe('NodePanel.Footer', () => {
     act(() =>
       root.render(
         <NodePanel.Root selected={false}>
-          <NodePanel.Content isVisible={false}>content</NodePanel.Content>
+          <NodePanel.Content visible={false}>content</NodePanel.Content>
           <NodePanel.Footer>
             <span data-testid="footer" />
           </NodePanel.Footer>
@@ -130,10 +130,10 @@ describe('NodePanel.Footer', () => {
     expect(shell.querySelector('[data-testid="footer"]')).not.toBeNull();
   });
 
-  it('renders nothing when isVisible is false', () => {
+  it('renders nothing when visible is false', () => {
     const shell = render(
       <NodePanel.Root selected={false}>
-        <NodePanel.Footer isVisible={false}>
+        <NodePanel.Footer visible={false}>
           <span data-testid="footer" />
         </NodePanel.Footer>
       </NodePanel.Root>,

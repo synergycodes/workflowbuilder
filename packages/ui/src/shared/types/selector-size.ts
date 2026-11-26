@@ -5,4 +5,4 @@ import { Size } from '@ui/shared/types/size';
  *
  * @category Shared
  */
-export type SelectorSize = Extract<Size, 'medium' | 'small' | 'extra-small'>;
+export type SelectorSize = Extract<Size, 'm' | 's' | 'xs'>;

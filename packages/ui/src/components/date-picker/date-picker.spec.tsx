@@ -27,7 +27,6 @@ function trigger(props: Partial<DatePickerProps>) {
 describe('DatePicker trigger state', () => {
   it.each([
     [{}, 'default', false],
-    [{ error: true }, 'critical', true],
     [{ state: 'critical' as const }, 'critical', true],
     [{ state: 'read-only' as const }, 'read-only', false],
     [{ readOnly: true }, 'read-only', false],
@@ -36,4 +35,45 @@ describe('DatePicker trigger state', () => {
     expect(button.dataset['state']).toBe(dataState);
     expect(/container--error/.test(button.className)).toBe(hasError);
   });
+});
+
+describe('DatePicker read-only', () => {
+  it.each([{ readOnly: true }, { state: 'read-only' as const }])('%o does not open the calendar', (props) => {
+    const button = trigger({ defaultValue: new Date(2026, 10, 10), ...props });
+
+    act(() => button.click());
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(button.getAttribute('aria-readonly')).toBe('true');
+  });
+});
+
+describe('DatePicker required', () => {
+  it('marks the label and the trigger', () => {
+    const button = trigger({ label: 'Due date', required: true });
+
+    expect(container.querySelector('label')?.textContent).toBe('Due date*');
+    expect(button.getAttribute('aria-required')).toBe('true');
+  });
+
+  it('leaves both unmarked without required', () => {
+    const button = trigger({ label: 'Due date' });
+
+    expect(container.querySelector('label')?.textContent).toBe('Due date');
+    expect(button.hasAttribute('aria-required')).toBe(false);
+  });
+});
+
+it('reports the picked date through onValueChange', () => {
+  const onValueChange = vi.fn();
+  const button = trigger({ defaultValue: new Date(2026, 10, 10), onValueChange });
+
+  act(() => button.click());
+  const day = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(
+    (candidate) => candidate.textContent === '12',
+  )!;
+  act(() => day.click());
+
+  expect(onValueChange).toHaveBeenCalledOnce();
+  expect(onValueChange.mock.calls[0]?.[0]).toEqual(new Date(2026, 10, 12));
 });

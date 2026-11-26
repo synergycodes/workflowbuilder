@@ -14,10 +14,6 @@ import {
   useIntegrationStore,
 } from './use-integration-store';
 
-vi.mock('@workflowbuilder/ui', () => ({
-  SnackbarType: { SUCCESS: 'SUCCESS', ERROR: 'ERROR', INFO: 'INFO', WARNING: 'WARNING' },
-}));
-
 vi.mock('@/store/slices/diagram-slice/actions', () => ({
   setStoreDataFromIntegration: vi.fn(),
   getStoreDataForIntegration: vi.fn(() => ({ name: 'loaded' })),

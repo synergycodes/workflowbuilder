@@ -49,7 +49,7 @@ export type LabelButtonProps = {
   prefixIcon?: ReactElement;
   suffixIcon?: ReactElement;
   /** @default false */
-  isLoading?: boolean;
+  loading?: boolean;
   tooltip?: string;
   /** @default 'default' */
   tooltipType?: TooltipVariant;
@@ -65,7 +65,7 @@ export type IconButtonProps = {
   children?: never;
   suffixIcon?: never;
   /** @default false */
-  isLoading?: boolean;
+  loading?: boolean;
   tooltip?: string;
   /** @default 'default' */
   tooltipType?: TooltipVariant;

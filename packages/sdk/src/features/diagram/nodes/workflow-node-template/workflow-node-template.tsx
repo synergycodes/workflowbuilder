@@ -56,7 +56,6 @@ export type WorkflowBuilderNodeTemplateProps<P = BaseNodeProperties & Record<str
   /** Render the Node Disabled variant (palette entries that cannot be added). */
   disabled?: boolean;
   layoutDirection?: LayoutDirection;
-  isConnecting?: boolean;
   showHandles?: boolean;
   isValid?: boolean;
   children?: React.ReactNode;
@@ -98,20 +97,20 @@ const WorkflowNodeTemplateComponent = memo(
             {!!children && <Collapsible.Button />}
             {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
-          <NodePanel.Content isVisible={isCanvasNode} className={styles['content']}>
+          <NodePanel.Content visible={isCanvasNode} className={styles['content']}>
             <OptionalNodeContent nodeId={id}>
               <Collapsible.Content>
                 <div className={styles['collapsible']}>{children}</div>
               </Collapsible.Content>
             </OptionalNodeContent>
           </NodePanel.Content>
-          <NodePanel.Footer isVisible={isCanvasNode}>
+          <NodePanel.Footer visible={isCanvasNode}>
             <OptionalNodeFooter nodeId={id} />
           </NodePanel.Footer>
-          <NodePanel.Overlay isVisible={isCanvasNode}>
+          <NodePanel.Overlay visible={isCanvasNode}>
             <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
-          <NodePanel.Handles isVisible={showHandles} alignment={handlesAlignment}>
+          <NodePanel.Handles visible={showHandles} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
           </NodePanel.Handles>

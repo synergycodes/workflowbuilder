@@ -22,7 +22,7 @@ import { useState } from 'react';
 function Example() {
   const [view, setView] = useState('list');
   return (
-    <SegmentPicker value={view} onChange={(_event, next) => setView(next)}>
+    <SegmentPicker value={view} onValueChange={(next) => setView(next)}>
       <SegmentPicker.Item value="list">List</SegmentPicker.Item>
       <SegmentPicker.Item value="grid">Grid</SegmentPicker.Item>
       <SegmentPicker.Item value="board">Board</SegmentPicker.Item>
@@ -44,7 +44,7 @@ editing mode or a theme switch.
 import { Moon, SunDim } from '@phosphor-icons/react';
 import { SegmentPicker } from '@workflowbuilder/ui';
 
-<SegmentPicker size="extra-small" variant="secondary" value={theme} onChange={(_event, next) => setTheme(next)}>
+<SegmentPicker size="xs" variant="secondary" value={theme} onValueChange={(next) => setTheme(next)}>
   <SegmentPicker.Item value="light" aria-label="Light" prefixIcon={<SunDim />} />
   <SegmentPicker.Item value="dark" aria-label="Dark" prefixIcon={<Moon />} />
 </SegmentPicker>;

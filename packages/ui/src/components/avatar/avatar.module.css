@@ -14,22 +14,22 @@
     align-items: center;
     justify-content: center;
 
-    &.extra-large {
+    &.xl {
       width: calc(var(--wb-ds-size-600) + 2 * var(--wb-public-avatar-border-size));
       height: calc(var(--wb-ds-size-600) + 2 * var(--wb-public-avatar-border-size));
     }
 
-    &.large {
+    &.l {
       width: calc(var(--wb-ds-size-400) + 2 * var(--wb-public-avatar-border-size));
       height: calc(var(--wb-ds-size-400) + 2 * var(--wb-public-avatar-border-size));
     }
 
-    &.medium {
+    &.m {
       width: calc(var(--wb-ds-size-300) + 2 * var(--wb-public-avatar-border-size));
       height: calc(var(--wb-ds-size-300) + 2 * var(--wb-public-avatar-border-size));
     }
 
-    &.small {
+    &.s {
       width: calc(var(--wb-ds-size-225) + 2 * var(--wb-public-avatar-border-size));
       height: calc(var(--wb-ds-size-225) + 2 * var(--wb-public-avatar-border-size));
     }

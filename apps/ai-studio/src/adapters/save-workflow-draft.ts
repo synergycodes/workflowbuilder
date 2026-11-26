@@ -53,7 +53,7 @@ export function saveDraftOf(workflowId: string): OnSaveExternal {
 // It shows nothing for a failed autosave; a manual Save gets its own error snackbar.
 function failed(params: OnSaveParams | undefined, reason: string): never {
   if (params?.isAutoSave) {
-    addNotice(`The workflow draft could not be saved automatically: ${reason}.`, 'error');
+    addNotice(`The workflow draft could not be saved automatically: ${reason}.`, 'critical');
   }
 
   throw new Error(`The workflow draft could not be saved: ${reason}.`);

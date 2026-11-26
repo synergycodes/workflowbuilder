@@ -6,7 +6,7 @@ import './node-as-port.css';
 type Position = 'left' | 'top' | 'right' | 'bottom';
 
 export type NodeAsPortWrapperProps = {
-  isConnecting: boolean;
+  connecting: boolean;
   targetPortPosition: Position;
   offset?: {
     x?: number;
@@ -15,14 +15,14 @@ export type NodeAsPortWrapperProps = {
 };
 
 export const NodeAsPortWrapper = memo(function NodeAsPortWrapper({
-  isConnecting,
+  connecting,
   offset = { x: 0, y: 0 },
   targetPortPosition,
   children,
 }: PropsWithChildren<NodeAsPortWrapperProps>) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [isConnectionTarget, setIsConnectionTarget] = useState(false);
-  const canApplyStyles = isConnecting && isConnectionTarget;
+  const canApplyStyles = connecting && isConnectionTarget;
 
   const containerStyles = canApplyStyles
     ? {
@@ -36,10 +36,10 @@ export const NodeAsPortWrapper = memo(function NodeAsPortWrapper({
     : null;
 
   const onMouseEnter = useCallback(() => {
-    if (isConnecting) {
+    if (connecting) {
       setIsConnectionTarget(true);
     }
-  }, [isConnecting]);
+  }, [connecting]);
 
   const onMouseLeave = useCallback(() => {
     setIsConnectionTarget(false);

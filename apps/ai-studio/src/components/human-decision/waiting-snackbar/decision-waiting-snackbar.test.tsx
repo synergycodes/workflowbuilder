@@ -102,7 +102,7 @@ describe('DecisionWaitingSnackbar', () => {
 
     const snackbar = onlyOpen();
     expect(snackbar).toMatchObject({
-      variant: 'info',
+      tone: 'info',
       title: 'Waiting for decision',
       subtitle: 'Review Refund',
       buttonLabel: 'Decide',

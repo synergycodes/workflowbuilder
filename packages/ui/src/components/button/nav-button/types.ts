@@ -11,10 +11,19 @@ export const NAV_BUTTON_SIZES = ['xl', 'l', 'm', 's', 'xs', 'xxs', 'xxxs'] as co
  */
 export type NavButtonSize = (typeof NAV_BUTTON_SIZES)[number];
 
-export const NAV_BUTTON_VARIANTS = ['square', 'round', 'plain'] as const;
+export const NAV_BUTTON_SHAPES = ['square', 'round'] as const;
 
 /**
- * Shape of a `NavButton`. `plain` is available for icon-only buttons only.
+ * Shape of a `NavButton`.
+ *
+ * @category NavButton
+ */
+export type NavButtonShape = (typeof NAV_BUTTON_SHAPES)[number];
+
+export const NAV_BUTTON_VARIANTS = ['default', 'plain'] as const;
+
+/**
+ * Style of a `NavButton`. `plain` has no background and is available for icon-only buttons only.
  *
  * @category NavButton
  */
@@ -28,8 +37,10 @@ export type NavButtonVariant = (typeof NAV_BUTTON_VARIANTS)[number];
 export type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
   /** @default 'm' */
   size?: NavButtonSize;
+  /** @default 'square' */
+  shape?: NavButtonShape;
   /** Renders the button in its selected state. */
-  isSelected?: boolean;
+  selected?: boolean;
 };
 
 /**
@@ -38,7 +49,7 @@ export type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
  * @category NavButton
  */
 export type NavLabelButtonProps = NavButtonBaseProps & {
-  /** @default 'square' */
+  /** @default 'default' */
   variant?: Exclude<NavButtonVariant, 'plain'>;
   children: ReactNode;
   /** Icon before the label. */
@@ -53,7 +64,7 @@ export type NavLabelButtonProps = NavButtonBaseProps & {
  * @category NavButton
  */
 export type NavIconButtonProps = NavButtonBaseProps & {
-  /** @default 'square' */
+  /** @default 'default' */
   variant?: NavButtonVariant;
   prefixIcon: IconNode;
   children?: never;

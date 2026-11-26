@@ -1,4 +1,4 @@
-import { Button, SnackbarType } from '@workflowbuilder/ui';
+import { Button } from '@workflowbuilder/ui';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +24,7 @@ export function ExportModal() {
 
     showTranslatedSnackbar({
       title: 'contentCopied',
-      variant: SnackbarType.SUCCESS,
+      tone: 'success',
     });
   }, [storeData]);
 

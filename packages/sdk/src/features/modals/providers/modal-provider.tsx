@@ -44,7 +44,7 @@ export function ModalProvider() {
     <>
       {createPortal(
         <Modal
-          size="large"
+          size="l"
           open={isOpen && !!modal}
           icon={activeModal?.icon}
           onClose={activeModal?.isCloseButtonVisible ? closeModal : undefined}

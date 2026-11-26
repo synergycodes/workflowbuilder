@@ -17,6 +17,39 @@ afterEach(() => {
   container.remove();
 });
 
+function renderedClasses(element: ReactNode) {
+  act(() => root.render(element));
+
+  return container
+    .querySelector('button')!
+    .className.split(/\s+/)
+    .map((name) => name.replace(/^_(.+)_[^_]+$/, '$1'));
+}
+
+it('renders square with a background by default', () => {
+  const classes = renderedClasses(<NavButton aria-label="Home" prefixIcon={<svg />} />);
+
+  expect(classes).toContain('square');
+  expect(classes).not.toContain('round');
+  expect(classes).not.toContain('plain');
+});
+
+it('renders round from shape', () => {
+  expect(renderedClasses(<NavButton shape="round">Round</NavButton>)).toContain('round');
+});
+
+it('renders selected from selected', () => {
+  expect(renderedClasses(<NavButton selected>Home</NavButton>)).toContain('selected');
+  expect(renderedClasses(<NavButton>Home</NavButton>)).not.toContain('selected');
+});
+
+it('renders plain from variant and keeps the shape', () => {
+  const classes = renderedClasses(<NavButton aria-label="Home" variant="plain" prefixIcon={<svg />} />);
+
+  expect(classes).toContain('square');
+  expect(classes).toContain('plain');
+});
+
 const emptyChildren: Array<[string, ReactNode]> = [
   ['null', null],
   ['false', false],

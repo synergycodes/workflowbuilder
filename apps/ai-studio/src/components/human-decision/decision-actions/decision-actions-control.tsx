@@ -89,7 +89,7 @@ function DecisionActionsControl({ data, handleChange, path, enabled, label }: Co
             aria-describedby={reject === undefined ? rejectNoteId : undefined}
             checked={reject !== undefined}
             disabled={!enabled}
-            onChange={toggleReject}
+            onCheckedChange={toggleReject}
           />
         </div>
         {reject !== undefined && (
@@ -107,7 +107,7 @@ function DecisionActionsControl({ data, handleChange, path, enabled, label }: Co
               aria-describedby={reject.reasonRequired ? undefined : reasonNoteId}
               checked={reject.reasonRequired}
               disabled={!enabled}
-              onChange={toggleReason}
+              onCheckedChange={toggleReason}
             />
           </div>
         )}

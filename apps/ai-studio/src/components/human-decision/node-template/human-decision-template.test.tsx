@@ -207,7 +207,7 @@ describe('HumanDecisionNodeTemplate', () => {
 
     const overlaySlots = container.querySelector('[data-slot="overlay-slots"][data-node-id="human-1"]');
     expect(overlaySlots?.parentElement?.className).toMatch(/overlay/);
-    expect(overlaySlots?.querySelector('[class*="status-container--invalid"]')).toBeInstanceOf(HTMLElement);
+    expect(overlaySlots?.querySelector('[class*="status-container--critical"]')).toBeInstanceOf(HTMLElement);
     expect(container.querySelector('[data-slot="content"] [class*="status-container"]')).toBeNull();
     const headerEnd = container.querySelector('[data-slot="header-end"][data-node-id="human-1"]');
     expect(headerEnd?.parentElement?.lastElementChild).toBe(headerEnd);

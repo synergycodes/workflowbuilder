@@ -56,7 +56,7 @@ describe('OpenNotices', () => {
   it('shows a notice raised later at once', () => {
     mount();
 
-    act(() => addNotice('The workflow draft could not be saved.', 'error'));
+    act(() => addNotice('The workflow draft could not be saved.', 'critical'));
 
     expect(shownTitles()).toEqual(['The workflow draft could not be saved.']);
   });
@@ -65,12 +65,12 @@ describe('OpenNotices', () => {
     mount();
 
     act(() => {
-      addNotice('The run did not start.', 'error');
+      addNotice('The run did not start.', 'critical');
       addNotice('The workflow draft is saved.', 'success');
     });
 
-    expect(snackbar.show.mock.calls[0]![0]).toMatchObject({ variant: 'error', autoHideDuration: null });
-    expect(snackbar.show.mock.calls[1]![0]).toMatchObject({ variant: 'success' });
+    expect(snackbar.show.mock.calls[0]![0]).toMatchObject({ tone: 'critical', autoHideDuration: null });
+    expect(snackbar.show.mock.calls[1]![0]).toMatchObject({ tone: 'success' });
     expect(snackbar.show.mock.calls[1]![0]).not.toHaveProperty('autoHideDuration');
   });
 
@@ -78,8 +78,8 @@ describe('OpenNotices', () => {
     mount();
 
     act(() => {
-      addNotice('The workflow draft could not be saved automatically: the server did not answer.', 'error');
-      addNotice('The workflow draft could not be saved automatically: the server did not answer.', 'error');
+      addNotice('The workflow draft could not be saved automatically: the server did not answer.', 'critical');
+      addNotice('The workflow draft could not be saved automatically: the server did not answer.', 'critical');
     });
 
     const [first, second] = snackbar.show.mock.calls.map(([options]) => options as { key?: string });

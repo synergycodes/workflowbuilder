@@ -6,13 +6,13 @@ import styles from './snackbar.module.css';
 import { ActionButtons } from './components/action-buttons';
 import { Icon } from './components/icon';
 import { Message } from './components/message';
-import { SnackbarVariant } from './types';
+import type { SnackbarTone } from './types';
 
 export type SnackbarProps = {
   /**
-   * Visual style variant of the snackbar
+   * Meaning of the message, which sets its colours, icon colour and action button style
    */
-  variant: SnackbarVariant;
+  tone: SnackbarTone;
   /**
    * Main message displayed in the snackbar
    */
@@ -30,12 +30,7 @@ export type SnackbarProps = {
    */
   onButtonClick?: () => void;
   /**
-   * Whether to show the close button
-   * @default false
-   */
-  close?: boolean;
-  /**
-   * Callback fired when the snackbar is closed
+   * Callback fired when the close button is clicked. The close button is shown only when it is set.
    */
   onClose?: () => void;
 };
@@ -44,21 +39,15 @@ export type SnackbarProps = {
  * A Snackbar component that displays brief messages about app processes.
  * Purely presentational: it does not position or auto-dismiss itself - placement
  * and lifetime (e.g. an auto-hide timer) are the consumer's responsibility, and
- * dismissal is driven through `close` / `onClose`.
+ * dismissal is driven through `onClose`.
  */
 export const Snackbar = forwardRef<HTMLDivElement, SnackbarProps>(
-  ({ variant, title, subtitle, buttonLabel, onButtonClick, close = false, onClose }, ref) => (
-    <div ref={ref} role="status" aria-live="polite" className={clsx(styles['container'], styles[variant])}>
+  ({ tone, title, subtitle, buttonLabel, onButtonClick, onClose }, ref) => (
+    <div ref={ref} role="status" aria-live="polite" className={clsx(styles['container'], styles[tone])}>
       <div className={styles['content']}>
-        <Icon isCentered={!subtitle} variant={variant} />
+        <Icon isCentered={!subtitle} tone={tone} />
         <Message title={title} subtitle={subtitle} />
-        <ActionButtons
-          variant={variant}
-          buttonLabel={buttonLabel}
-          onButtonClick={onButtonClick}
-          close={close}
-          onClose={onClose}
-        />
+        <ActionButtons tone={tone} buttonLabel={buttonLabel} onButtonClick={onButtonClick} onClose={onClose} />
       </div>
     </div>
   ),

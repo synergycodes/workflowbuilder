@@ -5,7 +5,7 @@ import { ComponentPreview } from './component-preview';
 export function CollapsibleExample() {
   return (
     <ComponentPreview>
-      <Collapsible defaultExpanded>
+      <Collapsible defaultOpen>
         <Collapsible.Button />
         <Collapsible.Content>Additional details go here.</Collapsible.Content>
       </Collapsible>

@@ -5,26 +5,25 @@ import { ButtonVariant } from '@ui/components/button/regular-button/types';
 import styles from './action-buttons.module.css';
 
 import { Button } from '../../button/regular-button/button';
-import { SnackbarType } from '../types';
+import type { SnackbarTone } from '../types';
+
+const BUTTON_VARIANT_BY_TONE: Record<SnackbarTone, ButtonVariant> = {
+  default: 'primary',
+  critical: 'critical',
+  info: 'primary',
+  warning: 'secondary',
+  success: 'success',
+};
 
 type ActionButtonsProps = {
-  variant: string;
+  tone: SnackbarTone;
   buttonLabel?: string;
   onButtonClick?: () => void;
-  close: boolean;
   onClose?: () => void;
 };
 
-export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onClose }: ActionButtonsProps) {
-  const buttonTypeMap: Record<string, ButtonVariant> = {
-    [SnackbarType.DEFAULT]: 'primary',
-    [SnackbarType.ERROR]: 'critical',
-    [SnackbarType.INFO]: 'primary',
-    [SnackbarType.WARNING]: 'secondary',
-    [SnackbarType.SUCCESS]: 'success',
-  };
-
-  const buttonType = buttonTypeMap[variant] || 'primary';
+export function ActionButtons({ tone, buttonLabel, onButtonClick, onClose }: ActionButtonsProps) {
+  const buttonType = BUTTON_VARIANT_BY_TONE[tone] ?? 'primary';
 
   return (
     <div className={styles['container']}>
@@ -33,9 +32,7 @@ export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onCl
           {buttonLabel}
         </Button>
       )}
-      {close && onClose && (
-        <NavButton aria-label="Close" size="s" variant="plain" onClick={onClose} prefixIcon={<X />} />
-      )}
+      {onClose && <NavButton aria-label="Close" size="s" variant="plain" onClick={onClose} prefixIcon={<X />} />}
     </div>
   );
 }

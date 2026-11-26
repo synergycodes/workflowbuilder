@@ -20,7 +20,7 @@ import { useState } from 'react';
 
 function Example() {
   const [checked, setChecked] = useState(false);
-  return <Switch checked={checked} onChange={(next) => setChecked(next)} />;
+  return <Switch checked={checked} onCheckedChange={(next) => setChecked(next)} />;
 }
 ```
 
@@ -49,7 +49,9 @@ import { useState } from 'react';
 
 function Example() {
   const [checked, setChecked] = useState(false);
-  return <IconSwitch checked={checked} icon={<Sun />} IconChecked={<Moon />} onChange={(next) => setChecked(next)} />;
+  return (
+    <IconSwitch checked={checked} icon={<Sun />} IconChecked={<Moon />} onCheckedChange={(next) => setChecked(next)} />
+  );
 }
 ```
 

@@ -8,13 +8,13 @@ function SwitchControl(props: SwitchControlProps) {
   const { data, handleChange, path, enabled, uischema } = props;
   const isDisabled = !enabled || uischema.disabled === true;
 
-  function onChange(checked: boolean) {
+  function onCheckedChange(checked: boolean) {
     handleChange(path, checked);
   }
 
   return (
     <ControlWrapper {...props}>
-      <Switch disabled={isDisabled} size="medium" checked={data ?? false} onChange={onChange} />
+      <Switch disabled={isDisabled} size="m" checked={data ?? false} onCheckedChange={onCheckedChange} />
     </ControlWrapper>
   );
 }

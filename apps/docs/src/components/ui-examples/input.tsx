@@ -27,7 +27,7 @@ export function InputExample() {
           state="critical"
           label="Project name"
           helperText="Enter at least three characters"
-          isRequired
+          required
           placeholder="Critical input"
           value={projectName}
           onChange={(event) => setProjectName(event.target.value)}

@@ -27,7 +27,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
     clearLabel = 'Clear text area',
     label,
     helperText,
-    isRequired,
     maxRows,
     minRows,
     disabled,
@@ -43,14 +42,13 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
 ) {
   const isReadOnly = !disabled && (state === 'read-only' || readOnly === true);
   const fieldState = disabled && state === 'read-only' ? 'default' : isReadOnly ? 'read-only' : state;
-  const isNativeRequired = required || isRequired;
 
   return (
     <Field
       id={id}
       label={label}
       helperText={helperText}
-      isRequired={isNativeRequired}
+      required={required}
       state={fieldState}
       disabled={disabled}
       ariaDescribedBy={ariaDescribedBy}
@@ -77,7 +75,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
             maxRows={maxRows}
             disabled={disabled}
             readOnly={isReadOnly}
-            required={isNativeRequired}
+            required={required}
             aria-describedby={describedBy}
             aria-invalid={fieldState === 'critical' ? true : ariaInvalid}
             className={clsx(styles['text-area'], inputFontStyles[size])}

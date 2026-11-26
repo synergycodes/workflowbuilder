@@ -34,13 +34,13 @@ it('preserves element children inside the label', () => {
 });
 
 it('keeps selection internal while composing the consumer click handler', () => {
-  const onChange = vi.fn();
+  const onValueChange = vi.fn();
   const onSelectedClick = vi.fn();
   const onNextClick = vi.fn();
 
   act(() => {
     root.render(
-      <SegmentPicker defaultValue="a" onChange={onChange}>
+      <SegmentPicker defaultValue="a" onValueChange={onValueChange}>
         <SegmentPicker.Item value="a" onClick={onSelectedClick}>
           First
         </SegmentPicker.Item>
@@ -55,19 +55,20 @@ it('keeps selection internal while composing the consumer click handler', () => 
   act(() => buttons[0]?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 
   expect(onSelectedClick).toHaveBeenCalledOnce();
-  expect(onChange).not.toHaveBeenCalled();
+  expect(onValueChange).not.toHaveBeenCalled();
 
   act(() => buttons[1]?.dispatchEvent(new MouseEvent('click', { bubbles: true })));
 
   expect(onNextClick).toHaveBeenCalledOnce();
-  expect(onChange).toHaveBeenCalledOnce();
-  expect(onChange.mock.calls[0]?.[1]).toBe('b');
+  expect(onValueChange).toHaveBeenCalledOnce();
+  expect(onValueChange.mock.calls[0]?.[0]).toBe('b');
+  expect(onValueChange.mock.calls[0]?.[1]).toHaveProperty('currentTarget');
 });
 
 it('marks the container and items with the secondary variant', () => {
   act(() => {
     root.render(
-      <SegmentPicker defaultValue="a" size="extra-small" variant="secondary">
+      <SegmentPicker defaultValue="a" size="xs" variant="secondary">
         <SegmentPicker.Item value="a">First</SegmentPicker.Item>
         <SegmentPicker.Item value="b">Second</SegmentPicker.Item>
       </SegmentPicker>,
@@ -81,6 +82,20 @@ it('marks the container and items with the secondary variant', () => {
   expect(buttons[0]?.className).toMatch(/secondary/);
   expect(buttons[1]?.className).toMatch(/secondary/);
   expect(buttons[0]?.getAttribute('aria-pressed')).toBe('true');
+});
+
+it('renders the round shape on the container and its items', () => {
+  act(() => {
+    root.render(
+      <SegmentPicker defaultValue="a" shape="round">
+        <SegmentPicker.Item value="a" prefixIcon={<svg />} aria-label="First" />
+        <SegmentPicker.Item value="b" prefixIcon={<svg />} aria-label="Second" />
+      </SegmentPicker>,
+    );
+  });
+
+  expect(container.firstElementChild?.className).toMatch(/round/);
+  expect(container.querySelector('button')?.className).toMatch(/round/);
 });
 
 it('renders the primary variant by default', () => {
