@@ -63,3 +63,13 @@ it('stays as open says when controlled', () => {
   expect(onOpenChange).toHaveBeenCalledWith(false);
   expect(header().getAttribute('aria-expanded')).toBe('true');
 });
+
+// The SDK palette forces groups open while filtering and releases `open` afterwards.
+it('keeps its own state through clicks made while controlled', () => {
+  renderAccordion({ open: true });
+
+  clickArrow();
+  renderAccordion();
+
+  expect(header().getAttribute('aria-expanded')).toBe('true');
+});

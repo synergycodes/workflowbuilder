@@ -128,7 +128,7 @@ Every component follows the same rules, so a prop name means the same thing wher
 
 **Open state.** `open` controls it, `defaultOpen` sets where an uncontrolled component starts, and `onOpenChange(open)` reports a change (`Accordion`, `Collapsible`, `Tooltip`). `Modal` keeps `open` with `onClose`.
 
-**Value handlers.** A control that passes a native input through keeps the native `onChange(event)` (`Input`, `TextArea`, `Checkbox`, `Radio`). A control that reports a value calls `onValueChange(value, event)` (`Select`, `SegmentPicker`; `DatePicker` passes the value alone). A toggle calls `onCheckedChange(checked, event)` (`Switch`, `IconSwitch`).
+**Value handlers.** A control that passes a native input through keeps the native `onChange(event)` (`Input`, `TextArea`, `Checkbox`, `Radio`). A control that reports a value calls `onValueChange(value, event)` (`Select`, `SegmentPicker`; `DatePicker` passes the value alone), and only when the value changes: picking the current one again reports nothing. A toggle calls `onCheckedChange(checked, event)` (`Switch`, `IconSwitch`).
 
 **Tone.** What a message means is `tone`, with the design system's values `default | info | success | warning | critical`; each component takes the ones it styles (`Snackbar` all five, `Status` only `critical`). A form field's validation and editing state stays `state`, and a button's style stays `variant`. Value sets are string unions with an `as const` array, e.g. `SNACKBAR_TONES`, not enums.
 

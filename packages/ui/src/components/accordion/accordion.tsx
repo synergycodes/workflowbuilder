@@ -51,13 +51,13 @@ export const Accordion = forwardRef<HTMLDivElement, AccordionProps>(
     function onExpandCollapse() {
       const newValue = !isExpanded;
 
-      setIsOpen(newValue);
+      if (open === undefined) setIsOpen(newValue);
       onOpenChange?.(newValue);
     }
 
     return (
       // The arrow bubbles into the header's onClick, so it must not fire onOpenChange too.
-      <Collapsible defaultOpen={defaultOpen} open={isExpanded}>
+      <Collapsible open={isExpanded}>
         <div ref={ref} className={clsx(styles['accordion'], className)} {...props}>
           <div
             className={clsx(styles['header'], {

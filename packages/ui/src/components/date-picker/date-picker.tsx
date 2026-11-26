@@ -170,13 +170,15 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     </>
   );
 
+  const isReadOnly = readOnly || state === 'read-only';
+
   return (
     <Field id={id} label={label} helperText={helperText} required={required} state={state} disabled={disabled}>
       {({ controlId, describedBy, required: fieldRequired }) => (
         <Popover.Root
-          open={disabled || readOnly ? false : open}
+          open={disabled || isReadOnly ? false : open}
           onOpenChange={(nextOpen) => {
-            if (disabled || readOnly) return;
+            if (disabled || isReadOnly) return;
             setOpen(nextOpen);
             if (!nextOpen) {
               setRangeDraft(undefined);
@@ -192,9 +194,9 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
             disabled={disabled}
             aria-label={ariaLabel}
             aria-labelledby={ariaLabelledby}
-            aria-readonly={readOnly || undefined}
+            aria-readonly={isReadOnly || undefined}
             aria-invalid={state === 'critical' || undefined}
-            data-state={readOnly ? 'read-only' : state}
+            data-state={isReadOnly ? 'read-only' : state}
             className={triggerClassName}
           >
             <span className={styles['trigger-label']}>{triggerLabel ?? placeholder}</span>

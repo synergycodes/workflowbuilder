@@ -17,9 +17,7 @@ const items = [...responseOptions, customResponseOption];
 export function ResponseControl({ data, handleChange, path, enabled, label }: ControlProps) {
   const current = responseOptionOf(data);
 
-  // Base UI reports a click on the selected item as a change.
   const onValueChange: SelectBaseProps['onValueChange'] = (value) => {
-    if (value === current) return;
     handleChange(path, outputSchemaFor(value));
   };
 

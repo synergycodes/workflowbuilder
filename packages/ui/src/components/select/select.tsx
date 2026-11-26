@@ -1,6 +1,6 @@
 import { Select as SelectBase } from '@base-ui/react/select';
 import clsx from 'clsx';
-import type { ReactNode, SyntheticEvent } from 'react';
+import { type ReactNode, type SyntheticEvent, useRef } from 'react';
 
 import selectButtonStyles from './select-button/select-button.module.css';
 import style from './select.module.css';
@@ -97,6 +97,7 @@ export function Select({
   state = 'default',
   id,
 }: SelectBaseProps) {
+  const uncontrolledValue = useRef(defaultValue);
   const triggerClassName = clsx(
     selectButtonStyles['container'],
     {
@@ -117,7 +118,12 @@ export function Select({
             disabled={disabled}
             name={name}
             required={required}
+            readOnly={state === 'read-only'}
             onValueChange={(nextValue, eventDetails) => {
+              // Base UI reports a click on the selected item as a change.
+              const currentValue = value === undefined ? uncontrolledValue.current : value;
+              if (nextValue === currentValue) return;
+              uncontrolledValue.current = nextValue as SelectValueType;
               onValueChange?.(nextValue as SelectValueType, eventDetails.event ?? null);
             }}
           >

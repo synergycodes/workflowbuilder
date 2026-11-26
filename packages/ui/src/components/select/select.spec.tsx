@@ -70,6 +70,57 @@ it('reports the picked value first and the event second through onValueChange', 
   expect(onValueChange.mock.calls[0]?.[1]).toBeInstanceOf(Event);
 });
 
+const twoItems = [
+  { value: 'a', label: 'A' },
+  { value: 'b', label: 'B' },
+];
+
+function option(label: string) {
+  return [...document.querySelectorAll<HTMLElement>('[role="option"]')].find(
+    (candidate) => candidate.textContent === label,
+  );
+}
+
+async function openSelect() {
+  press(container.querySelector('button')!);
+  await act(async () => {});
+}
+
+describe('Select onValueChange on re-picking the current value', () => {
+  it.each([
+    ['uncontrolled', { defaultValue: 'a' }],
+    ['controlled', { value: 'a' }],
+  ])('stays silent when %s', async (_, props) => {
+    const onValueChange = vi.fn();
+    act(() => root.render(<Select items={twoItems} onValueChange={onValueChange} {...props} />));
+
+    await openSelect();
+    press(option('A')!);
+
+    expect(onValueChange).not.toHaveBeenCalled();
+  });
+
+  it('reports a pick that returns to the starting value when uncontrolled', async () => {
+    const onValueChange = vi.fn();
+    act(() => root.render(<Select defaultValue="a" items={twoItems} onValueChange={onValueChange} />));
+
+    await openSelect();
+    press(option('B')!);
+    await openSelect();
+    press(option('A')!);
+
+    expect(onValueChange.mock.calls.map(([value]) => value)).toEqual(['b', 'a']);
+  });
+});
+
+it('does not open with state read-only', async () => {
+  act(() => root.render(<Select defaultValue="a" items={twoItems} state="read-only" />));
+
+  await openSelect();
+
+  expect(option('B')).toBeUndefined();
+});
+
 describe('Select required', () => {
   it('marks the label and the trigger', () => {
     triggerClass({ label: 'Mode', required: true });

@@ -37,6 +37,17 @@ describe('DatePicker trigger state', () => {
   });
 });
 
+describe('DatePicker read-only', () => {
+  it.each([{ readOnly: true }, { state: 'read-only' as const }])('%o does not open the calendar', (props) => {
+    const button = trigger({ defaultValue: new Date(2026, 10, 10), ...props });
+
+    act(() => button.click());
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(button.getAttribute('aria-readonly')).toBe('true');
+  });
+});
+
 describe('DatePicker required', () => {
   it('marks the label and the trigger', () => {
     const button = trigger({ label: 'Due date', required: true });
