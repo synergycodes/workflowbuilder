@@ -120,19 +120,19 @@ Default `@workflowbuilder/ui` order:
 
 ## Prop naming
 
-Every component follows the same rules, so a prop name means the same thing wherever it appears. New components follow them too.
+The components follow the same rules, so a prop name means the same thing wherever it appears. New components follow them too. The few exceptions are named under the rule they break.
 
 **Sizes.** The prop is always `size`, on one scale: `xxxs | xxs | xs | s | m | l | xl` (`SIZES`, `Size`). A component's size type lists only the steps it styles, e.g. `ItemSize` is `s | m | l` and `SelectorSize` is `xs | s | m`. `m` is the standard step and the default, with two exceptions that keep the design's default: `Avatar` defaults to `xl` and `NodeFooter` to `s`. A component with a standard and an enlarged form, such as `Modal`, takes `m | l`.
 
-**Booleans.** A boolean prop names the state bare, as HTML and Base UI do: `disabled`, `readOnly`, `required`, `checked`, `open`, `selected`, `loading`, `hovered`, `visible`, `dimmed`. No prop starts with `is` or `has`. One state has one prop: `required` both marks the label and sets the native attribute.
+**Booleans.** A boolean prop names the state bare, as HTML and Base UI do: `disabled`, `readOnly`, `required`, `checked`, `open`, `selected`, `loading`, `hovered`, `visible`, `dimmed`. No prop starts with `is` or `has`. One state has one prop: `required` both marks the label and sets the native attribute (`aria-required` on `DatePicker`, whose trigger is a button).
 
 **Open state.** `open` controls it, `defaultOpen` sets where an uncontrolled component starts, and `onOpenChange(open)` reports a change (`Accordion`, `Collapsible`, `Tooltip`). `Modal` keeps `open` with `onClose`.
 
 **Value handlers.** A control that passes a native input through keeps the native `onChange(event)` (`Input`, `TextArea`, `Checkbox`, `Radio`). A control that reports a value calls `onValueChange(value, event)` (`Select`, `SegmentPicker`; `DatePicker` passes the value alone), and only when the value changes: picking the current one again reports nothing. A toggle calls `onCheckedChange(checked, event)` (`Switch`, `IconSwitch`).
 
-**Tone.** What a message means is `tone`, with the design system's values `default | info | success | warning | critical`; each component takes the ones it styles (`Snackbar` all five, `Status` only `critical`). A form field's validation and editing state stays `state`, and a button's style stays `variant`. Value sets are string unions with an `as const` array, e.g. `SNACKBAR_TONES`, not enums.
+**Tone.** What a message means is `tone`, with the design system's values `default | info | success | warning | critical`; each component takes the ones it styles (`Snackbar` all five, a `Menu` item `default | critical`, `Status` only `critical`). The run-state parts keep their own lists under the same prop: `NODE_RUN_TONES` adds `human`, `neutral` and `inverse`, `EDGE_RUN_TONES` has `active` and `disabled`. A form field's validation and editing state stays `state`, and a button's style stays `variant`. Value sets are string unions, not enums; a set shared across components or iterated over also has an `as const` array, e.g. `SNACKBAR_TONES`.
 
-**Shape.** `shape` is geometry and `variant` is style. Shape values are shared, `default | square | round`, and each component takes the ones it styles (`Button`, `NavButton`, `SegmentPicker`). The two combine: `<NavButton shape="round" variant="plain">` is a transparent round button.
+**Shape.** `shape` is geometry and `variant` is style. Shape values are shared, `default | square | round`, and each component takes the ones it styles (`Button`, `NavButton`, `SegmentPicker`). The two combine: `<NavButton shape="round" variant="plain">` is a transparent round button. One style prop still has another name: a button's `tooltipType` and `Tooltip.Content`'s `tooltipType` pick the tooltip's style.
 
 **Base UI names.** A prop handed straight to Base UI keeps Base UI's name and type.
 
