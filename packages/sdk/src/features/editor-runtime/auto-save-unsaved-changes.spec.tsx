@@ -1,5 +1,5 @@
 import { type RenderResult, act, fireEvent, render, screen } from '@testing-library/react';
-import { StrictMode } from 'react';
+import { Component, type PropsWithChildren, StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from '../../hooks/use-workflow-builder-actions';
@@ -80,6 +80,25 @@ function ActionsProbe() {
   return null;
 }
 
+const crashingName = 'Crashes the render';
+
+function CrashOnName() {
+  if (useStore((store) => store.workflowName) === crashingName) throw new Error('render crash');
+  return null;
+}
+
+class HostErrorBoundary extends Component<PropsWithChildren, { failed: boolean }> {
+  override state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  override render() {
+    return this.state.failed ? <p role="alert">The editor crashed</p> : this.props.children;
+  }
+}
+
 async function settle(ms = 0) {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(ms);
@@ -91,10 +110,13 @@ async function renderRoot(strategy: Strategy, integration: WorkflowBuilderIntegr
     strategy === 'props' ? { name: stored.name, initialNodes: stored.nodes, initialEdges: stored.edges } : {};
   const view = render(
     <StrictMode>
-      <WorkflowBuilderRoot integration={integration} {...initialData}>
-        <ActionsProbe />
-        <SaveButton />
-      </WorkflowBuilderRoot>
+      <HostErrorBoundary>
+        <WorkflowBuilderRoot integration={integration} {...initialData}>
+          <ActionsProbe />
+          <SaveButton />
+          <CrashOnName />
+        </WorkflowBuilderRoot>
+      </HostErrorBoundary>
     </StrictMode>,
   );
   await settle();
@@ -210,6 +232,18 @@ describe.each<Strategy>(['localStorage', 'api', 'props'])('automatic saves with 
     act(edits['a rename']);
     await leaveTheRoute(view);
 
+    expect(writes()).toBe(0);
+  });
+
+  it('an edit that crashes the render reaches the host app error boundary and is not written', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { integration, writes } = harnessFor(strategy);
+    await renderRoot(strategy, integration);
+
+    act(() => useStore.getState().setWorkflowName(crashingName));
+    await settle(800);
+
+    expect(screen.getByRole('alert')).toBeDefined();
     expect(writes()).toBe(0);
   });
 
