@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-settings-navigation-background: var(--wb-public-modal-header-background);
 }
 

@@ -143,20 +143,14 @@
 }
 
 .json-key {
-  color: var(--wb-ds-colors-acc1-600);
+  color: var(--wb-ds-ui-code-key);
 }
 
-.json-string {
-  color: #15803d;
-}
-
-.json-number {
-  color: #b45309;
-}
-
+.json-string,
+.json-number,
 .json-boolean,
 .json-null {
-  color: #7c3aed;
+  color: var(--wb-ds-ui-code-literal);
 }
 
 .json-bracket {

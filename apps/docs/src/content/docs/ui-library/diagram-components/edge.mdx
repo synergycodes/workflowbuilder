@@ -23,7 +23,7 @@ that React Flow provides. Used outside a diagram context it may need extra
 wrapper elements or layout adjustments because absolute positioning removes it
 from normal document flow.
 
-`useEdgeStyle` returns an object of CSS properties (`stroke`, `strokeWidth`,
+`useEdgeStyle` returns an object of CSS properties (`fill`, `stroke`, `strokeWidth`,
 `transition`, plus `strokeDasharray` and `animation` when the line is dashed or
 running) that you apply directly to the SVG path element representing an edge.
 Besides `state` and `isHovered` it takes `runState` (`pending`, `running`,
@@ -179,7 +179,7 @@ the CSS properties for its SVG path.
 
 <PropsTable slug="use-edge-style" />
 
-Returns `{ stroke, strokeWidth, transition }`, plus `strokeDasharray` and
+Returns `{ fill, stroke, strokeWidth, transition }`, plus `strokeDasharray` and
 `animation` when they apply, ready to spread onto a path's `style`.
 
 ## Run tones
@@ -214,11 +214,11 @@ node, not on the edge. Add your own if you need one.
 Define the variable for light and dark mode, then pass its name as `tone`:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-edge-run-status-stroke-error: #dc2626;
 }
 
-:root[data-theme='dark'] {
+.workflow-builder-root[data-wb-theme='dark'] {
   --wb-public-edge-run-status-stroke-error: #f87171;
 }
 ```

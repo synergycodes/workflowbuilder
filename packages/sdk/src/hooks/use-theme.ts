@@ -1,9 +1,13 @@
-import { useSyncExternalStore } from 'react';
+import { useContext } from 'react';
 
-import { getTheme, subscribeTheme } from './theme';
+import { HostThemeContext } from './host-theme-context';
+import { useControlledTheme, usePersistedTheme } from './theme';
 
 export function useTheme() {
-  const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
+  const hostTheme = useContext(HostThemeContext);
+  const controlledTheme = useControlledTheme((state) => state.controlled?.theme ?? null);
+  const persistedTheme = usePersistedTheme((state) => state.theme);
+  const theme = hostTheme ?? controlledTheme ?? persistedTheme;
 
   return { theme };
 }

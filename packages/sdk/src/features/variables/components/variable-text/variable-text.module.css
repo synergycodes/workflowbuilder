@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-color-violet-400-20: rgba(148, 131, 255, 0.2);
   --wb-sdk-variable-text-mention-bg: var(--wb-sdk-color-violet-400-20);
   --wb-sdk-variable-text-suggestion-bg: var(--wb-ds-ui-bg-base);
@@ -129,20 +129,20 @@
   font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
 }
 
-body:has(.suggestionsContainer) {
-  &::before {
-    content: '';
-    position: fixed;
-    width: 100vw;
-    height: 100dvh;
-    background-color: var(--wb-sdk-variable-backdrop);
-    z-index: 200;
-  }
+/* On the shell, which clips it (position: relative; overflow: hidden), so only the editor dims. */
+:global(:is(#\#, .workflow-builder-root).workflow-builder-root-shell)[data-wb-overlay='variable-picker']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--wb-sdk-variable-backdrop);
+  z-index: 200;
+}
 
-  /* Modal already dims the page; don't stack a second backdrop. */
-  &:global(.wb-modal-open)::before {
-    display: none;
-  }
+/* Modal already dims the editor; don't stack a second backdrop. */
+:global(
+    :is(#\#, .workflow-builder-root).workflow-builder-root-shell.wb-modal-open
+  )[data-wb-overlay='variable-picker']::before {
+  display: none;
 }
 
 .suggestionsHeader {

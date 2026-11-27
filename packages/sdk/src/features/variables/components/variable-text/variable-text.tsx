@@ -1,5 +1,5 @@
 import xIcon from '@iconify-icons/ph/x';
-import { NavButton, SnackbarType } from '@workflowbuilder/ui';
+import { NavButton, SnackbarType, usePortalContainer } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { getNodeByIdAction } from '../../../../store-get-actions/stores/use-stor
 import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY, variableTypeInfoByType } from '../../constants';
 import { buildMentionData } from './core/build-mention-data';
+import { OverlayAttribute } from './overlay-attribute';
 import type {
   VariableMentionData,
   VariableSuggestion,
@@ -96,6 +97,7 @@ export function VariableText({
   mentionProps,
 }: VariableTextProps) {
   const { t } = useTranslation();
+  const portal = usePortalContainer() ?? undefined;
   // A counter, not `crypto.randomUUID()`: that API exists only in secure contexts (https, localhost).
   const [key, setKey] = useState(0);
   const singleLine = variant === 'text';
@@ -163,6 +165,7 @@ export function VariableText({
 
       return (
         <div className={styles['suggestionsContainer']} onMouseDown={preventBlur}>
+          <OverlayAttribute kind="variable-picker" />
           <div className={styles['suggestionsHeader']}>
             <span className={styles['suggestionsTitle']}>{title}</span>
             <NavButton
@@ -295,6 +298,7 @@ export function VariableText({
 
   return (
     <MentionsInput
+      suggestionsPortalHost={portal}
       {...restMentionsInputProps}
       key={key}
       className={clsx(styles['container'], classNameWrapper)}

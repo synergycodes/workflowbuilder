@@ -5,9 +5,9 @@ sidebar:
   order: 5
 ---
 
-The aggregated `style.css` ships with the SDK's default visual layer. Override CSS custom properties on `:root` (or a higher-priority selector) to customise.
+The aggregated `style.css` ships with the SDK's default visual layer. Override CSS custom properties on `.workflow-builder-root`, the editor's element. The container the editor's popups (Modal, Menu, Tooltip, Select, DatePicker) render in carries the same class, so one block reaches them too.
 
-CSS variables inherit through the DOM, not the React tree. Modal, Menu, Tooltip, Select, and DatePicker surfaces mount under `document.body`, so app-shell-scoped overrides do not reach them. This applies to all theme tokens, including backgrounds and component overrides; use `:root` or apply the overrides to the portal container too. Custom layouts passed as Root children and SDK-owned body portals join the builder's font scope, but portals created by host or plugin code remain outside it.
+Overrides on `:root` are ignored for public variables and themed tokens; only tokens the design system itself declares on `:root` (primitives such as `--wb-ds-colors-*` and `--wb-ds-space-*`, canvas geometry) work there. Keep primitive overrides on `:root`: the canvas geometry tokens read the spacing, size and radius primitives there, so a primitive set on `.workflow-builder-root` does not reach node and edge geometry. CSS variables inherit through the DOM, not the React tree: custom layouts passed as Root children inherit the overrides, but portals created by host or plugin code outside the editor do not. To theme the editor from your own variables, see the bridge example in [Upgrade to 4.0](/get-started/upgrade-to-4/#move-variable-overrides-to-workflow-builder-root).
 
 ## Typography
 
@@ -18,7 +18,7 @@ Other weights, Inter, and non-ASCII glyphs use `font-display: swap` assets. They
 `--wb-public-font-family` controls the builder root and every Poppins-backed type role. The proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-font-family: 'Inter', system-ui, -apple-system, sans-serif;
   --wb-public-font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
@@ -28,10 +28,10 @@ Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or
 
 ## Layout spacing
 
-`--wb-public-layout-spacing` sets the default layout's outer spacing: the gap between the canvas edge and the header and side panels, and between the header and the panels (default `0.75rem`). It takes a CSS length with a unit: write `0px`, not `0`, since a unitless `0` breaks `calc()`. Read it in your own overlays to keep them on the same grid:
+`--wb-public-layout-spacing` sets the default layout's outer spacing: the gap between the canvas edge and the header and side panels, and between the header and the panels (default `0.75rem`). It takes a CSS length with a unit: write `0px`, not `0`, since a unitless `0` breaks `calc()`. Read it in your own overlays inside the editor to keep them on the same grid:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-layout-spacing: 1rem;
 }
 
@@ -45,14 +45,14 @@ Custom layouts passed as `Root` children do not use it unless they read it thems
 
 ## Snackbar position
 
-Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). A stack too tall for the space above that distance stays on screen, pinned 20px below the viewport top, and overlaps what is beneath it. To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default. The example assumes a panel pinned to the viewport bottom; one that moves without resizing needs its own trigger:
+Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). A stack too tall for the space above that distance stays on screen, pinned 20px below the viewport top, and overlaps what is beneath it. To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default. Set it with a rule on `.workflow-builder-root`, not on `:root` or `<html>`: snackbars render in the editor's popup container, which carries the default itself, so only a rule matching that class overrides it. The example assumes a panel pinned to the viewport bottom; one that moves without resizing needs its own trigger:
 
 ```ts
 const GAP = 12; // space between the panel and the lowest snackbar
-const root = document.documentElement.style;
+const style = document.head.appendChild(document.createElement('style'));
 const update = () => {
   const offset = window.innerHeight - panel.getBoundingClientRect().top + GAP;
-  root.setProperty('--wb-public-snackbar-offset-bottom', `${offset}px`);
+  style.textContent = `.workflow-builder-root { --wb-public-snackbar-offset-bottom: ${offset}px; }`;
 };
 
 update();
@@ -61,7 +61,7 @@ observer.observe(panel);
 
 // When the panel goes away:
 observer.disconnect();
-root.removeProperty('--wb-public-snackbar-offset-bottom');
+style.remove();
 ```
 
 ## Canvas grid
@@ -69,7 +69,7 @@ root.removeProperty('--wb-public-snackbar-offset-bottom');
 `--wb-public-canvas-grid-color` sets the colour of the canvas dot grid (default: the design system's canvas dots colour). Set it to `transparent` to hide the grid; the canvas background, `--wb-public-background-color`, stays:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-canvas-grid-color: transparent;
 }
 ```

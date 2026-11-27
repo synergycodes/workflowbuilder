@@ -1,5 +1,15 @@
 /* !important: host rules such as `svg:hover path { stroke: … }` outrank one class. */
 .clickable-transparent-border {
+  /* A filled hit path under a curved edge would catch the pointer inside the curve. */
+  fill: none !important;
   stroke-width: var(--wb-public-edge-hit-width) !important;
   stroke: transparent !important;
+  /* A dashed hit path catches the pointer only on its dashes. */
+  stroke-dasharray: none !important;
+}
+
+/* Solid against a host `svg path` rule; xyflow's `animated` dash is left alone.
+   :where(): the prefix alone carries the weight, so a consumer's own class on the edge can still dash it. */
+:where(:global(.react-flow__edge:not(.animated)) .line) {
+  stroke-dasharray: none;
 }

@@ -9,8 +9,8 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { libInjectCss } from 'vite-plugin-lib-inject-css';
 
 import { combineCssBundle } from './combine-css-bundle.mts';
-import { boxSizingPlugin } from './postcss-box-sizing.mts';
-import { layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mts';
+import { DEFAULTS_LAYER } from './postcss-layer-root-defaults.mts';
+import { editorPostcssPlugins } from './postcss-pipeline.mts';
 
 const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -76,7 +76,7 @@ function copyTokenStyles() {
     targets: files.map((file) => ({
       src: `../tokens/dist/${file}`,
       dest: '.',
-      transform: (content: string) => `${layerOrder}\n@layer ui.base {\n${content}\n}`,
+      transform: (content: string) => `${layerOrder}\n@layer ${DEFAULTS_LAYER} {\n${content}\n}`,
     })),
   });
 }
@@ -126,7 +126,7 @@ export default defineConfig({
   css: {
     devSourcemap: true,
     postcss: {
-      plugins: [boxSizingPlugin(), layerRootDefaultsPlugin()],
+      plugins: editorPostcssPlugins('ui'),
     },
   },
   resolve: {

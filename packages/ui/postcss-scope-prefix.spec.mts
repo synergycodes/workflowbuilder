@@ -1,0 +1,164 @@
+import { describe, expect, it } from 'vitest';
+
+import postcss from 'postcss';
+
+import {
+  type PrefixStrength,
+  scopePrefixPlugin,
+  startsWithBareRoot,
+  startsWithBoxClass,
+} from './postcss-scope-prefix.mts';
+
+const VENDORED = /node_modules[\\/](react-day-picker|@xyflow)[\\/]/;
+
+async function run(css: string, strength: PrefixStrength, from = '/fake/component.module.css'): Promise<string> {
+  const result = await postcss([scopePrefixPlugin({ strength, vendoredFiles: VENDORED })]).process(css, { from });
+  return result.css;
+}
+
+describe('postcss-scope-prefix base styles', () => {
+  it('keeps a hand-written :where() behind the prefix, so the rule weighs only the prefix', async () => {
+    expect(await run(':where(.button), :where(.link:hover)::after { color: red }', 'ui', '/x/src/base.css')).toBe(
+      String.raw`:is(#\#, .workflow-builder-root) :where(.button), :is(#\#, .workflow-builder-root) :where(.link:hover)::after { color: red }`,
+    );
+  });
+});
+
+describe('startsWithBareRoot', () => {
+  it('matches the bare root class followed by a descendant or child combinator', () => {
+    expect(startsWithBareRoot('.workflow-builder-root button')).toBe(true);
+    expect(startsWithBareRoot('  .workflow-builder-root ::-webkit-scrollbar')).toBe(true);
+    expect(startsWithBareRoot('.workflow-builder-root > button')).toBe(true);
+    expect(startsWithBareRoot('.workflow-builder-root>button')).toBe(true);
+  });
+
+  it('rejects the box itself, a state on it, a sibling, and a longer class', () => {
+    expect(startsWithBareRoot('.workflow-builder-root')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root:hover')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root ~ div')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root+div')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root-shell')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root-x .a')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-rootx')).toBe(false);
+  });
+});
+
+describe('startsWithBoxClass', () => {
+  it('names the box, the container, and the bare root with a state or sibling', () => {
+    expect(startsWithBoxClass('.workflow-builder-root-shell')).toBe(true);
+    expect(startsWithBoxClass('.wb-portal .x')).toBe(true);
+    expect(startsWithBoxClass('.workflow-builder-root')).toBe(true);
+    expect(startsWithBoxClass('.workflow-builder-root:hover')).toBe(true);
+    expect(startsWithBoxClass('.workflow-builder-root ~ div')).toBe(true);
+  });
+
+  it('leaves scoped resets and other classes alone', () => {
+    expect(startsWithBoxClass('.workflow-builder-root button')).toBe(false);
+    expect(startsWithBoxClass('.wb-portal-x')).toBe(false);
+    expect(startsWithBoxClass('.button')).toBe(false);
+  });
+});
+
+describe('postcss-scope-prefix include', () => {
+  const plugin = scopePrefixPlugin({ strength: 'sdk', include: /[\\/]sdk[\\/]src[\\/]/ });
+
+  it('prefixes a file inside include', async () => {
+    const result = await postcss([plugin]).process('.panel { color: red }', { from: '/x/sdk/src/panel.module.css' });
+    expect(result.css).toBe(String.raw`:is(#\#, .workflow-builder-root).workflow-builder-root .panel { color: red }`);
+  });
+
+  it('leaves a file outside include untouched', async () => {
+    const result = await postcss([plugin]).process('.panel { color: red }', { from: '/x/apps/demo/src/global.css' });
+    expect(result.css).toBe('.panel { color: red }');
+  });
+});
+
+describe('postcss-scope-prefix', () => {
+  it('prefixes a component rule with the UI strength', async () => {
+    expect(await run('.button { color: red }', 'ui')).toBe(
+      String.raw`:is(#\#, .workflow-builder-root) .button { color: red }`,
+    );
+  });
+
+  it('uses the SDK strength', async () => {
+    expect(await run('.panel { color: red }', 'sdk')).toBe(
+      String.raw`:is(#\#, .workflow-builder-root).workflow-builder-root .panel { color: red }`,
+    );
+  });
+
+  it('uses :where for vendored files', async () => {
+    expect(await run('.rdp-day { color: red }', 'ui', '/x/node_modules/react-day-picker/style.css')).toBe(
+      ':where(.workflow-builder-root) .rdp-day { color: red }',
+    );
+  });
+
+  it('skips :root and bare [data-wb-theme] default blocks', async () => {
+    const input = ":root { --a: 1px }\n[data-wb-theme='dark'] { --b: 2px }";
+    expect(await run(input, 'ui')).toBe(input);
+  });
+
+  it('prefixes a variable-only component rule so it keeps pace with its base rule', async () => {
+    expect(await run("[data-wb-theme='dark'] .warning { --c: red }", 'sdk')).toBe(
+      String.raw`:is(#\#, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] .warning { --c: red }`,
+    );
+  });
+
+  it('compounds a painting rule on the bare themed box', async () => {
+    expect(await run("[data-wb-theme='dark'] { color-scheme: dark }", 'sdk')).toBe(
+      String.raw`:is(#\#, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] { color-scheme: dark }`,
+    );
+  });
+
+  it('compounds a [data-wb-theme] descendant selector', async () => {
+    expect(await run("[data-wb-theme='dark'] .logo { opacity: 1 }", 'ui')).toBe(
+      String.raw`:is(#\#, .workflow-builder-root)[data-wb-theme='dark'] .logo { opacity: 1 }`,
+    );
+  });
+
+  it('skips @keyframes steps and @font-face, descends into @media', async () => {
+    const output = await run(
+      '@keyframes spin { from { opacity: 0 } }\n@font-face { font-family: X }\n@media (min-width: 1px) { .a { color: red } }',
+      'ui',
+    );
+    expect(output).toContain('from { opacity: 0 }');
+    expect(output).not.toContain(String.raw`:is(#\#, .workflow-builder-root) from`);
+    expect(output).toContain(String.raw`@media (min-width: 1px) { :is(#\#, .workflow-builder-root) .a`);
+  });
+
+  it('leaves rules inside @layer alone', async () => {
+    const input = '@layer wb-ui.base { .x { color: red } }';
+    expect(await run(input, 'ui')).toBe(input);
+  });
+
+  it('handles top-level :global() and selector lists', async () => {
+    expect(await run(':global(.ace_tooltip), .b { display: none }', 'sdk')).toBe(
+      String.raw`:is(#\#, .workflow-builder-root).workflow-builder-root :global(.ace_tooltip), :is(#\#, .workflow-builder-root).workflow-builder-root .b { display: none }`,
+    );
+  });
+
+  it('is idempotent, also when UI output passes through the SDK build', async () => {
+    const once = await run('.button { color: red }', 'ui');
+    expect(await run(once, 'ui')).toBe(once);
+    expect(await run(once, 'sdk')).toBe(once);
+  });
+
+  it('recognises its own prefix in minified UI dist CSS', async () => {
+    const minified = String.raw`:is(#\#,.workflow-builder-root) ._button_1dpso_9{color:red}`;
+    expect(await run(minified, 'sdk')).toBe(minified);
+  });
+
+  it('skips the scoped resets and keeps a hand-glued box rule', async () => {
+    const reset = '.workflow-builder-root button { cursor: pointer }';
+    expect(await run(reset, 'sdk')).toBe(reset);
+    const glued = String.raw`:is(#\#, .workflow-builder-root).workflow-builder-root-shell { position: relative }`;
+    expect(await run(glued, 'sdk')).toBe(glued);
+  });
+
+  it('fails the build on a box class a descendant prefix could never match', async () => {
+    await expect(run('.workflow-builder-root-shell { position: relative }', 'sdk')).rejects.toThrow(
+      /names the editor box/,
+    );
+    await expect(run('.wb-portal { display: contents }', 'sdk')).rejects.toThrow(/names the editor box/);
+    await expect(run('.workflow-builder-root ~ div { color: red }', 'sdk')).rejects.toThrow(/names the editor box/);
+  });
+});

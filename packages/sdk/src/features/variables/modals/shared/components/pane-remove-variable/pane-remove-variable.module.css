@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-settings-remove-bg: var(--wb-public-modal-header-background);
 }
 

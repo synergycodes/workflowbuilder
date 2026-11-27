@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-variable-bg: var(--wb-sdk-color-violet-400-20);
   --wb-sdk-variable-txt: #6b3bff;
 }

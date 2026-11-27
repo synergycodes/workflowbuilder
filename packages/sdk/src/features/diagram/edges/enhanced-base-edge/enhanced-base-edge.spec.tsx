@@ -111,10 +111,35 @@ describe('EnhancedBaseEdge', () => {
   });
 
   it('sizes the transparent hit area with the public hit width, 12 by default', () => {
-    expect(cssRule('../../../../index.css', ':root')).toMatch(/--wb-public-edge-hit-width:\s*12;/);
+    expect(cssRule('../../../../index.css', String.raw`\[data-wb-theme\]`)).toMatch(
+      /--wb-public-edge-hit-width:\s*12;/,
+    );
     const hitArea = cssRule('enhanced-base-edge.module.css', String.raw`\.clickable-transparent-border`);
     expect(hitArea).toMatch(/stroke-width:\s*var\(--wb-public-edge-hit-width\) !important;/);
     expect(hitArea).toMatch(/stroke:\s*transparent !important;/);
+  });
+
+  // Seen on a host with `svg path { stroke-dasharray: 2 2 }`: the edge could not be hovered between dashes.
+  it('keeps the hit area and a plain line solid against a host or xyflow dash', () => {
+    const hitArea = cssRule('enhanced-base-edge.module.css', String.raw`\.clickable-transparent-border`);
+    expect(hitArea).toMatch(/stroke-dasharray:\s*none !important;/);
+    expect(hitArea).toMatch(/fill:\s*none !important;/);
+
+    // Inside :where(), so a class the consumer passes can still dash the line.
+    const line = cssRule(
+      'enhanced-base-edge.module.css',
+      String.raw`:where\(:global\(\.react-flow__edge:not\(\.animated\)\) \.line\)`,
+    );
+    expect(line).toMatch(/stroke-dasharray:\s*none;/);
+
+    const { container } = render(
+      <svg>
+        <EnhancedBaseEdge id="edge-1" path="M 0 0 L 10 0" className="custom" />
+      </svg>,
+    );
+    const visible = container.querySelector<SVGPathElement>('[data-edge-id="edge-1"]')!;
+    expect(visible.getAttribute('class')).toContain('line');
+    expect(visible.getAttribute('class')).toContain('custom');
   });
 
   it('turns only the edit colours to the select colour on keyboard focus and selection', () => {

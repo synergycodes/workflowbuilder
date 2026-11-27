@@ -1,5 +1,5 @@
 /* One palette per tone, read by NodeRunRing (stroke, halo), NodeRunIndicator (bg, fg) and NodeRunBadge (bg, fg). */
-:root {
+[data-wb-theme] {
   --wb-public-node-run-status-stroke-info: var(--wb-ds-canvas-run-status-stroke-info);
   --wb-public-node-run-status-stroke-success: var(--wb-ds-canvas-run-status-stroke-success);
   --wb-public-node-run-status-stroke-warning: var(--wb-ds-canvas-run-status-stroke-warning);

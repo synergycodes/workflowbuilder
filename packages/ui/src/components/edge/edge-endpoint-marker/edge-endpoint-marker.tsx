@@ -40,7 +40,8 @@ export function EdgeEndpointMarker({ id, type, style }: EdgeEndpointMarkerProps)
     <marker id={id} markerUnits="userSpaceOnUse" orient="auto" {...MARKER_BOX[type]}>
       {type === 'arrow' ? (
         // polyline, not path: host and xyflow rules that target `path` (`.animated path`) must not restyle it.
-        <polyline points="1,1 6.5,6.5 1,12" fill="none" style={shapeStyle} />
+        // Inline fill: the attribute alone loses to a host `svg polyline { fill }`.
+        <polyline points="1,1 6.5,6.5 1,12" fill="none" style={{ ...shapeStyle, fill: 'none' }} />
       ) : (
         // Filled with the canvas colour to hide the line that runs under the circle.
         <circle

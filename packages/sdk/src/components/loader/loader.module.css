@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-loader-background-opacity: 1;
   --wb-sdk-panel-background-color: var(--wb-ds-ui-bg-base);
 }

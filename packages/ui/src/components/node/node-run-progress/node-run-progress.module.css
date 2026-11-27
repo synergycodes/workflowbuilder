@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-public-node-run-progress-height: var(--wb-ds-canvas-run-status-progress-height);
   --wb-public-node-run-progress-border-radius: var(--wb-ds-canvas-run-status-progress-radius);
   --wb-public-node-run-progress-track-color: var(--wb-ds-canvas-run-status-progress-track);
@@ -13,28 +13,26 @@
   );
 }
 
-@layer ui.component {
-  .progress {
-    position: absolute;
-    inset-inline: var(--wb-ds-canvas-node-head-h-pad);
-    top: var(--wb-public-node-run-progress-top);
-    height: var(--wb-public-node-run-progress-height);
-    overflow: hidden;
-    border-radius: var(--wb-public-node-run-progress-border-radius);
-    background: var(--wb-public-node-run-progress-track-color);
-  }
+.progress {
+  position: absolute;
+  inset-inline: var(--wb-ds-canvas-node-head-h-pad);
+  top: var(--wb-public-node-run-progress-top);
+  height: var(--wb-public-node-run-progress-height);
+  overflow: hidden;
+  border-radius: var(--wb-public-node-run-progress-border-radius);
+  background: var(--wb-public-node-run-progress-track-color);
+}
 
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--wb-public-node-run-progress-fill-color);
+  transition: width 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
   .fill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--wb-public-node-run-progress-fill-color);
-    transition: width 0.4s ease;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .fill {
-      transition: none;
-    }
+    transition: none;
   }
 }

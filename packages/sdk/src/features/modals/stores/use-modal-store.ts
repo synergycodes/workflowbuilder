@@ -61,6 +61,11 @@ export function openModal({ isCloseButtonVisible = true, footerVariant = 'integr
   });
 }
 
+// The store outlives a Root; without this a remounted Root renders the old modal open on its first commit.
+export function resetModalStore() {
+  useModalStore.setState({ ...emptyStore });
+}
+
 export function closeModal() {
   const modal = useModalStore.getState().modal;
 

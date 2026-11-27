@@ -73,8 +73,6 @@
   border: none;
   border-radius: var(--wb-ds-radius-75);
   background: none;
-  font-size: var(--wb-ds-font-size-162);
-  line-height: 1;
   color: var(--wb-ds-ui-text-default);
   cursor: pointer;
 
@@ -86,6 +84,12 @@
     outline: var(--wb-ds-size-25) solid var(--wb-ds-ui-stroke-focus);
     outline-offset: var(--wb-ds-size-25);
   }
+}
+
+/* The page id: the `wb-text-*` role on the same element is scoped in 4.0 and outweighs a plain class. */
+:global(#root .workflow-builder-root) .toggle {
+  font-size: var(--wb-ds-font-size-162);
+  line-height: 1;
 }
 
 .caret {
@@ -106,7 +110,8 @@
   transform: rotate(180deg);
 }
 
-.chip {
+/* The page id: the Chip's own variant rule is scoped in 4.0 and outweighs a plain class. */
+:global(#root .workflow-builder-root) .chip {
   color: var(--ai-studio-status-color--tone);
   background: color-mix(in srgb, var(--ai-studio-status-color--tone), transparent 88%);
 }
@@ -183,18 +188,25 @@
 .message {
   min-width: 0;
   overflow-wrap: anywhere;
-  line-height: 1.45;
-}
-
-.title {
-  font-weight: 500;
 }
 
 .message {
   grid-column: 3;
-  font-size: var(--wb-ds-font-size-137);
   color: var(--wb-ds-ui-text-subtle-default);
   white-space: pre-line;
+}
+
+:global(#root .workflow-builder-root) .title,
+:global(#root .workflow-builder-root) .message {
+  line-height: 1.45;
+}
+
+:global(#root .workflow-builder-root) .title {
+  font-weight: 500;
+}
+
+:global(#root .workflow-builder-root) .message {
+  font-size: var(--wb-ds-font-size-137);
 }
 
 .detail {
@@ -233,8 +245,11 @@
 
   .title {
     color: var(--ai-studio-status-color--failed);
-    font-weight: 700;
   }
+}
+
+:global(#root .workflow-builder-root) .row--failed .title {
+  font-weight: 700;
 }
 
 .row--failed.row--highlighted {

@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-public-node-icon-glyph-size: var(--wb-ds-canvas-node-head-glyph);
   /* The border is transparent except on a disabled tile. */
   --wb-public-node-icon-border-size: 0.0625rem;
@@ -29,7 +29,7 @@
   );
 }
 
-:root[data-theme='dark'] {
+[data-wb-theme='dark'] {
   --wb-public-node-icon-color-blue: var(--wb-ds-colors-acc1-400);
   --wb-public-node-icon-container-background-color-blue: var(--wb-ds-colors-acc1-500-20);
   --wb-public-node-icon-color-green: var(--wb-ds-colors-acc3-400);
@@ -42,28 +42,26 @@
   --wb-public-node-icon-container-background-color-gray: var(--wb-ds-colors-gray-650) /* missing token */;
 }
 
-@layer ui.component {
-  .container {
-    --node-icon-color: var(--wb-public-node-icon-color);
-    --node-icon-background: var(--wb-public-node-icon-container-background-color);
+.container {
+  --node-icon-color: var(--wb-public-node-icon-color);
+  --node-icon-background: var(--wb-public-node-icon-container-background-color);
 
-    display: flex;
-    /* The padding counts the border in, so every state keeps the design size. */
-    padding: calc(var(--wb-public-node-icon-padding) - var(--wb-public-node-icon-border-size));
-    justify-content: center;
-    align-items: center;
-    font-size: var(--wb-public-node-icon-glyph-size);
-    color: var(--node-icon-color);
+  display: flex;
+  /* The padding counts the border in, so every state keeps the design size. */
+  padding: calc(var(--wb-public-node-icon-padding) - var(--wb-public-node-icon-border-size));
+  justify-content: center;
+  align-items: center;
+  font-size: var(--wb-public-node-icon-glyph-size);
+  color: var(--node-icon-color);
 
-    border-radius: var(--wb-public-node-icon-border-radius);
-    border: var(--wb-public-node-icon-border-size) solid transparent;
-    background: var(--node-icon-background);
-    background-origin: border-box;
+  border-radius: var(--wb-public-node-icon-border-radius);
+  border: var(--wb-public-node-icon-border-size) solid transparent;
+  background: var(--node-icon-background);
+  background-origin: border-box;
 
-    &.disabled {
-      color: var(--wb-public-node-icon-color-disabled);
-      background: var(--wb-public-node-icon-container-background-color-disabled);
-      border-color: var(--wb-public-node-icon-container-border-color);
-    }
+  &.disabled {
+    color: var(--wb-public-node-icon-color-disabled);
+    background: var(--wb-public-node-icon-container-background-color-disabled);
+    border-color: var(--wb-public-node-icon-container-border-color);
   }
 }

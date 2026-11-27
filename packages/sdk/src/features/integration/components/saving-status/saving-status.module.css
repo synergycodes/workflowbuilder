@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-saving-status--in-progress-color: var(--wb-ds-colors-acc1-500); /* missing token */
   --wb-sdk-saving-status--saved-color: var(--wb-ds-components-text-field-stroke-success); /* missing token */
   --wb-sdk-saving-status--not-saved-color: var(--wb-ds-components-text-field-stroke-critical); /* missing token */

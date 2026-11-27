@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-import-error-color: var(--wb-public-snackbar-title-color);
   --wb-sdk-import-error-background-color: var(--wb-public-snackbar-error-background);
   --wb-sdk-import-error-border: var(--wb-public-snackbar-border-size) solid var(--wb-public-snackbar-error-border);

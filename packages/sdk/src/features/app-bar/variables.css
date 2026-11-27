@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-app-bar-background: var(--wb-ds-ui-bg-base);
   --wb-sdk-app-bar-border-radius: var(--wb-ds-radius-150);
   --wb-sdk-app-bar-border-color: var(--wb-ds-ui-stroke-default);

@@ -44,6 +44,7 @@ export type UseEdgeStyleParams = {
  * @category Edge
  */
 export type EdgeStyle = {
+  fill: 'none';
   stroke: string;
   strokeWidth: string;
   transition: string;
@@ -64,7 +65,7 @@ function runStrokeVariable(runState: EdgeRunState, tone: EdgeRunToneName | undef
  * A custom hook for computing CSS style properties for diagram edges based on their visual state,
  * hover interaction, run state, run tone and line type.
  *
- * The `useEdgeStyle` hook returns an object of CSS properties (`stroke`, `strokeWidth`, `transition`, and
+ * The `useEdgeStyle` hook returns an object of CSS properties (`fill`, `stroke`, `strokeWidth`, `transition`, and
  * `strokeDasharray` / `animation` when the line is dashed or running) that can be directly applied to an SVG path
  * element representing an edge.
  */
@@ -88,6 +89,8 @@ export function useEdgeStyle({
               : '--wb-public-edge-color';
 
     const style: EdgeStyle = {
+      // Inline: a `fill="none"` attribute loses to a host `svg path { fill }`, which fills a curved edge.
+      fill: 'none',
       stroke: `var(${strokeCssVariable})`,
       strokeWidth: 'var(--wb-public-edge-stroke-width)',
       transition: isHovered && !runState ? 'none' : 'stroke var(--wb-public-transition)',

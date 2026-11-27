@@ -15,6 +15,7 @@ import { EditorHeaderSaveAsPdf } from '../features/ui-extensions/components/edit
 import { EditorHeaderVersion } from '../features/ui-extensions/components/editor-header-version';
 import { useUiExtensionRegistry } from '../features/ui-extensions/ui-extension-context';
 import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
+import { resetThemeStore } from '../hooks/theme.test-utils';
 import { useWorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
 import { type WorkflowBuilderState, useWorkflowBuilderState } from '../hooks/use-workflow-builder-state';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -25,8 +26,7 @@ vi.mock('../features/integration/components/runtime-integration-wrapper', () => 
 }));
 
 afterEach(() => {
-  localStorage.clear();
-  delete document.documentElement.dataset.theme;
+  resetThemeStore();
 });
 
 function ControlVisibility() {
@@ -161,6 +161,22 @@ describe('WorkflowBuilderRoot UI extension providers', () => {
 
     fireEvent.click(screen.getByText('Open settings'));
 
+    expect(screen.getByRole('dialog').closest('body > .workflow-builder-root.wb-portal[data-wb-theme]')).not.toBeNull();
+  });
+
+  it('a modal left open is closed when the Root unmounts', () => {
+    function CustomHeader() {
+      const { openSettings } = useWorkflowBuilderActions();
+      return <button onClick={openSettings}>Open settings</button>;
+    }
+
+    const first = renderRoot(<CustomHeader />);
+    fireEvent.click(screen.getByText('Open settings'));
     expect(screen.getByRole('dialog')).not.toBeNull();
+    first.unmount();
+
+    renderRoot(<CustomHeader />);
+
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

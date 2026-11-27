@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-connectable-item-horizontal-padding: var(--wb-ds-canvas-node-row-h-pad);
   --wb-sdk-connectable-item-vertical-padding: var(--wb-ds-canvas-node-row-v-pad);
   --wb-sdk-connectable-item-gap: var(--wb-ds-canvas-node-row-gap);

@@ -1,10 +1,12 @@
 import { Select as SelectBase } from '@base-ui/react/select';
+import { usePortalContainer } from '@ui/shared/portal-container/portal-container';
 import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
 import type { ReactNode, SyntheticEvent } from 'react';
 
 import selectButtonStyles from './select-button/select-button.module.css';
 import style from './select.module.css';
+import inputHeightStyles from '@ui/shared/styles/field-control-height.module.css';
 import fieldControlSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 import listBoxStyles from '@ui/shared/styles/list-box.module.css';
@@ -116,9 +118,12 @@ export function Select({
       [selectButtonStyles['container--error']]: fieldState === 'critical',
     },
     inputFontStyles[size],
+    inputHeightStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
     fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
     className,
   );
+
+  const portalContainer = usePortalContainer();
 
   return (
     <Field
@@ -155,7 +160,7 @@ export function Select({
                 )}
               </SelectBase.Value>
             </SelectBase.Trigger>
-            <SelectBase.Portal>
+            <SelectBase.Portal container={portalContainer}>
               <SelectBase.Positioner
                 className={clsx(listBoxStyles['popup'], style['popup'])}
                 alignItemWithTrigger={false}

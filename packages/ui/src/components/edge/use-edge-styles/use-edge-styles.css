@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-public-edge-color-disabled: var(--wb-ds-canvas-edge-stroke-disabled);
   --wb-public-edge-color-select: var(--wb-ds-canvas-edge-stroke-active);
   --wb-public-edge-color-hover: var(--wb-ds-canvas-edge-stroke-hover);
@@ -16,18 +16,15 @@
   --wb-public-edge-animation-running: wb-edge-dash-flow 0.5s linear infinite;
 }
 
-/* The build layers only top-level :root rules; these need ui.base explicitly. */
-@layer ui.base {
-  /* One negative period per loop, so the dash travels toward the target without a jump. */
-  @keyframes wb-edge-dash-flow {
-    to {
-      stroke-dashoffset: calc(-1 * var(--wb-public-edge-dash-running-period));
-    }
+/* One negative period per loop, so the dash travels toward the target without a jump. */
+@keyframes wb-edge-dash-flow {
+  to {
+    stroke-dashoffset: calc(-1 * var(--wb-public-edge-dash-running-period));
   }
+}
 
-  @media (prefers-reduced-motion: reduce) {
-    :root {
-      --wb-public-edge-animation-running: none;
-    }
+@media (prefers-reduced-motion: reduce) {
+  [data-wb-theme] {
+    --wb-public-edge-animation-running: none;
   }
 }

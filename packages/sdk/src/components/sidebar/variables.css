@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-sidebar-vertical-padding: 0.75rem;
   --wb-sdk-sidebar-horizontal-padding: 1rem;
   --wb-sdk-sidebar-background: var(--wb-ds-ui-bg-base);

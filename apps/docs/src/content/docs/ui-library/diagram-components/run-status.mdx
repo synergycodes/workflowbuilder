@@ -100,7 +100,7 @@ none), `-bg-<tone>` and `-fg-<tone>` for the indicator circle and glyph and for 
 `--wb-ds-canvas-run-status-*`, which switch with the theme. The `inverse` badge reads the
 `BadgeLabel` Inverse variables instead.
 
-Override a palette variable on `:root` (and `:root[data-theme='dark']`) to recolour a tone in every
+Override a palette variable on `.workflow-builder-root` (and `[data-wb-theme='dark']`) to recolour a tone in every
 part, or on one part with a `className`:
 
 ```css
@@ -117,14 +117,14 @@ part, or on one part with a `className`:
 a tone, define its palette and pass the name as `tone`:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-node-run-status-stroke-paused: #7c3aed;
   --wb-public-node-run-status-halo-paused: #ede9fe;
   --wb-public-node-run-status-bg-paused: #ede9fe;
   --wb-public-node-run-status-fg-paused: #5b21b6;
 }
 
-:root[data-theme='dark'] {
+.workflow-builder-root[data-wb-theme='dark'] {
   /* the same names, dark values */
 }
 ```
