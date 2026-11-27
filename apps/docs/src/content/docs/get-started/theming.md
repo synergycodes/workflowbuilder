@@ -7,7 +7,7 @@ sidebar:
 
 The aggregated `style.css` ships with the SDK's default visual layer. Override CSS custom properties on `.workflow-builder-root`, the editor's element. The container the editor's popups (Modal, Menu, Tooltip, Select, DatePicker) render in carries the same class, so one block reaches them too.
 
-Overrides on `:root` are ignored for public variables and themed tokens; only tokens the design system itself declares on `:root` (primitives such as `--wb-ds-colors-*`, canvas geometry) work there. CSS variables inherit through the DOM, not the React tree: custom layouts passed as Root children inherit the overrides, but portals created by host or plugin code outside the editor do not. To theme the editor from your own variables, see the bridge example in [Upgrade to 4.0](/get-started/upgrade-to-4/#move-variable-overrides-to-workflow-builder-root).
+Overrides on `:root` are ignored for public variables and themed tokens; only tokens the design system itself declares on `:root` (primitives such as `--wb-ds-colors-*` and `--wb-ds-space-*`, canvas geometry) work there. Keep primitive overrides on `:root`: the canvas geometry tokens read the spacing, size and radius primitives there, so a primitive set on `.workflow-builder-root` does not reach node and edge geometry. CSS variables inherit through the DOM, not the React tree: custom layouts passed as Root children inherit the overrides, but portals created by host or plugin code outside the editor do not. To theme the editor from your own variables, see the bridge example in [Upgrade to 4.0](/get-started/upgrade-to-4/#move-variable-overrides-to-workflow-builder-root).
 
 ## Typography
 
