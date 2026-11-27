@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-message-control-error-color: var(--wb-public-snackbar-title-color);
   --wb-sdk-message-control-error-background-color: var(--wb-public-snackbar-error-background);
   --wb-sdk-message-control-spacing: var(--wb-ds-space-100);
@@ -29,7 +29,7 @@
   --wb-sdk-background-color: var(--wb-ds-colors-acc5-500-10);
 }
 
-html[data-theme='dark'] .container--warning {
+[data-wb-theme='dark'] .container--warning {
   --wb-sdk-color: var(--wb-ds-colors-acc5-200);
 }
 

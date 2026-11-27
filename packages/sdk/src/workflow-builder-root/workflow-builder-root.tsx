@@ -13,8 +13,10 @@ import { EdgeEndpointContext } from '../features/diagram/edges/edge-endpoint-con
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
+import { resetModalStore } from '../features/modals/stores/use-modal-store';
 import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
-import { initTheme } from '../hooks/theme';
+import { useWarnOnce } from '../features/ui-extensions/use-warn-once';
+import { setControlledTheme } from '../hooks/theme';
 import { setRegisteredIcons } from '../icon/icon-registry';
 import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
@@ -43,13 +45,30 @@ import type {
  * ```
  *
  * @example Custom layout
+ * The canvas fills the element around it, so the layout has to give that element a height.
  * ```tsx
  * <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
- *   <header><WorkflowBuilder.EditorHeader /></header>
- *   <aside><WorkflowBuilder.Palette /></aside>
- *   <main><WorkflowBuilder.Canvas /></main>
- *   <aside><WorkflowBuilder.PropertiesPanel /></aside>
+ *   <div className="editor-layout">
+ *     <header><WorkflowBuilder.EditorHeader /></header>
+ *     <aside><WorkflowBuilder.Palette /></aside>
+ *     <main><WorkflowBuilder.Canvas /></main>
+ *     <aside><WorkflowBuilder.PropertiesPanel /></aside>
+ *   </div>
  * </WorkflowBuilder.Root>
+ * ```
+ * ```css
+ * .editor-layout {
+ *   display: grid;
+ *   grid-template:
+ *     'header header header' auto
+ *     'palette canvas properties' minmax(0, 1fr) / auto 1fr auto;
+ *   height: 100%;
+ * }
+ * .editor-layout > * { min-height: 0; }
+ * .editor-layout > header { grid-area: header; }
+ * .editor-layout > aside:first-of-type { grid-area: palette; }
+ * .editor-layout > main { grid-area: canvas; }
+ * .editor-layout > aside:last-of-type { grid-area: properties; }
  * ```
  *
  * @category Core
@@ -72,6 +91,8 @@ export function WorkflowBuilderRoot({
   initialEdges,
   isValidConnection,
   reactFlowProps,
+  theme,
+  onThemeChange,
   builtInControls,
   edgeEndpoint = 'none',
   children,
@@ -112,17 +133,26 @@ export function WorkflowBuilderRoot({
     resetWorkflowStore();
     resetIntegrationStore();
     loadNodeDefinitions();
+    return resetModalStore;
   }, []);
 
-  // Paint the persisted theme on the DOM once, client-side. Lives here (not at
-  // `theme.ts` module level) so a server-side import of the SDK never touches
-  // `document` / `localStorage`. `useLayoutEffect` runs before first paint, so
-  // a saved non-default theme shows without a flash; it never runs on the
-  // server. Idempotent, so a second Root mount (or strict-mode double-invoke)
-  // is a harmless no-op.
+  useWarnOnce(
+    !!theme && !onThemeChange && builtInControls?.themeToggle !== false,
+    '[workflow-builder] `theme` is set without `onThemeChange`, so the theme toggle does nothing. Pass `onThemeChange` to follow it, or hide the toggle with `builtInControls={{ themeToggle: false }}`.',
+  );
+
+  // Latest callback in a ref: hosts often pass an inline function, which must not re-run the effect.
+  const onThemeChangeRef = useRef(onThemeChange);
   useLayoutEffect(() => {
-    initTheme();
-  }, []);
+    onThemeChangeRef.current = onThemeChange;
+  });
+
+  // setControlledTheme notifies subscribers, so it runs in a layout effect, never during render.
+  useLayoutEffect(() => {
+    setControlledTheme(theme ?? null, (nextTheme) => onThemeChangeRef.current?.(nextTheme));
+  }, [theme]);
+
+  useLayoutEffect(() => () => setControlledTheme(null, null), []);
 
   // Runtime config — write the latest prop values into module-level holders
   // synchronously in render, NOT in `useEffect`. Children read the holders
@@ -166,7 +196,9 @@ export function WorkflowBuilderRoot({
       >
         <ReactFlowProvider>
           <EdgeEndpointContext.Provider value={edgeEndpoint}>
-            <RootShell builtInControls={builtInControls}>{children}</RootShell>
+            <RootShell theme={theme} builtInControls={builtInControls}>
+              {children}
+            </RootShell>
           </EdgeEndpointContext.Provider>
         </ReactFlowProvider>
       </RuntimeIntegrationWrapper>

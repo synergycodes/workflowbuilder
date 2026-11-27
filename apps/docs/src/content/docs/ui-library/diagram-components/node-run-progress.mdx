@@ -8,7 +8,7 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { NodeRunProgressExample } from '../../../../components/ui-examples/run-status';
 
 `NodeRunProgress` draws a 3px bar 3px above the bottom edge of the node header, inset by the header
-padding. Its default `--wb-public-node-run-progress-top` is computed once on `:root` from the header's
+padding. Its default `--wb-public-node-run-progress-top` is computed once on the editor's element from the header's
 min-height: a node that changes its `NodeIcon` size or header needs `--wb-public-node-run-progress-top`
 set on that node. A header taller than its min-height, for example with a two-line title, needs
 `--wb-public-node-run-progress-top` set to match.

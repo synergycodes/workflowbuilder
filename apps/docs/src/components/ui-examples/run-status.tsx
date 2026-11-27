@@ -157,7 +157,7 @@ export function RunStatusExample() {
   );
 }
 
-// Set inline so the page needs no global CSS; an application sets them on :root.
+// Set inline so the page needs no global CSS; an application sets them on `.workflow-builder-root`.
 const pausedTone = {
   '--wb-public-node-run-status-stroke-paused': '#7c3aed',
   '--wb-public-node-run-status-halo-paused': '#ede9fe',

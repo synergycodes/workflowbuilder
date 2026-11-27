@@ -111,6 +111,11 @@ describe('useEdgeStyle', () => {
     expect(styleFor(params).strokeWidth).toBe('var(--wb-public-edge-stroke-width)');
   });
 
+  // Seen on a host with `svg path { fill: yellow }`: a curved custom edge would be filled in.
+  it.each(ROWS)('keeps the path unfilled inline when %s', (_, params) => {
+    expect(styleFor(params).fill).toBe('none');
+  });
+
   it('drops the colour transition on hover and keeps it once a run state is set', () => {
     expect(styleFor({ isHovered: true }).transition).toBe('none');
     expect(styleFor({}).transition).toBe('stroke var(--wb-public-transition)');
@@ -168,9 +173,9 @@ describe('use-edge-styles.css', () => {
   const file = path.join(import.meta.dirname, 'use-edge-styles.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
 
-  function rootDeclarations(inReducedMotion: boolean) {
+  function themeDeclarations(inReducedMotion: boolean) {
     const found = new Map<string, string>();
-    stylesheet.walkRules(':root', (rule: Rule) => {
+    stylesheet.walkRules('[data-wb-theme]', (rule: Rule) => {
       const reduced = rule.parent?.type === 'atrule' && rule.parent.params.includes('prefers-reduced-motion');
       if (reduced !== inReducedMotion) return;
       rule.walkDecls((declaration) => {
@@ -180,7 +185,7 @@ describe('use-edge-styles.css', () => {
     return found;
   }
 
-  const defaults = rootDeclarations(false);
+  const defaults = themeDeclarations(false);
 
   it('maps every edge colour variable to a DS edge stroke token', () => {
     const colours = [...defaults].filter(([name]) => name.startsWith('--wb-public-edge-color'));
@@ -215,7 +220,7 @@ describe('use-edge-styles.css', () => {
 
   it('stops the running dash under reduced motion', () => {
     expect(defaults.get('--wb-public-edge-animation-running')).toBe('wb-edge-dash-flow 0.5s linear infinite');
-    expect(rootDeclarations(true).get('--wb-public-edge-animation-running')).toBe('none');
+    expect(themeDeclarations(true).get('--wb-public-edge-animation-running')).toBe('none');
   });
 
   it('defines the dash-flow keyframes the running animation names', () => {

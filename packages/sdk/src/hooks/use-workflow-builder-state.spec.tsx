@@ -8,6 +8,7 @@ import { EditorHeaderVersion } from '../features/ui-extensions/components/editor
 import { renderInRoot } from '../features/ui-extensions/test-utils';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { setTheme } from './theme';
+import { resetThemeStore } from './theme.test-utils';
 import { type WorkflowBuilderState, useWorkflowBuilderState } from './use-workflow-builder-state';
 
 function noop() {}
@@ -36,8 +37,7 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
-  localStorage.clear();
-  delete document.documentElement.dataset.theme;
+  resetThemeStore();
 });
 
 describe('useWorkflowBuilderState', () => {

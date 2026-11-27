@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-spinner-color: var(--wb-ds-ui-text-onaccent-default);
 }
 

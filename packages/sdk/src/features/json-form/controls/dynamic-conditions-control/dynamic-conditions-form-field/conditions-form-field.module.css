@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-conditions-form-inputs-background: var(--wb-ds-ui-bg-elevated); /* missing token */
   --wb-sdk-conditions-form-input-background: var(--wb-ds-ui-bg-base); /* missing token */
   --wb-sdk-conditions-form-input-background-destructive: var(--wb-ds-colors-red-400-10); /* missing token */

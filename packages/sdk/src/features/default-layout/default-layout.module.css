@@ -42,6 +42,7 @@
 
   .diagram-container {
     position: absolute;
+    inset: 0;
   }
 
   .viewport-bounds {

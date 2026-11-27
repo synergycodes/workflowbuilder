@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-public-node-width: var(--wb-ds-canvas-node-width);
   --wb-public-node-height: 100%;
   --wb-public-node-border-size: 0.0625rem;
@@ -25,97 +25,95 @@
     var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--wb-ds-canvas-node-focus-ring-active);
 }
 
-@layer ui.component {
-  .node-panel-wrapper:hover .container:not(.disabled, .selected) {
-    background: var(--wb-public-node-hover-background-color);
-    outline-color: var(--wb-public-node-border-hover-color);
+.node-panel-wrapper:hover .container:not(.disabled, .selected) {
+  background: var(--wb-public-node-hover-background-color);
+  outline-color: var(--wb-public-node-border-hover-color);
+}
+
+.container {
+  display: flex;
+  width: var(--wb-public-node-width);
+  height: var(--wb-public-node-height);
+  align-items: center;
+  flex-direction: column;
+
+  border-radius: var(--wb-public-node-border-radius);
+  background: var(--wb-public-node-background-color);
+  /* Inset outline, not a border or box-shadow: it adds no size and leaves box-shadow to the focus ring. */
+  outline: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
+  outline-offset: calc(-1 * var(--wb-public-node-border-size));
+
+  &.selected {
+    background: var(--wb-public-node-background-color-selected);
+    outline-color: var(--wb-public-node-border-color-selected);
+    box-shadow: var(--wb-public-node-box-shadow-selected);
   }
 
-  .container {
+  /* Containing block of NodePanel.Overlay; nodes without one keep their positioning context. */
+  &:has(> .overlay) {
+    position: relative;
+
+    /* Above the Overlay, which comes later in the DOM; content-box overrides the injected border-box. */
+    :global(.react-flow__handle) {
+      z-index: 1;
+      box-sizing: content-box;
+    }
+  }
+
+  &.disabled {
+    background: var(--wb-public-node-background-color-disabled);
+  }
+
+  &:not(:hover) {
+    transition:
+      box-shadow var(--wb-public-transition),
+      outline-color var(--wb-public-transition);
+  }
+
+  .header-wrapper {
+    width: 100%;
+  }
+
+  .header-container {
     display: flex;
-    width: var(--wb-public-node-width);
-    height: var(--wb-public-node-height);
+    min-height: calc(
+      2 * var(--wb-public-node-header-padding-block) + 2 * var(--wb-public-node-icon-padding) +
+        var(--wb-public-node-icon-glyph-size)
+    );
+    padding: var(--wb-public-node-header-padding-block) var(--wb-public-node-header-padding-inline);
+    gap: var(--wb-public-node-header-gap);
     align-items: center;
+  }
+
+  .content-container {
+    display: flex;
     flex-direction: column;
+    padding: 0 var(--wb-public-node-padding) var(--wb-public-node-body-padding-block);
+    gap: var(--wb-public-node-gap);
+  }
 
-    border-radius: var(--wb-public-node-border-radius);
-    background: var(--wb-public-node-background-color);
-    /* Inset outline, not a border or box-shadow: it adds no size and leaves box-shadow to the focus ring. */
-    outline: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
-    outline-offset: calc(-1 * var(--wb-public-node-border-size));
+  /* Without a header nothing above separates the body from the top stroke. */
+  .header-wrapper:not(:has(.header-container)) + .content-container {
+    padding-top: var(--wb-public-node-body-padding-block);
+  }
 
-    &.selected {
-      background: var(--wb-public-node-background-color-selected);
-      outline-color: var(--wb-public-node-border-color-selected);
-      box-shadow: var(--wb-public-node-box-shadow-selected);
-    }
+  .header-container,
+  .content-container {
+    width: 100%;
+  }
 
-    /* Containing block of NodePanel.Overlay; nodes without one keep their positioning context. */
-    &:has(> .overlay) {
-      position: relative;
+  .overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
 
-      /* Above the Overlay, which comes later in the DOM; content-box overrides the injected border-box. */
-      :global(.react-flow__handle) {
-        z-index: 1;
-        box-sizing: content-box;
-      }
-    }
-
-    &.disabled {
-      background: var(--wb-public-node-background-color-disabled);
-    }
-
-    &:not(:hover) {
-      transition:
-        box-shadow var(--wb-public-transition),
-        outline-color var(--wb-public-transition);
-    }
-
-    .header-wrapper {
-      width: 100%;
-    }
-
-    .header-container {
-      display: flex;
-      min-height: calc(
-        2 * var(--wb-public-node-header-padding-block) + 2 * var(--wb-public-node-icon-padding) +
-          var(--wb-public-node-icon-glyph-size)
-      );
-      padding: var(--wb-public-node-header-padding-block) var(--wb-public-node-header-padding-inline);
-      gap: var(--wb-public-node-header-gap);
-      align-items: center;
-    }
-
-    .content-container {
-      display: flex;
-      flex-direction: column;
-      padding: 0 var(--wb-public-node-padding) var(--wb-public-node-body-padding-block);
-      gap: var(--wb-public-node-gap);
-    }
-
-    /* Without a header nothing above separates the body from the top stroke. */
-    .header-wrapper:not(:has(.header-container)) + .content-container {
-      padding-top: var(--wb-public-node-body-padding-block);
-    }
-
-    .header-container,
-    .content-container {
-      width: 100%;
-    }
-
-    .overlay {
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      pointer-events: none;
-    }
-
-    .header-container,
-    .content-container,
-    .handles-container {
-      &:empty {
-        display: none;
-      }
+  .header-container,
+  .content-container,
+  .handles-container {
+    &:empty {
+      display: none;
     }
   }
 }

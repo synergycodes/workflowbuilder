@@ -11,7 +11,10 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const gridColor = () => document.documentElement.style.getPropertyValue('--wb-public-canvas-grid-color');
+const gridColor = () =>
+  /\.workflow-builder-root \{ --wb-public-canvas-grid-color: ([^;]+); \}/.exec(
+    document.querySelector('style[data-ai-studio-canvas-grid]')?.textContent ?? '',
+  )?.[1] ?? '';
 const setReadOnly = (isReadOnly: boolean) => act(() => useStore.setState({ isReadOnly }));
 
 function Probe() {

@@ -1,8 +1,6 @@
-@layer ui.component {
-  .container {
-    display: flex;
-    align-items: center;
-    gap: var(--wb-ds-space-100);
-    margin-left: auto;
-  }
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--wb-ds-space-100);
+  margin-left: auto;
 }

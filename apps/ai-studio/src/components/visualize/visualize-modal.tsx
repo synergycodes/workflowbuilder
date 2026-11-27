@@ -1,4 +1,5 @@
 import { DownloadSimple, FileSvg, X } from '@phosphor-icons/react';
+import { usePortalContainer } from '@workflowbuilder/ui';
 import { Suspense, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -18,10 +19,15 @@ type Props = {
   onClose: () => void;
 };
 
-// Portaled to document.body so the fixed overlay escapes the transformed React Flow viewport.
+// Portaled out of the transformed React Flow viewport, into the editor's popup container so the
+// overlay keeps the theme tokens; body is the fallback outside <WorkflowBuilder.Root>.
 export function VisualizeModal({ renderer, text, data, badge, isVector, onClose }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const portalContainer = usePortalContainer();
   const Renderer = getRenderer(renderer);
+
+  // `null` is the Root without a DOM (server rendering): nothing to portal into.
+  if (portalContainer === null) return null;
 
   return createPortal(
     <div className={styles['overlay']} role="presentation" onClick={onClose}>
@@ -61,6 +67,6 @@ export function VisualizeModal({ renderer, text, data, badge, isVector, onClose 
         </div>
       </div>
     </div>,
-    document.body,
+    portalContainer ?? document.body,
   );
 }

@@ -1,6 +1,8 @@
 import { StrictMode, Suspense } from 'react';
 import * as ReactDOM from 'react-dom/client';
 
+import './host.css';
+
 import { openFromUrl } from './app/open-from-url';
 import { OpenedApp } from './app/opened-app';
 import { AppBoundary } from './components/open-from-url/app-boundary';

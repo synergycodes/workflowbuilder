@@ -3,6 +3,11 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import type { Plugin } from 'vite';
 
+import postcss from 'postcss';
+
+import { DEFAULTS_LAYER } from './postcss-layer-root-defaults.mjs';
+import { editorPostcssPlugins } from './postcss-pipeline.mjs';
+
 /**
  * Post-build CSS steps for the multi-entry library bundle. See css-layers.md.
  *
@@ -168,7 +173,7 @@ export function emitFontAssets(distributionDirectory: string): string {
     ].join('\n');
   });
 
-  return `@layer ui.base {\n${rules.join('\n\n')}\n}`;
+  return `@layer ${DEFAULTS_LAYER} {\n${rules.join('\n\n')}\n}`;
 }
 
 function readLayerOrder(stylesDirectory: string): string {
@@ -212,7 +217,7 @@ function writeCombinedStylesheet(
 ) {
   const assetsDirectory = assetsDirectoryOf(distributionDirectory);
 
-  // Within a layer, file order only breaks ties between equal-specificity rules.
+  // File order only breaks ties between equal-specificity rules.
   const styles = cssFilesIn(assetsDirectory)
     .map((file) => fs.readFileSync(path.resolve(assetsDirectory, file), 'utf8'))
     .join('\n');
@@ -224,11 +229,17 @@ function writeCombinedStylesheet(
 }
 
 function writeGlobalStylesheet(distributionDirectory: string, stylesDirectory: string, fontStyles: string) {
-  const globals = ['layers.css', 'globals.css', 'typography.css']
+  const globals = ['layers.css', 'globals.css']
     .map((file) => fs.readFileSync(path.resolve(stylesDirectory, file), 'utf8'))
     .join('\n');
 
-  fs.writeFileSync(path.resolve(distributionDirectory, 'styles.css'), `${globals}\n${fontStyles}`);
+  // Bypasses Vite, so typography goes through the UI plugins here.
+  const typographyPath = path.resolve(stylesDirectory, 'typography.css');
+  const typography = postcss(editorPostcssPlugins('ui')).process(fs.readFileSync(typographyPath, 'utf8'), {
+    from: typographyPath,
+  }).css;
+
+  fs.writeFileSync(path.resolve(distributionDirectory, 'styles.css'), `${globals}\n${typography}\n${fontStyles}`);
 }
 
 function appendFontStylesToEntryChunk(distributionDirectory: string, fontStyles: string) {

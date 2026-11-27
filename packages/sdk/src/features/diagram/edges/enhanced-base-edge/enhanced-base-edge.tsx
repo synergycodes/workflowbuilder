@@ -1,5 +1,6 @@
 import { type EdgeEndpoint, EdgeEndpointMarker } from '@workflowbuilder/ui';
 import { BaseEdge, type BaseEdgeProps } from '@xyflow/react';
+import clsx from 'clsx';
 import { useId } from 'react';
 
 import styles from './enhanced-base-edge.module.css';
@@ -50,6 +51,7 @@ export function EnhancedBaseEdge({ id, path, endpoint = 'none', ...rest }: Enhan
         path={path}
         interactionWidth={0}
         {...rest}
+        className={clsx(styles['line'], rest.className)}
         style={style}
         markerEnd={hasEndpoint ? `url(#${markerId})` : rest.markerEnd}
       />

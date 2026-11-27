@@ -1,16 +1,14 @@
-:root {
+[data-wb-theme] {
   --wb-public-node-run-badge-offset: var(--wb-ds-space-100);
   --wb-public-node-run-badge-dimmed-opacity: 0.4;
 }
 
-@layer ui.component {
-  .badge {
-    position: absolute;
-    right: 0;
-    bottom: calc(100% + var(--wb-public-node-run-badge-offset));
-  }
+.badge {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--wb-public-node-run-badge-offset));
+}
 
-  .dimmed {
-    opacity: var(--wb-public-node-run-badge-dimmed-opacity);
-  }
+.dimmed {
+  opacity: var(--wb-public-node-run-badge-dimmed-opacity);
 }

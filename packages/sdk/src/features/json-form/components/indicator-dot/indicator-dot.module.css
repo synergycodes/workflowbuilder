@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-indicator-dot-size: 0.75rem;
   --wb-sdk-indicator-dot-radius: calc(var(--wb-sdk-indicator-dot-size) / 2);
   --wb-sdk-indicator-dot-background-color: var(--wb-ds-ui-icon-warning-default);

@@ -1,0 +1,92 @@
+import { act } from 'react';
+import { type Root, createRoot } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { Menu } from '../../components/menu/menu';
+import { PortalContainerProvider } from './portal-container';
+
+let mount: HTMLDivElement;
+let portal: HTMLDivElement;
+let root: Root;
+
+beforeEach(() => {
+  mount = document.createElement('div');
+  portal = document.createElement('div');
+  document.body.append(mount, portal);
+  root = createRoot(mount);
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  mount.remove();
+  portal.remove();
+});
+
+describe('PortalContainerProvider', () => {
+  it('renders popups into the provided container', () => {
+    act(() => {
+      root.render(
+        <PortalContainerProvider container={portal}>
+          <Menu open items={[{ label: 'Edit' }]} />
+        </PortalContainerProvider>,
+      );
+    });
+
+    expect(portal.querySelector('[role="menu"]')).not.toBeNull();
+  });
+
+  it('waits while the container is null, then renders into it once it exists', () => {
+    act(() => {
+      root.render(
+        <PortalContainerProvider container={null}>
+          <Menu open items={[{ label: 'Edit' }]} />
+        </PortalContainerProvider>,
+      );
+    });
+
+    expect(document.querySelector('[role="menu"]')).toBeNull();
+
+    act(() => {
+      root.render(
+        <PortalContainerProvider container={portal}>
+          <Menu open items={[{ label: 'Edit' }]} />
+        </PortalContainerProvider>,
+      );
+    });
+
+    expect(portal.querySelector('[role="menu"]')).not.toBeNull();
+  });
+
+  it('falls back to document.body without a provider', () => {
+    act(() => {
+      root.render(<Menu open items={[{ label: 'Edit' }]} />);
+    });
+
+    const menu = document.querySelector('[role="menu"]');
+    expect(menu).not.toBeNull();
+    expect(portal.contains(menu)).toBe(false);
+  });
+
+  // The SDK bundles its own copy of this module; a host's copy must still see the SDK's provider.
+  it("a second copy of the module reads the first copy's provider", async () => {
+    vi.resetModules();
+    const second = await import('./portal-container');
+    expect(second.PortalContainerProvider).not.toBe(PortalContainerProvider);
+
+    let seen: HTMLElement | null | undefined;
+    function Reader() {
+      seen = second.usePortalContainer();
+      return null;
+    }
+
+    act(() => {
+      root.render(
+        <PortalContainerProvider container={portal}>
+          <Reader />
+        </PortalContainerProvider>,
+      );
+    });
+
+    expect(seen).toBe(portal);
+  });
+});

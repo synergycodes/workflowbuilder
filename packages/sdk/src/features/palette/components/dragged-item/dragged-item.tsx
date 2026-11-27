@@ -1,3 +1,4 @@
+import { usePortalContainer } from '@workflowbuilder/ui';
 import { type PropsWithChildren, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -11,6 +12,10 @@ type DraggedItemProps = {
 
 export const DraggedItem = forwardRef<HTMLDivElement, PropsWithChildren<DraggedItemProps>>(
   ({ children, zoom }: PropsWithChildren<DraggedItemProps>, ref) => {
+    const portal = usePortalContainer();
+    // `null` is the Root without a DOM (server rendering); `undefined` (no provider) means <body>.
+    if (portal === null) return null;
+
     function getStyles() {
       if (isSafari && !isOpera && !isChrome) {
         return zoom > 1 ? { zoom: `${zoom}` } : { scale: `${zoom}` };
@@ -27,7 +32,7 @@ export const DraggedItem = forwardRef<HTMLDivElement, PropsWithChildren<DraggedI
       <div ref={ref} className={`${styles['container']} workflow-builder-root`} style={getStyles()}>
         {children}
       </div>,
-      document.body,
+      portal ?? document.body,
     );
   },
 );

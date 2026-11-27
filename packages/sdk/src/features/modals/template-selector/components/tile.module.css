@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-template-tile-background: var(--wb-ds-ui-bg-elevated); /* missing token */
   --wb-sdk-template-tile-subtitle-color: var(--wb-ds-colors-gray-500); /* missing token */
   --wb-sdk-template-tile-outline-color: var(--wb-ds-colors-gray-400); /* missing token */

@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-branches-container-gap: var(--wb-ds-canvas-node-body-gap);
 }
 

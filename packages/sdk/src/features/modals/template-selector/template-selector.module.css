@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-template-title-width: 140px;
   --wb-sdk-template-title-padding: 12px;
   --wb-sdk-template-subtitle-color: var(--wb-ds-colors-gray-500) /* missing token */;

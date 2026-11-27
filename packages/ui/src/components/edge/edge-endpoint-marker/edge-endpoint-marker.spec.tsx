@@ -79,6 +79,7 @@ describe('EdgeEndpointMarker', () => {
 
     expect(shape.tagName).toBe('polyline');
     expect(shape.getAttribute('fill')).toBe('none');
+    expect(shape.style.fill).toBe('none');
     expect(shape.getAttribute('points')).toBe('1,1 6.5,6.5 1,12');
     expect([marker.getAttribute('refX'), marker.getAttribute('refY')]).toEqual(['6.5', '6.5']);
   });

@@ -2,12 +2,18 @@
 
 This catalogue records CSS failure classes that have affected Workflow Builder builds. The labels under **Automated?** match `scripts/check-built-css.ts`, package scripts, or focused tests. Adding, removing, or weakening a check requires updating its section here in the same change.
 
-The checker runs over this package's `dist` and over any extra dist directory passed as an
-argument. Two checks apply only to this package's own output, because this package owns those
-contracts: layer coverage (with the order statement and the known-name check) and the
-`:root`-in-`ui.base` placement of public defaults. A consumer bundle ships its own unlayered
-component CSS and may set a public variable on its own subtree as a scoped override, which is a
-legitimate pattern rather than a mis-scoped default. Every other check applies everywhere.
+The checker runs over this package's `dist` (the `ui` bundle) and over any extra dist directory
+passed as an argument (the `sdk` bundle; the SDK passes its own). The prefix and layer contract
+applies to both, because both builds take their plugins from `postcss-pipeline.mts`. Two checks
+run on the UI dist alone: the `[data-wb-theme]`-in-`wb-ui.base` placement of public defaults (a
+consumer bundle may set a public variable on its own subtree as a scoped override) and the SDK
+prefix, which the SDK dist carries legitimately.
+
+The demo and AI Studio alias `@workflowbuilder/sdk` to its source, so their dev servers never
+produce a dist for the checker to read; they run `editorPostcssPlugins('sdk')` from
+`postcss-pipeline.mts` themselves and show the change at once. That is deliberate: the
+checker's verdict comes from `pnpm build:lib` instead, run before a push and again by
+`pr-check.yml` on every PR.
 
 ## Malformed `var()` argument
 
@@ -19,19 +25,79 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 **Automated?** - Yes. `Malformed var() argument` walks declaration values in every checked dist stylesheet.
 
-## Unlayered built CSS
+## Unprefixed built CSS
 
-**What breaks** - A package rule unexpectedly beats layered UI rules regardless of specificity, so consumer overrides or component states stop winning.
+**What breaks** - A rule without the scope prefix is too weak to beat a host page's unlayered resets (Bootstrap's `button`, `.app button`), so the host restyles editor controls, and it can match host elements outside the editor.
 
-**Why it is silent** - The stylesheet is valid; cascade origin and layer precedence produce the wrong winner without a parse error.
+**Why it is silent** - The stylesheet is valid; the host rule simply wins on specificity.
 
-**How to spot it** - Parse dist CSS and inspect root-level rules and at-rules. Only `@layer` blocks and statement-form `@layer` declarations should be direct root children. A statement-form declaration is harmless here because the leading-order check guarantees the canonical order comes first; a stylesheet whose rules only `composes` global roles produces one, since the composed bodies end up empty. See `css-layers.md` for the package contract.
+**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#\#, .workflow-builder-root)` (UI), `:is(#\#, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), or be a scoped reset under the bare root class followed by a descendant or child combinator (`.workflow-builder-root button`). A sibling combinator (`.workflow-builder-root ~ div`) would reach the host's elements next to the editor and is reported. The editor box's own rules carry the glued SDK prefix (`:is(#\#, .workflow-builder-root).workflow-builder-root-shell`); a bare `.workflow-builder-root-shell` rule is reported here, and `postcss-scope-prefix.mts` fails the build on it before that. `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from the plugin, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
 
-**Automated?** - Yes, for this package's dist only. `Unlayered built CSS` checks direct PostCSS children.
+**Automated?** - Yes, in every checked dist. `Unprefixed built CSS` checks root-level rules and recurses into the conditional at-rules; any other at-rule is flagged for a human look.
+
+## Wrong prefix strength
+
+**What breaks** - Two prefix strengths come from filename lists (`VENDORED_FILES` and `SDK_FILES` in `postcss-pipeline.mts`); base styles take theirs from the `:where()` they write in source. Vendored CSS at component weight beats our theming; a base style without `:where()` gets full component weight and beats the variants that should override it.
+
+**Why it is silent** - Every weight is a valid prefix, so `Unprefixed built CSS` accepts any of them on any rule.
+
+**How to spot it** - Check a known selector per class in the output: the base button behind `:where()`, react-day-picker and `@xyflow` behind `:where(.workflow-builder-root)`, a component module at full weight.
+
+**Automated?** - Partly in the dist, mostly as tests. `SDK prefix in the UI dist` refuses the heaviest prefix in this package's dist; the reverse cannot be checked, because the SDK dist carries the UI rules it re-reads. `prefix-strength.spec.mts` (UI) runs real source files through the UI options and pins the base-file list by name; `packages/sdk/postcss-pipeline.spec.mts` does the same for the SDK paths.
+
+## SDK prefix in the UI dist
+
+**What breaks** - A UI rule emitted with the SDK prefix (`:is(#\#, .workflow-builder-root).workflow-builder-root `) weighs one class more than every other UI rule, so it beats the component variants and SDK overrides that should win over it.
+
+**Why it is silent** - The SDK prefix is a valid scope prefix, so `Unprefixed built CSS` accepts it.
+
+**How to spot it** - Search this package's dist for the SDK prefix followed by a space, `.`, `[` or `:`. A glued box rule (`…).workflow-builder-root-shell`) belongs to the SDK and is not part of this match.
+
+**Automated?** - Yes, for this package's dist only. `SDK prefix in the UI dist` checks every rule outside `@layer`, also inside the conditional at-rules.
+
+## Box class behind a combinator
+
+**What breaks** - `.workflow-builder-root-shell` (the editor box) and `.wb-portal` (the popup container under `<body>`) have no ancestor that carries the root class, so a selector that reaches them through a combinator (`:is(#\#, .workflow-builder-root).workflow-builder-root .workflow-builder-root-shell`) matches nothing. The box loses its geometry or the container its `display: contents`, and the rule looks correctly prefixed.
+
+**Why it is silent** - The selector is valid and carries the prefix; it is only never satisfied.
+
+**How to spot it** - Search built selectors for a space or combinator followed by `.workflow-builder-root-shell` or `.wb-portal`. In source, rules on the box are written with the glued prefix by hand; the plugin fails the build when it meets a bare box class at the start of a selector.
+
+**Automated?** - Yes, in every checked dist. `Box class behind a combinator` checks every rule outside `@layer`, also inside the conditional at-rules.
+
+## Defaults block outside `@layer`
+
+**What breaks** - A variable-only `:root` or `[data-wb-theme…]` block that is not inside `@layer wb-ui.base` ties with a consumer's `.workflow-builder-root { --wb-public-… }` override, so stylesheet order decides whether the documented customization works.
+
+**Why it is silent** - Both declarations are valid; without the layer the shipped default is an ordinary rule.
+
+**How to spot it** - Search dist for `:root` and `[data-wb-theme` rules that hold only custom properties and sit outside the layer, including inside `@media`, `@supports` and `@container`. `postcss-layer-root-defaults.mts` wraps those blocks in place, so one outside the layer means the file bypassed the plugin or the block mixes in a painting declaration.
+
+**Automated?** - Yes, in every checked dist. `Defaults block outside @layer` checks every rule outside `@layer`, also inside the conditional at-rules.
+
+## Hashed foreign class
+
+**What breaks** - A class a `*.module.css` file does not own (the root box, `.wb-portal`, React Flow's `.react-flow__*`, Ace's `.ace_*`, react-day-picker's `.rdp-*`) written without `:global(…)` is hashed by CSS modules like any other class, so the built selector names a class no element has and the rule matches nothing. The area target lost its `display: contents` this way (`:where(.workflow-builder-root) .target`) and header plugin buttons stacked vertically.
+
+**Why it is silent** - The rule is valid and even carries a prefix (the scope plugin does not recognise the hashed root class and adds one), so the checker's prefix rule is satisfied.
+
+**How to spot it** - Search built selectors for `._workflow-builder-root`, `._wb-`, `._react-flow`, `._ace_`, `._rdp-`. In source, every foreign class inside a `*.module.css` must sit in `:global(…)`; CSS modules runs before `postcss-scope-prefix`, so the plugin then sees the plain class.
+
+**Automated?** - Yes, in every checked dist. `Hashed foreign class` checks every rule outside `@layer`, also inside the conditional at-rules.
+
+## Painting rule inside `@layer`
+
+**What breaks** - A styling rule inside `@layer wb-ui.base` loses to every unlayered host rule regardless of specificity, so a host reset restyles the editor again.
+
+**Why it is silent** - Layer precedence picks the winner without any error.
+
+**How to spot it** - `@layer wb-ui.base` should hold only variable-only rules and `@font-face`. The layer exists so a consumer's `.workflow-builder-root { --wb-public-… }` override beats the shipped defaults; anything that paints belongs outside it, prefixed.
+
+**Automated?** - Yes, in every checked dist. `Painting rule inside @layer` checks every rule inside a layer block, also inside `@media` / `@supports`.
 
 ## Missing leading layer order
 
-**What breaks** - If a component stylesheet names a layer before the canonical order statement, whichever file loads first can establish the wrong order and let `ui.base` beat `ui.component`.
+**What breaks** - Layers registered later outrank earlier ones. If `wb-ui.base` is first named after a consumer's own layers, the shipped variable defaults beat the consumer's layered overrides.
 
 **Why it is silent** - Later order statements remain valid but cannot change the order fixed by the first layer name the browser encountered.
 
@@ -41,7 +107,7 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 ## Unknown layer name
 
-**What breaks** - A typo such as `ui.components` creates a new layer after the declared order, so it silently wins over the intended layers.
+**What breaks** - A typo such as `wb-ui.bases`, or a leftover `ui.component`, creates a new layer after `wb-ui.base`, so its rules silently outrank the shipped defaults while still losing, being layered, to every unlayered host reset.
 
 **Why it is silent** - CSS permits new layer names at any time and appends them to the existing order.
 
@@ -81,13 +147,33 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 ## Mis-scoped public variable default
 
-**What breaks** - A public default on a component selector can outrank a consumer's `:root` override, so the documented customization appears not to work.
+**What breaks** - A public default on a component selector can outrank a consumer's `.workflow-builder-root` override, so the documented customization appears not to work.
 
 **Why it is silent** - Both declarations and values are valid; selector and layer precedence choose the package default.
 
-**How to spot it** - Inspect every `--wb-public-*` declaration in dist. Every selector in the rule must target the root element itself, written as either `:root` or `html` and optionally qualified by an attribute, class, or ID, and the rule must sit inside `@layer ui.base`. Component rules should consume public variables rather than redefine them. Both root spellings are accepted because they match the same element; the repo writes theme scopes as `html[data-theme='...']`.
+**How to spot it** - Inspect every `--wb-public-*` declaration in dist. Every selector in the rule must be the theme attribute itself, `[data-wb-theme]` or `[data-wb-theme='light' | 'dark']`, optionally qualified by an attribute, class, or ID, and the rule must sit inside `@layer wb-ui.base`. That is the element carrying the themed tokens the default reads, and the element a consumer override on `.workflow-builder-root` targets. Component rules should consume public variables rather than redefine them.
 
 **Automated?** - Yes, for this package's dist only. `Mis-scoped public variable default` validates the selector and nearest layer for every public-property declaration. A consumer bundle setting a public variable on a component subtree is not flagged, so that case still needs a human: ask whether the variable is meant to stay consumer-controllable at that level. The SDK's palette sets `--wb-public-node-width` this way, so palette entries keep the DS palette width while canvas nodes follow the root value. That scoped override is intended; the same shape elsewhere would be worth questioning.
+
+## Default on `:root`
+
+**What breaks** - A `--wb-public-*` or `--wb-sdk-*` default declared on `:root` resolves its `var(--wb-ds-…)` value on `<html>`, where the themed tokens do not exist, so the variable is invalid and the component loses that color, radius, or size.
+
+**Why it is silent** - A custom property is resolved on the element that declares it; an unresolvable reference makes it invalid at computed-value time without any error.
+
+**How to spot it** - Search dist for `--wb-public-` and `--wb-sdk-` declarations under a `:root` selector. Sources write public and SDK defaults on `[data-wb-theme]` themselves; `:root` is for design tokens only. The defaults plugin only wraps blocks in the layer and never changes their selector.
+
+**Automated?** - Yes, in every checked dist. `Default on :root cannot resolve themed tokens` flags any such declaration.
+
+## Design token moved off `:root`
+
+**What breaks** - Primitive and Canvas tokens (`--wb-ds-*` without a theme) leave `:root`, so anything resolving them by inheritance outside the editor root, or before the theme attribute is set, loses its value.
+
+**Why it is silent** - The tokens still exist inside the editor, so most of the UI looks right.
+
+**How to spot it** - Search dist for `--wb-ds-` declarations under a bare `[data-wb-theme]` selector. Themed tokens always carry a value (`[data-wb-theme='light' | 'dark']`); the bare attribute is the defaults plugin's rewrite target, so a token there means the plugin rewrote a token block. The plugin skips any block that declares `--wb-ds-*`.
+
+**Automated?** - Yes, in every checked dist. `Design token moved off :root` flags any such declaration.
 
 ## Broken package export target
 

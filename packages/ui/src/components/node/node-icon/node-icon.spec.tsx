@@ -82,8 +82,8 @@ describe('node-icon.module.css', () => {
     return found;
   }
 
-  const light = declarations(':root');
-  const dark = declarations(":root[data-theme='dark']");
+  const light = declarations('[data-wb-theme]');
+  const dark = declarations("[data-wb-theme='dark']");
 
   it.each(ACCENTS)('defines the %s accent in both themes', (accent) => {
     const glyph = `--wb-public-node-icon-color-${accent}`;

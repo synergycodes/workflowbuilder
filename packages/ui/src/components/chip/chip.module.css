@@ -1,75 +1,82 @@
-:root {
+[data-wb-theme] {
   --wb-public-chip-focus-ring-color: var(--wb-ds-shadow-ui-focus);
 }
 
-@layer ui.component {
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--wb-ds-space-50);
-    border-radius: var(--wb-ds-radius-50);
-    white-space: nowrap;
-  }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wb-ds-space-50);
+  border-radius: var(--wb-ds-radius-50);
+  white-space: nowrap;
+}
 
-  .solid {
-    background-color: var(--wb-ds-components-chips-bg-solid);
-    color: var(--wb-ds-components-chips-fg-solid);
-  }
+.solid {
+  background-color: var(--wb-ds-components-chips-bg-solid);
+  color: var(--wb-ds-components-chips-fg-solid);
+}
 
-  .outline {
-    background-color: var(--wb-ds-components-chips-fg-outline);
-    background-image: linear-gradient(
-      var(--wb-ds-components-chips-overlay-outline),
-      var(--wb-ds-components-chips-overlay-outline)
-    );
-    box-shadow: 0 0 0 var(--wb-ds-size-12) var(--wb-ds-components-chips-fg-outline);
-    color: var(--wb-ds-components-chips-fg-outline);
-  }
+.outline {
+  background-color: var(--wb-ds-components-chips-fg-outline);
+  background-image: linear-gradient(
+    var(--wb-ds-components-chips-overlay-outline),
+    var(--wb-ds-components-chips-overlay-outline)
+  );
+  box-shadow: 0 0 0 var(--wb-ds-size-12) var(--wb-ds-components-chips-fg-outline);
+  color: var(--wb-ds-components-chips-fg-outline);
+}
 
-  .s {
-    height: 0.875rem;
-    padding-inline: var(--wb-ds-space-50);
-  }
+.s {
+  height: 0.875rem;
+  padding-inline: var(--wb-ds-space-50);
+}
 
-  .m {
-    height: 1rem;
-    padding-inline: var(--wb-ds-space-50);
-  }
+.m {
+  height: 1rem;
+  padding-inline: var(--wb-ds-space-50);
+}
 
-  .l {
-    height: 1.25rem;
-    padding-inline: var(--wb-ds-space-75);
-  }
+.l {
+  height: 1.25rem;
+  padding-inline: var(--wb-ds-space-75);
+}
 
-  .xl {
-    height: 1.375rem;
-    padding-inline: var(--wb-ds-space-75);
-  }
+.xl {
+  height: 1.375rem;
+  padding-inline: var(--wb-ds-space-75);
+}
 
-  .icon,
-  .close {
-    display: inline-flex;
-    align-items: center;
-  }
+.icon,
+.close {
+  display: inline-flex;
+  align-items: center;
+}
 
-  .icon svg,
-  .close svg {
-    width: 0.625rem;
-    height: 0.625rem;
-  }
+.icon svg,
+.close svg {
+  width: 0.625rem;
+  height: 0.625rem;
+}
 
-  .close {
-    padding: 0;
-    border: none;
-    background: none;
-    color: inherit;
-    cursor: pointer;
+.xl .icon svg,
+.xl .close svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
 
-    &:focus-visible {
-      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
-        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
-        var(--wb-public-chip-focus-ring-color);
-      outline: none;
-    }
+.close {
+  margin: 0;
+  padding: 0;
+  min-width: auto;
+  min-height: auto;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+      var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
+      var(--wb-public-chip-focus-ring-color);
+    outline: none;
   }
 }

@@ -1,60 +1,58 @@
-:root {
+[data-wb-theme] {
   --wb-public-node-footer-divider-color: var(--wb-public-node-border-color);
   --wb-public-node-footer-min-height: var(--wb-ds-size-450);
   --wb-public-node-footer-gap: var(--wb-ds-space-75);
   --wb-public-node-footer-icon-size: var(--wb-ds-size-175);
 }
 
-@layer ui.component {
-  .footer {
-    --footer-color: var(--wb-public-node-run-status-fg-neutral);
+.footer {
+  --footer-color: var(--wb-public-node-run-status-fg-neutral);
 
-    display: flex;
-    width: 100%;
-    min-height: var(--wb-public-node-footer-min-height);
-    padding: var(--wb-public-node-body-padding-block) var(--wb-public-node-padding);
-    gap: var(--wb-public-node-footer-gap);
-    align-items: center;
-    border-top: var(--wb-public-node-border-size) solid var(--wb-public-node-footer-divider-color);
-    color: var(--footer-color);
+  display: flex;
+  width: 100%;
+  min-height: var(--wb-public-node-footer-min-height);
+  padding: var(--wb-public-node-body-padding-block) var(--wb-public-node-padding);
+  gap: var(--wb-public-node-footer-gap);
+  align-items: center;
+  border-top: var(--wb-public-node-border-size) solid var(--wb-public-node-footer-divider-color);
+  color: var(--footer-color);
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+
+  svg {
+    width: var(--wb-public-node-footer-icon-size);
+    height: var(--wb-public-node-footer-icon-size);
   }
+}
 
-  .icon {
-    display: inline-flex;
-    flex: none;
+.message {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Keeps the message out of max-content, so nodes sized by it truncate instead of growing. */
+  contain: inline-size;
+}
 
-    svg {
-      width: var(--wb-public-node-footer-icon-size);
-      height: var(--wb-public-node-footer-icon-size);
-    }
-  }
+.s {
+  composes: wb-text-label-s from global;
+  /* Label S has a 100% line height, which crops descenders once overflow is hidden. */
+  line-height: 1.4;
+}
 
-  .message {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    /* Keeps the message out of max-content, so nodes sized by it truncate instead of growing. */
-    contain: inline-size;
-  }
+.m {
+  composes: wb-text-body-s from global;
+}
 
-  .s {
-    composes: wb-text-label-s from global;
-    /* Label S has a 100% line height, which crops descenders once overflow is hidden. */
-    line-height: 1.4;
-  }
-
-  .m {
-    composes: wb-text-body-s from global;
-  }
-
-  .actions {
-    /* Above the hit area of the bottom handle, which reaches into the footer. */
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex: none;
-    gap: var(--wb-public-node-footer-gap);
-  }
+.actions {
+  /* Above the hit area of the bottom handle, which reaches into the footer. */
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  gap: var(--wb-public-node-footer-gap);
 }

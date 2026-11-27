@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-conditions-form-border-color: var(--wb-ds-ui-stroke-default); /* missing token */
   --wb-sdk-conditions-form-border-radius: 0.75rem; /* missing token */
   --wb-sdk-conditions-form-header-color: var(--wb-public-form-label-color);

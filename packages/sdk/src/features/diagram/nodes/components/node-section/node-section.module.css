@@ -1,4 +1,4 @@
-:root {
+[data-wb-theme] {
   --wb-sdk-node-section-gap: var(--wb-ds-canvas-node-body-gap);
   --wb-sdk-node-section-padding: var(--wb-ds-canvas-node-body-h-pad);
   --wb-sdk-node-section-vertical-padding: var(--wb-ds-canvas-node-body-v-pad);

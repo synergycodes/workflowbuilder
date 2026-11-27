@@ -56,7 +56,10 @@ function setRunStatus(status: ExecutionStatus) {
   act(() => applySnapshot(snapshotFrame(status, [])));
 }
 
-const gridColor = () => document.documentElement.style.getPropertyValue('--wb-public-canvas-grid-color');
+const gridColor = () =>
+  /\.workflow-builder-root \{ --wb-public-canvas-grid-color: ([^;]+); \}/.exec(
+    document.querySelector('style[data-ai-studio-canvas-grid]')?.textContent ?? '',
+  )?.[1] ?? '';
 
 describe('AiStudioControls', () => {
   let container: HTMLDivElement;
