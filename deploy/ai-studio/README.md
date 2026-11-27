@@ -285,6 +285,8 @@ Why each allowance is there, and what to change when your deployment differs:
 - **`connect-src 'self'`** holds because the SPA reaches `/api` on its own
   origin. If you set `VITE_BACKEND_URL` to another host, add that origin here
   and list the web origin in `ALLOWED_ORIGINS`, or every request is blocked.
+- **The public demo** adds `https://api.hsforms.com` to `connect-src` for its
+  contact form; the `web` image does not (see [Contact form](#contact-form)).
 - **Enterprise smart routing** (libavoid, WebAssembly) needs
   `'wasm-unsafe-eval'` added to `script-src`. The Community SDK runs no
   WebAssembly and no web workers.
@@ -384,6 +386,19 @@ tags live in `.env`, every later compose command on the VM
 images, not the local `ai-studio-*` build names. The VM's compose files and
 `.env` are both that copy — change them in the repo or the GitHub settings,
 never on the VM: the next deploy overwrites a hand edit.
+
+<a id="contact-form"></a>
+
+**Contact form (public demo only).** The workflow builds the web image from the
+`web-demo` target: `web` plus an exit-intent HubSpot contact form. It downloads
+`contact-form.js` from the pinned `synergycodes/hubspot-contact-form` release and
+writes the `<script>` tag into `deploy/ai-studio/contact-form/` (git-ignored); the
+target copies the script next to the SPA, puts the tag into `index.html` and adds
+`https://api.hsforms.com` to `connect-src`. The ids come from the
+`HUBSPOT_PORTAL_ID` / `HUBSPOT_FORM_ID` Actions variables, the version and the
+copy from the workflow's `env`. Compose, `pack-offline.sh` and the mirror build
+all name the `web` target, so no other deployment carries the form or the extra
+origin.
 
 Workflow data is treated as ephemeral for the public demo — losing the
 volumes is acceptable; there is nothing precious in them.
