@@ -184,7 +184,7 @@ type WorkflowBuilderIntegration =
 
 With every strategy the editor saves on its own: after a change that comes more than 10 seconds after the last successful save, when the user closes or leaves the page, and when `<WorkflowBuilder.Root>` unmounts. The last one covers a route change in a single-page app, which removes the editor without the browser's `beforeunload` event. An automatic save writes only unsaved changes, meaning anything that changed the data the integration receives (nodes, edges, the workflow name, global variables, the layout direction) since the load or the last successful save. Loading, selecting and moving the viewport are not changes, so a tab the user only looked at never writes and cannot overwrite work saved in another tab. A failed save leaves the changes unsaved, and the next automatic save sends them.
 
-`autoSave: false` turns the automatic saves off, for example in a preview or a read-only run view. The Save button and `actions.save()` still write. A change of `autoSave` after mount applies from the next automatic save.
+`autoSave: false` turns the automatic saves off, for example in a preview or a read-only run view. The Save button and `actions.save()` still write. A change of `autoSave` after mount applies from the next automatic save. A change in the same render that unmounts `<WorkflowBuilder.Root>` does not apply: the save on unmount follows the previous value.
 
 ```tsx
 <WorkflowBuilder.Root integration={{ strategy: 'props', onDataSave, autoSave: false }} />

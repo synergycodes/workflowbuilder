@@ -77,6 +77,8 @@ export type WorkflowBuilderPlugin = () => void;
  * single-page app). Defaults to `true`. They write only
  * unsaved changes, so an editor that was only looked at never writes. `false`
  * turns them all off; the built-in Save button and `actions.save()` still write.
+ * A change of `autoSave` in the same render that unmounts the Root does not
+ * apply: the save on unmount follows the previous value.
  *
  * @category Integration
  */
