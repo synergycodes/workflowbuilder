@@ -81,7 +81,30 @@ describe('IntegrationContextWrapper', () => {
     expect(vi.mocked(showSnackbarSaveErrorIfNeeded)).toHaveBeenCalledWith(params);
   });
 
+  it('unmounting with unsaved changes sends them as an auto-save', () => {
+    const mockOnSave = vi.fn().mockResolvedValue('success');
+    const view = render(<IntegrationContextWrapper onSave={mockOnSave} autoSave />);
+
+    view.unmount();
+
+    expect(mockOnSave.mock.calls).toEqual([[{ isAutoSave: true }]]);
+  });
+
+  it.each([
+    ['nothing is unsaved', { autoSave: true, unsaved: false }],
+    ['autoSave is off', { autoSave: false, unsaved: true }],
+  ])('unmounting sends nothing when %s', (_, { autoSave, unsaved }) => {
+    vi.mocked(hasUnsavedChanges).mockReturnValue(unsaved);
+    const mockOnSave = vi.fn().mockResolvedValue('success');
+    const view = render(<IntegrationContextWrapper onSave={mockOnSave} autoSave={autoSave} />);
+
+    view.unmount();
+
+    expect(mockOnSave).not.toHaveBeenCalled();
+  });
+
   it('a save kept from an unmounted wrapper resolves error without calling onSave', async () => {
+    vi.mocked(hasUnsavedChanges).mockReturnValue(false);
     const mockOnSave = vi.fn().mockResolvedValue('success');
     let onSave!: OnSave;
     function Consumer() {
@@ -115,11 +138,13 @@ describe('IntegrationContextWrapper', () => {
       </IntegrationContextWrapper>,
     );
     const pending = onSave();
+    vi.mocked(getStoreSavingStatus).mockReturnValue('saving');
 
     view.unmount();
     settle('success');
 
     expect(await pending).toBe('success');
+    expect(mockOnSave).toHaveBeenCalledTimes(1);
     expect(vi.mocked(setStoreSavingStatus).mock.calls).toEqual([['saving']]);
     expect(vi.mocked(trackFutureChange)).not.toHaveBeenCalled();
   });

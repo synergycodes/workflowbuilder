@@ -73,10 +73,13 @@ export type WorkflowBuilderPlugin = () => void;
  * `localStorage` default.
  *
  * `autoSave` controls the automatic saves of every variant: the save after a
- * change that comes more than 10 seconds after the last successful save, and
- * the save on tab close. Defaults to `true`. They write only
+ * change that comes more than 10 seconds after the last successful save, the
+ * save on tab close, and the save when the Root unmounts (a route change in a
+ * single-page app). Defaults to `true`. They write only
  * unsaved changes, so an editor that was only looked at never writes. `false`
- * turns both off; the built-in Save button and `actions.save()` still write.
+ * turns them all off; the built-in Save button and `actions.save()` still write.
+ * A change of `autoSave` in the same render that unmounts the Root does not
+ * apply: the save on unmount follows the previous value.
  *
  * @category Integration
  */

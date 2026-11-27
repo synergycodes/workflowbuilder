@@ -1,10 +1,20 @@
-import { type PropsWithChildren, type RefObject, createContext, useLayoutEffect, useRef, useState } from 'react';
+import {
+  Component,
+  type PropsWithChildren,
+  type RefObject,
+  createContext,
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { createWorkflowBuilderActions } from '../../../../../hooks/create-workflow-builder-actions';
 import type { WorkflowBuilderActions } from '../../../../../hooks/use-workflow-builder-actions';
 import type { OnSave } from '../../../../../types/integration';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
 import { useUiExtensionRegistry } from '../../../../ui-extensions/ui-extension-context';
+import { useAutoSaveOnUnmount } from '../../../hooks/use-auto-save-on-unmount';
 import {
   getStoreDataSnapshot,
   getStoreSavingStatus,
@@ -42,10 +52,10 @@ export const IntegrationContext = createContext<IntegrationContextType>({
 
 type Props = PropsWithChildren<{ onSave: OnSave; autoSave: boolean }>;
 
-type Session = { onSave: OnSave; autoSave: boolean; isMounted: boolean };
+type Session = { onSave: OnSave; autoSave: boolean; isMounted: boolean; hasCrashed: boolean };
 
 export function IntegrationContextWrapper({ onSave, autoSave, children }: Props) {
-  const sessionRef = useRef<Session>({ onSave, autoSave, isMounted: false });
+  const sessionRef = useRef<Session>({ onSave, autoSave, isMounted: false, hasCrashed: false });
   const registry = useUiExtensionRegistry();
 
   useLayoutEffect(() => {
@@ -69,10 +79,14 @@ export function IntegrationContextWrapper({ onSave, autoSave, children }: Props)
     };
   });
 
+  const hasCrashed = useCallback(() => sessionRef.current.hasCrashed, []);
+
+  useAutoSaveOnUnmount({ onSave: value.onSave, autoSave, hasCrashed });
+
   return (
     <IntegrationContext.Provider value={value}>
       <MountTracker session={sessionRef} />
-      {children}
+      <CrashMarker session={sessionRef}>{children}</CrashMarker>
     </IntegrationContext.Provider>
   );
 }
@@ -87,6 +101,30 @@ function MountTracker({ session }: { session: RefObject<Session> }) {
   }, [session]);
 
   return null;
+}
+
+type CrashMarkerState = { hasFailed: boolean; error: unknown };
+
+/**
+ * Marks the session when a render below throws, then rethrows, so the host still gets the error.
+ * Marked in render: `componentDidCatch` runs after the cleanup of the removed editor, and the save in it.
+ */
+class CrashMarker extends Component<PropsWithChildren<{ session: RefObject<Session> }>, CrashMarkerState> {
+  override state: CrashMarkerState = { hasFailed: false, error: undefined };
+
+  static getDerivedStateFromError(error: unknown): CrashMarkerState {
+    return { hasFailed: true, error };
+  }
+
+  override render() {
+    this.props.session.current.hasCrashed = this.state.hasFailed;
+
+    if (this.state.hasFailed) {
+      throw this.state.error;
+    }
+
+    return this.props.children;
+  }
 }
 
 /*
