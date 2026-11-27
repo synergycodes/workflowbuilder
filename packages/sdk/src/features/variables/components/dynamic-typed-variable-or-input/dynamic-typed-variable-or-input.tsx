@@ -92,9 +92,8 @@ export function DynamicTypedVariableOrInput({
             tooltip={t('variables.typeValue')}
             onClick={handleToggleMode}
             disabled={isDisabled}
-          >
-            <Icon icon={pencilSimpleIcon} />
-          </NavButton>
+            prefixIcon={<Icon icon={pencilSimpleIcon} />}
+          />
         }
       />
     );
@@ -116,12 +115,10 @@ export function DynamicTypedVariableOrInput({
           <NavButton
             className={clsx(styles['button-toggle'], 'right-adornment')}
             tooltip={t('variables.pickVariable')}
-            aria-label={t('variables.pickVariable')}
             onClick={handleToggleMode}
             disabled={isDisabled}
-          >
-            <Icon icon={bracketsCurlyIcon} />
-          </NavButton>
+            prefixIcon={<Icon icon={bracketsCurlyIcon} />}
+          />
         ) : undefined
       }
     />
