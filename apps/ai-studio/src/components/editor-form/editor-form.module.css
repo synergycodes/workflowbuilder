@@ -1,4 +1,5 @@
-/* 1rem as in the panel's own fields, over the SDK's 0.5rem for a nested layout. */
-.fields > div {
+/* 1rem as in the panel's own fields, over the SDK's 0.5rem for a nested layout.
+   The page id: the SDK's rule is scoped in 4.0 and outweighs a plain class. */
+:global(#root .workflow-builder-root) .fields > div {
   gap: 1rem;
 }
