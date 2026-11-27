@@ -79,11 +79,12 @@ elements that use it:
 ```
 
 This applies to `--wb-public-*` and to the themed `--wb-ds-*` tokens (those that differ between
-light and dark). Tokens that live on `:root`, such as primitives like `--wb-ds-colors-acc1-500`
-and the canvas geometry, still work there, but `.workflow-builder-root` is the one place that
-works for every `--wb-*` override. The editor's popups (menus, selects, tooltips,
-modals, date pickers) render in a container that carries the same class, so one block reaches
-them too. The override wins whatever the stylesheet order, because the editor's defaults sit
+light and dark). Primitives (`--wb-ds-colors-*`, `--wb-ds-space-*`, `--wb-ds-size-*`,
+`--wb-ds-radius-*`, …) are the exception and stay on `:root`: the canvas geometry tokens declared
+there read the spacing, size and radius primitives, so a primitive set on
+`.workflow-builder-root` does not reach node and edge geometry. The editor's popups (menus,
+selects, tooltips, modals, date pickers) render in a container that carries the same class, so
+one `.workflow-builder-root` block reaches them too. The override wins whatever the stylesheet order, because the editor's defaults sit
 in a cascade layer and yours do not. Two variables are the exception: the palette sets
 `--wb-public-node-width` and the properties header sets `--wb-public-node-icon-padding` on their
 own elements, so a value on `.workflow-builder-root` does not reach them.

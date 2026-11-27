@@ -119,7 +119,9 @@ Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` p
 `@workflowbuilder/ui` styles components with generated `--wb-ds-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
 
 Override on `.workflow-builder-root`, the element that carries `data-wb-theme`. An override on `:root`
-does not apply, because the defaults are declared on that element itself.
+does not apply, because the defaults are declared on that element itself. Primitive tokens
+(`--wb-ds-colors-*`, `--wb-ds-space-*`, `--wb-ds-size-*`, `--wb-ds-radius-*`, …) are the exception:
+they are declared on `:root` and the canvas tokens read them there, so override them on `:root`.
 
 Override a generated design token:
 

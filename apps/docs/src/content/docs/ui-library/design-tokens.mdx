@@ -66,8 +66,10 @@ There are three override levels, from broadest to most local:
 2. **Semantic tokens** (`--wb-ds-ui-*`, `--wb-ds-components-*`, …) - re-map meaning (e.g. make "primary" green).
 3. **Component variables** (`--wb-public-*`) - tweak a single component; component pages include generated tables for component-local variables.
 
-Write overrides on `.workflow-builder-root`. Primitives also work on `:root`; semantic tokens and
-component variables do not, because their defaults are declared on the themed element itself.
+Write semantic token and component variable overrides on `.workflow-builder-root`; on `:root` they
+do not apply, because their defaults are declared on the themed element itself. Write primitive
+overrides on `:root`: the canvas tokens declared there read the spacing, size and radius
+primitives, so a primitive set on `.workflow-builder-root` does not reach node and edge geometry.
 
 For the enterprise path you replace `tokens.json` with one generated from your
 own Figma design kit and rebuild; the generated design-token surface stays the same.

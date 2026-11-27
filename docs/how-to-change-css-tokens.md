@@ -9,7 +9,8 @@ stylesheet always wins - import order does not matter.
 ## Consuming from npm (SDK or UI package)
 
 Override the variables you care about on `.workflow-builder-root` in any stylesheet
-of your app (primitive tokens such as `--wb-ds-colors-*` also work on `:root`):
+of your app (primitive tokens such as `--wb-ds-colors-*` and `--wb-ds-space-*` go on `:root`
+instead, where the canvas tokens read them):
 
 ```css
 .workflow-builder-root {
