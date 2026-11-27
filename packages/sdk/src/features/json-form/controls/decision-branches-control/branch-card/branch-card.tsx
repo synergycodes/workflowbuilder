@@ -72,6 +72,7 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
             aria-label={t('common.remove')}
             onClick={onClickRemove}
             prefixIcon={<Icon icon={trashBoldIcon} size="inherit" />}
+            disabled={!enabled}
           />
         </div>
       </div>

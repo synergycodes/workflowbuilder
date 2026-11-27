@@ -1,7 +1,7 @@
 import type { WorkflowBuilderNode } from '../../node/node-data';
 import { flatErrors } from './flat-errors';
 import { getNodeDefinition } from './get-node-definition';
-import { workflowBuilderValidator } from './workflow-builder-validator';
+import { workflowBuilderValidator } from './workflow-builder-validator/workflow-builder-validator';
 
 export function getNodeErrors(node?: WorkflowBuilderNode) {
   const definition = getNodeDefinition(node);

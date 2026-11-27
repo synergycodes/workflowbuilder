@@ -43,20 +43,21 @@ const timeBasedTriggerProperties: PaletteItem<TriggerNodeSchema>['uischema'] = {
         },
         {
           type: 'HorizontalLayout',
-          layoutColumns: '1fr 110px 60px',
+          layoutColumns: '1fr 110px 80px',
           elements: [
             {
               type: 'Label',
               text: 'Starts',
             },
             {
-              type: 'DatePicker',
+              type: 'VariableDynamic',
+              variableType: 'date',
               scope: scope('properties.timeSchedule.properties.starts.properties.date'),
             },
             {
-              type: 'Text',
+              type: 'VariableDynamic',
+              variableType: 'time',
               scope: scope('properties.timeSchedule.properties.starts.properties.time'),
-              placeholder: '--:--',
               rule: {
                 effect: 'SHOW',
                 condition: {
@@ -69,17 +70,21 @@ const timeBasedTriggerProperties: PaletteItem<TriggerNodeSchema>['uischema'] = {
         },
         {
           type: 'HorizontalLayout',
-          layoutColumns: '1fr 110px 60px',
+          layoutColumns: '1fr 110px 80px',
           elements: [
             {
               type: 'Label',
               text: 'Ends',
             },
             {
-              type: 'DatePicker',
+              type: 'VariableDynamic',
+              variableType: 'date',
               scope: scope('properties.timeSchedule.properties.ends.properties.date'),
             },
             {
+              type: 'VariableDynamic',
+              variableType: 'time',
+              scope: scope('properties.timeSchedule.properties.ends.properties.time'),
               rule: {
                 effect: 'SHOW',
                 condition: {
@@ -87,9 +92,6 @@ const timeBasedTriggerProperties: PaletteItem<TriggerNodeSchema>['uischema'] = {
                   schema: { const: false },
                 },
               },
-              type: 'Text',
-              scope: scope('properties.timeSchedule.properties.ends.properties.time'),
-              placeholder: '--:--',
             },
           ],
         },

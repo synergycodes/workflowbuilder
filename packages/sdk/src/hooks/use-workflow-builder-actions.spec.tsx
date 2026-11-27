@@ -15,7 +15,7 @@ import { EditorHeaderPublish } from '../features/ui-extensions/components/editor
 import { EditorHeaderSaveAsPdf } from '../features/ui-extensions/components/editor-header-save-as-pdf';
 import { EditorHeaderVersion } from '../features/ui-extensions/components/editor-header-version';
 import { renderInRoot } from '../features/ui-extensions/test-utils';
-import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
+import { openModalWorkflowSettings } from '../features/variables/modals/global/modal-settings';
 import type { DiagramModel } from '../node/common';
 import { useStore } from '../store/store';
 import { getTheme } from './theme';
@@ -33,7 +33,7 @@ vi.mock('../features/modals/template-selector/open-template-selector-modal', () 
   openTemplateSelectorModal: vi.fn(),
 }));
 
-vi.mock('../features/variables/modals/modal-settings', () => ({
+vi.mock('../features/variables/modals/global/modal-settings', () => ({
   openModalWorkflowSettings: vi.fn(),
 }));
 

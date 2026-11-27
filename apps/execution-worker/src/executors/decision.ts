@@ -1,5 +1,10 @@
 // Decision executor — picks the first matching branch.
-import { type ExecutionContext, PermanentNodeExecutionError, resolveTemplate } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  PermanentNodeExecutionError,
+  compareDateTime,
+  resolveTemplate,
+} from '@workflow-builder/execution-core';
 
 import type { DecisionBranchCondition, DecisionNode } from '../domain/ai-studio-nodes';
 
@@ -45,10 +50,10 @@ function evaluateCondition(condition: DecisionBranchCondition, context: Executio
 
   switch (condition.comparisonOperator) {
     case 'isEqual': {
-      return left === right;
+      return compareDateTime(left, right, 'isEqual') ?? left === right;
     }
     case 'isNotEqual': {
-      return left !== right;
+      return compareDateTime(left, right, 'isNotEqual') ?? left !== right;
     }
     case 'isContaining': {
       return left.toLowerCase().includes(right.toLowerCase());
@@ -57,10 +62,10 @@ function evaluateCondition(condition: DecisionBranchCondition, context: Executio
       return !left.toLowerCase().includes(right.toLowerCase());
     }
     case 'isBefore': {
-      return new Date(left).getTime() <= new Date(right).getTime();
+      return compareDateTime(left, right, 'isBefore') ?? false;
     }
     case 'isAfter': {
-      return new Date(left).getTime() >= new Date(right).getTime();
+      return compareDateTime(left, right, 'isAfter') ?? false;
     }
     case 'isGreaterThan': {
       return Number(left) > Number(right);

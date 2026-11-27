@@ -109,12 +109,12 @@ export default defineConfig(({ command }) => ({
       tsconfigPath: './tsconfig.json',
       include: ['src/**/*'],
       exclude: ['src/**/*.spec.ts', 'src/**/*.spec.tsx'],
-      // Inline types from @workflowbuilder/ui so external consumers don't need
-      // to install it. It is bundled into the SDK's runtime (not externalized
-      // in Vite's build), so its types must be inlined too - otherwise
-      // dist/index.d.ts would reference a package the SDK does not declare
-      // as a dependency.
-      bundledPackages: ['@workflowbuilder/ui'],
+      // Inline types from workspace-internal packages so external consumers
+      // don't need to install them. Both packages are bundled into the SDK's
+      // runtime (not externalized in Vite's build), so their types must be
+      // inlined too - otherwise dist/index.d.ts would reference packages the
+      // SDK does not declare as dependencies.
+      bundledPackages: ['@workflowbuilder/ui', '@workflow-builder/types'],
       // The one type we can't reach from source alone — the ai-tools-control
       // depends on a few @jsonforms types we export for consumer convenience.
       insertTypesEntry: true,

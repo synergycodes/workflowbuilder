@@ -1,12 +1,13 @@
-import type { PrimitiveFieldType } from '../node/node-schema';
-
 type TypeMap = {
   string: string;
   number: number;
   boolean: boolean;
+  date: string;
+  datetime: string;
+  time: string;
 };
 
-type Convert<T> = T extends PrimitiveFieldType ? TypeMap[T] : unknown;
+type Convert<T> = T extends keyof TypeMap ? TypeMap[T] : unknown;
 
 // Match on `properties` alone — `NodeSchema`'s top level allows `type:
 // 'object'` to be omitted, and the usual authoring pattern does omit it.

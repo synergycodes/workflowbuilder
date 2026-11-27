@@ -6,7 +6,7 @@ import { openImportModal } from '../features/integration/components/import-expor
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
 import { isCleanUpBlocked, isVersionPublishable } from '../features/ui-extensions/header-action-rules';
 import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
-import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
+import { openModalWorkflowSettings } from '../features/variables/modals/global/modal-settings';
 import { type LayoutDirection, layoutDirections } from '../node/common';
 import { getStoreSelection } from '../store/slices/diagram-selection/actions';
 import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
