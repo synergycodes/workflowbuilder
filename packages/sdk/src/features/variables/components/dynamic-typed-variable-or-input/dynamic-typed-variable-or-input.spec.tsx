@@ -1,9 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
+import { useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
 import { DynamicTypedVariableOrInput } from './dynamic-typed-variable-or-input';
@@ -37,6 +38,12 @@ function Harness({ type, initialValue = '', suggestionGroupsForType = numberVari
   );
 }
 
+function storeSourceNode() {
+  useStore.setState({
+    nodes: [{ id: 'decision', position: { x: 0, y: 0 }, data: { properties: { label: 'Recurring Customer?' } } }],
+  } as never);
+}
+
 describe('DynamicTypedVariableOrInput', () => {
   it('clears the value when switching to a variable and restores the typed value when switching back', () => {
     const onSave = vi.fn();
@@ -62,5 +69,43 @@ describe('DynamicTypedVariableOrInput', () => {
     render(<Harness type="string" onSave={vi.fn()} />);
 
     expect(screen.getByRole('button', { name: 'Pick variable' })).not.toBeNull();
+  });
+
+  describe('a stored node variable the field no longer offers', () => {
+    const missingReference = '{{nodes.decision.branchIndex}}';
+    const allTypes: VariableTypePrimitive[] = ['string', 'number', 'boolean', 'date', 'datetime', 'time'];
+
+    afterEach(() => {
+      useStore.setState({ nodes: [] });
+    });
+
+    it.each(allTypes)('shows it as a missing variable in a %s field with no variable left', (type) => {
+      storeSourceNode();
+      render(<Harness type={type} initialValue={missingReference} suggestionGroupsForType={[]} onSave={vi.fn()} />);
+
+      const field = screen.getByPlaceholderText('Click to pick variable') as HTMLInputElement;
+
+      expect(field.value).toBe('{{ Recurring Customer? · Missing variable · branchIndex }}');
+      expect(screen.getByRole('button', { name: 'Type value' })).not.toBeNull();
+    });
+
+    it('shows it as a missing node when the source node is gone', () => {
+      render(<Harness type="number" initialValue={missingReference} suggestionGroupsForType={[]} onSave={vi.fn()} />);
+
+      const field = screen.getByPlaceholderText('Click to pick variable') as HTMLInputElement;
+
+      expect(field.value).toBe('{{ Missing node (deci...) · branchIndex }}');
+    });
+
+    it('lets the user leave it by switching back to typing a value', () => {
+      storeSourceNode();
+      const onSave = vi.fn();
+      render(<Harness type="number" initialValue={missingReference} suggestionGroupsForType={[]} onSave={onSave} />);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Type value' }));
+
+      expect(onSave).toHaveBeenLastCalledWith('');
+      expect((screen.getByPlaceholderText('Type a numeric value') as HTMLInputElement).value).toBe('');
+    });
   });
 });

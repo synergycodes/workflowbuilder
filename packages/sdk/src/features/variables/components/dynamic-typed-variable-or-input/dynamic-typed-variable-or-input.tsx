@@ -72,7 +72,10 @@ export function DynamicTypedVariableOrInput({
     commit(lastManualValueRef.current);
   }, [commit, mode, value]);
 
-  if (mode === 'variable' && suggestionGroupsForType.length > 0) {
+  // A stored reference stays in the picker with no variable left, which labels it "Missing variable".
+  const hasPickerContent = suggestionGroupsForType.length > 0 || getIsStringVariableReference(value);
+
+  if (mode === 'variable' && hasPickerContent) {
     return (
       <VariableSelect
         className={className}
