@@ -24,6 +24,27 @@ function Example() {
 }
 ```
 
+## Colour
+
+A `Chip` takes its colour from two CSS variables, `--wb-public-chip-background-color` for the background and `--wb-public-chip-color` for the foreground. Set them on `:root` to change every `Chip`, on a container to change the ones inside it, or on a single instance through `className` or `style`, for example to use a colour that comes from your data.
+
+```tsx
+import type { CSSProperties } from 'react';
+
+<Chip
+  label="Beta"
+  style={{ '--wb-public-chip-background-color': tag.color, '--wb-public-chip-color': '#fff' } as CSSProperties}
+/>;
+```
+
+Those two variables colour the `solid` treatment. The `outline` treatment has its own pair: `--wb-public-chip-color-outline` paints the text, the border ring and the fill, and `--wb-public-chip-background-color-outline` is a wash laid over that fill. A translucent value tints over the text colour; an opaque one replaces the fill.
+
+```tsx
+import type { CSSProperties } from 'react';
+
+<Chip label="Beta" variant="outline" style={{ '--wb-public-chip-color-outline': tag.color } as CSSProperties} />;
+```
+
 ## Props
 
 <PropsTable slug="chip" />

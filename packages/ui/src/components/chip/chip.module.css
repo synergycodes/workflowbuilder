@@ -1,4 +1,8 @@
 :root {
+  --wb-public-chip-background-color: var(--wb-ds-components-chips-bg-solid);
+  --wb-public-chip-color: var(--wb-ds-components-chips-fg-solid);
+  --wb-public-chip-color-outline: var(--wb-ds-components-chips-fg-outline);
+  --wb-public-chip-background-color-outline: var(--wb-ds-components-chips-overlay-outline);
   --wb-public-chip-focus-ring-color: var(--wb-ds-shadow-ui-focus);
 }
 
@@ -12,18 +16,18 @@
   }
 
   .solid {
-    background-color: var(--wb-ds-components-chips-bg-solid);
-    color: var(--wb-ds-components-chips-fg-solid);
+    background-color: var(--wb-public-chip-background-color);
+    color: var(--wb-public-chip-color);
   }
 
   .outline {
-    background-color: var(--wb-ds-components-chips-fg-outline);
+    background-color: var(--wb-public-chip-color-outline);
     background-image: linear-gradient(
-      var(--wb-ds-components-chips-overlay-outline),
-      var(--wb-ds-components-chips-overlay-outline)
+      var(--wb-public-chip-background-color-outline),
+      var(--wb-public-chip-background-color-outline)
     );
-    box-shadow: 0 0 0 var(--wb-ds-size-12) var(--wb-ds-components-chips-fg-outline);
-    color: var(--wb-ds-components-chips-fg-outline);
+    box-shadow: 0 0 0 var(--wb-ds-size-12) var(--wb-public-chip-color-outline);
+    color: var(--wb-public-chip-color-outline);
   }
 
   .s {

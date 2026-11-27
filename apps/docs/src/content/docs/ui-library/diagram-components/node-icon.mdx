@@ -31,6 +31,26 @@ function NodeHeader({ label, description }) {
 }
 ```
 
+## Colour
+
+A `NodeIcon` takes its colour from two CSS variables, `--wb-public-node-icon-container-background-color` for the background and `--wb-public-node-icon-color` for the foreground. Set them on `:root` to change every `NodeIcon`, on a container to change the ones inside it, or on a single instance through `className` or `style`, for example to use a colour that comes from your data.
+
+```tsx
+import type { CSSProperties } from 'react';
+
+<NodeIcon
+  icon={<User />}
+  style={
+    {
+      '--wb-public-node-icon-container-background-color': '#ccfbf1',
+      '--wb-public-node-icon-color': '#0f766e',
+    } as CSSProperties
+  }
+/>;
+```
+
+Use `accent` in a node definition, where the SDK draws the icon and your app cannot reach the instance. Everywhere else, set the variables. When an `accent` is set, its own variables win over this pair on that icon.
+
 ## Accent
 
 `accent` tints the container and colors the glyph. `blue`, `green`,

@@ -38,6 +38,11 @@ export type ChipVariant = 'solid' | 'outline';
  */
 export type ChipSize = 's' | 'm' | 'l' | 'xl';
 
+/**
+ * A small label. Colour it through `--wb-public-chip-*` variables, on `:root`, a container or one instance.
+ *
+ * @category Chip
+ */
 export const Chip = forwardRef<HTMLSpanElement, ChipProps>(
   ({ label, variant = 'solid', size = 'm', prefixIcon, onClose, closeLabel, className, ...rest }, ref) => {
     return (
