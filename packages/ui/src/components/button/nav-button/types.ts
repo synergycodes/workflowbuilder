@@ -49,6 +49,7 @@ export type NavLabelButtonProps = NavButtonBaseProps & {
 
 /**
  * Props of an icon-only `NavButton`: it takes `prefixIcon` and no children.
+ * Without an `aria-label`, `tooltip` becomes the button's accessible name.
  *
  * @category NavButton
  */

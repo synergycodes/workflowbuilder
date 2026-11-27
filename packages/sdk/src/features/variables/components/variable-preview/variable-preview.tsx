@@ -27,7 +27,6 @@ export function VariablePreview({ className = '', variable, onEdit, onRemove }: 
         <div className={styles['actions']}>
           {onEdit && (
             <NavButton
-              aria-label={t('common.edit')}
               tooltip={t('common.edit')}
               onClick={onEdit}
               size="xs"
@@ -36,7 +35,6 @@ export function VariablePreview({ className = '', variable, onEdit, onRemove }: 
           )}
           {onRemove && (
             <NavButton
-              aria-label={t('common.remove')}
               tooltip={t('common.remove')}
               onClick={onRemove}
               size="xs"

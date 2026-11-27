@@ -42,3 +42,31 @@ it.each(emptyChildren.flatMap(([label, child]) => iconSlots.map((slot) => [label
     expect(container.querySelector(`svg[data-icon-slot="${slot}"]`)).not.toBeNull();
   },
 );
+
+const getAriaLabel = () => container.querySelector('button')?.getAttribute('aria-label');
+
+describe('aria-label from tooltip', () => {
+  it('names an icon-only button after its tooltip', () => {
+    act(() => {
+      root.render(<NavButton tooltip="Undo" prefixIcon={<svg />} />);
+    });
+
+    expect(getAriaLabel()).toBe('Undo');
+  });
+
+  it('keeps an explicit aria-label over the tooltip', () => {
+    act(() => {
+      root.render(<NavButton aria-label="Undo last change" tooltip="Undo" prefixIcon={<svg />} />);
+    });
+
+    expect(getAriaLabel()).toBe('Undo last change');
+  });
+
+  it('leaves a labelled button named by its text', () => {
+    act(() => {
+      root.render(<NavButton tooltip="Undo the last change">Undo</NavButton>);
+    });
+
+    expect(getAriaLabel()).toBeNull();
+  });
+});

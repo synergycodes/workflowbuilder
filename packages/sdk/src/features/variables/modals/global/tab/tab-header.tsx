@@ -40,7 +40,6 @@ export function TabHeader({
     >
       {onGoBack && (
         <NavButton
-          aria-label={t('common.goBack')}
           tooltip={t('common.goBack')}
           onClick={onGoBack}
           size="l"

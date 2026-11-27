@@ -41,7 +41,6 @@ export function CleanUpButton() {
         disabled={isDisabled}
         isSelected={isPending}
         aria-busy={isPending}
-        aria-label={label}
         tooltip={label}
         prefixIcon={
           layoutDirection === 'DOWN' ? (

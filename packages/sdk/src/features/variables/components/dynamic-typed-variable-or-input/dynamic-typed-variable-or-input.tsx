@@ -1,6 +1,6 @@
 import bracketsCurlyIcon from '@iconify-icons/ph/brackets-curly';
 import pencilSimpleIcon from '@iconify-icons/ph/pencil-simple';
-import { NavButton, Tooltip } from '@workflowbuilder/ui';
+import { NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -90,12 +90,10 @@ export function DynamicTypedVariableOrInput({
           <NavButton
             className={clsx(styles['button-toggle'], 'right-adornment')}
             tooltip={t('variables.typeValue')}
-            aria-label={t('variables.typeValue')}
             onClick={handleToggleMode}
             disabled={isDisabled}
-          >
-            <Icon icon={pencilSimpleIcon} />
-          </NavButton>
+            prefixIcon={<Icon icon={pencilSimpleIcon} />}
+          />
         }
       />
     );
@@ -116,17 +114,11 @@ export function DynamicTypedVariableOrInput({
         suggestionGroupsForType.length > 0 ? (
           <NavButton
             className={clsx(styles['button-toggle'], 'right-adornment')}
-            aria-label={t('variables.pickVariable')}
+            tooltip={t('variables.pickVariable')}
             onClick={handleToggleMode}
             disabled={isDisabled}
-          >
-            <Tooltip>
-              <Tooltip.Trigger>
-                <Icon icon={bracketsCurlyIcon} />
-              </Tooltip.Trigger>
-              <Tooltip.Content>{t('variables.pickVariable')}</Tooltip.Content>
-            </Tooltip>
-          </NavButton>
+            prefixIcon={<Icon icon={bracketsCurlyIcon} />}
+          />
         ) : undefined
       }
     />

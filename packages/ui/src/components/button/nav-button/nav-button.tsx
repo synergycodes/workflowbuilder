@@ -14,7 +14,9 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
     prefixIcon,
     size = 'm',
     suffixIcon,
+    tooltip,
     variant = 'square',
+    'aria-label': ariaLabel,
     ...props
   } = buttonProps;
   const renderableChildren = Children.toArray(children).filter((child) => child !== '');
@@ -28,6 +30,9 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
         [styles['icon-only']]: isIconOnly,
         [styles['selected']]: isSelected,
       })}
+      tooltip={tooltip}
+      // Icon-only: a labelled button is named by its text, which an aria-label would replace.
+      aria-label={ariaLabel ?? (isIconOnly ? tooltip : undefined)}
       {...props}
     >
       {isIconOnly ? (

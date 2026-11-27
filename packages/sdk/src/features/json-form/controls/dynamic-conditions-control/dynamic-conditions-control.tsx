@@ -45,7 +45,6 @@ function DynamicConditionsControl(props: DynamicConditionsControlProps) {
       <div className={styles['header']}>
         <span className={clsx('wb-text-body-s-emphasized', styles['title'])}>{t('title')}</span>
         <NavButton
-          aria-label={t('title')}
           size="s"
           onClick={openEditorModal}
           tooltip={t('title')}
