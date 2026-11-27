@@ -23,6 +23,7 @@ export {
   TransientNodeExecutionError,
   classifyNodeError,
   resolveExecutor,
+  resolveTemplate,
 } from '../../execution-core/src/index';
 
 export type { NodeErrorEnvelope } from '../../execution-core/src/index';

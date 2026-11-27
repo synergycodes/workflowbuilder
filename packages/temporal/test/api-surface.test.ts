@@ -25,6 +25,7 @@ describe('public API surface', () => {
       'WorkflowBuilderPlugin',
       'createActivities',
       'executionWorkflowId',
+      'resolveTemplate',
     ]);
   });
 

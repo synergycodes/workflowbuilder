@@ -133,6 +133,23 @@ throw new TransientNodeExecutionError('rate_limited', 'Rate limited');
 
 A permanent failure is not retried at all. A transient one retries up to the profile's `maximumAttempts`, and so does anything thrown unclassified. The error code and the attempt it died on land in the `node_failed` event. `node_completed` and `node_failed` also carry `nextPort`, the edge the run left the node through; how to read it, including runs recorded before it existed, is in the execution-core README under ["Per-node error policy"](https://github.com/synergycodes/workflowbuilder/blob/main/packages/execution-core/README.md#per-node-error-policy).
 
+### Resolving `{{…}}` references
+
+The variable picker stores references as `{{namespace.path}}`, for example `{{nodes.writer-1.response}}`. `resolveTemplate` resolves them against the `ExecutionContext` your executor receives, the same way the reference worker does:
+
+```ts
+import { resolveTemplate } from '@workflowbuilder/temporal';
+
+const prompt = resolveTemplate(node.config.systemPrompt, context);
+```
+
+The picker writes `nodes` and `global` references; the resolver also reads `trigger` and `variables`, from the trigger payload and the run's variables. A plain reference that does not resolve throws. Two modifiers opt into a fallback instead: `{{nodes.writer-1.response?}}` yields `''`, and `{{nodes.writer-1.response | default:'n/a'}}` yields `n/a`. A value that is not a string is inserted as JSON.
+
+Both failures are a `PermanentNodeExecutionError`, so the node is not retried:
+
+- `template_malformed`: the reference does not follow the grammar, for example `{{nodes.writer?x}}`.
+- `template_unresolved`: the path, or the namespace, does not exist in the context.
+
 ### Cancellation and Worker crashes
 
 The plugin does not heartbeat node activities. Cancelling a run therefore does not interrupt an executor that is already running: the run closes `cancelled` without waiting for it, while the executor runs to the end. Its side effects still happen, and its result is dropped.

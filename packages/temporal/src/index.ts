@@ -18,7 +18,12 @@ export type { ActivityProfile, NodeActivityProfiles } from './workflow/activity-
 
 // Re-exported from the bundled execution core, so a consumer writes executors
 // against this package alone and never installs a second one.
-export { NodeExecutionError, PermanentNodeExecutionError, TransientNodeExecutionError } from './core-contract';
+export {
+  NodeExecutionError,
+  PermanentNodeExecutionError,
+  TransientNodeExecutionError,
+  resolveTemplate,
+} from './core-contract';
 export type {
   BaseNode,
   CompletedNodeExecution,
