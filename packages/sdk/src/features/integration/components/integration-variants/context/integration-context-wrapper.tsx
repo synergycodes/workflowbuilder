@@ -5,6 +5,7 @@ import type { WorkflowBuilderActions } from '../../../../../hooks/use-workflow-b
 import type { OnSave } from '../../../../../types/integration';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
 import { useUiExtensionRegistry } from '../../../../ui-extensions/ui-extension-context';
+import { useAutoSaveOnUnmount } from '../../../hooks/use-auto-save-on-unmount';
 import {
   getStoreDataSnapshot,
   getStoreSavingStatus,
@@ -69,25 +70,24 @@ export function IntegrationContextWrapper({ onSave, autoSave, children }: Props)
     };
   });
 
+  useAutoSaveOnUnmount({ onSave: value.onSave, autoSave });
+
   return (
     <IntegrationContext.Provider value={value}>
-      <MountTracker session={sessionRef} onSave={value.onSave} />
+      <MountTracker session={sessionRef} />
       {children}
     </IntegrationContext.Provider>
   );
 }
 
-function MountTracker({ session, onSave }: { session: RefObject<Session>; onSave: OnSave }) {
+function MountTracker({ session }: { session: RefObject<Session> }) {
   useLayoutEffect(() => {
     const current = session.current;
     current.isMounted = true;
     return () => {
-      // A host SPA route change unmounts the editor without `beforeunload`. Saved here, not in a
-      // descendant's cleanup: those run after this one, when the save is already refused.
-      void onSave({ isAutoSave: true });
       current.isMounted = false;
     };
-  }, [session, onSave]);
+  }, [session]);
 
   return null;
 }
