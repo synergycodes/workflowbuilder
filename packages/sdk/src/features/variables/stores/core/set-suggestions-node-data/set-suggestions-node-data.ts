@@ -1,0 +1,104 @@
+import type { VariableSuggestion } from '../../../components/variable-text/variable-text.types';
+import {
+  NODE_ID_FOR_COMMON_NODE_DATA,
+  NODE_LABEL_FOR_COMMON_NODE_DATA,
+  VARIABLE_DELIMITER,
+  VARIABLE_NODES_KEY,
+} from '../../../constants';
+import type { SuggestionNodeType, SuggestionsBySourceHandle, SuggestionsBySourceHandleType } from '../../types';
+import { SUGGESTION_NODE_TYPE } from '../../types';
+import type { VariablesSuggestionsStore } from '../../use-variable-suggestions-store';
+import { useVariablesSuggestionsStore } from '../../use-variable-suggestions-store';
+
+type ParamsShared = {
+  type: SuggestionNodeType;
+  nodeId: string;
+  nodeType: string;
+  nodeLabel: string;
+  bySourceHandle: SuggestionsBySourceHandle;
+  bySourceHandleType: SuggestionsBySourceHandleType;
+};
+
+// If all variables are refreshed is worth batching them all and then setting the mutated store
+type ParamsMutation = {
+  cachedStore: VariablesSuggestionsStore;
+  shouldOnlyPassedStore: true;
+} & ParamsShared;
+
+type ParamsUpdate = {
+  cachedStore: undefined;
+  shouldOnlyPassedStore?: false;
+} & ParamsShared;
+
+type Params = ParamsMutation | ParamsUpdate;
+
+// Shared per node type, so the node id and label become placeholders resolved on read
+function withCommonPlaceholders<T extends { [key: string]: VariableSuggestion[] | undefined }>(
+  suggestionsByKey: T,
+  nodeId: string,
+): T {
+  return Object.fromEntries(
+    Object.entries(suggestionsByKey).map(([key, suggestions]) => [
+      key,
+      suggestions?.map((suggestion) => ({
+        ...suggestion,
+        display: suggestion.display
+          .split(VARIABLE_DELIMITER)
+          .map((chunk, index) => (index === 0 ? NODE_LABEL_FOR_COMMON_NODE_DATA : chunk))
+          .join(VARIABLE_DELIMITER),
+        // Anchored on the `nodes.<id>.` prefix: a bare `replace(nodeId, …)` would hit the prefix for ids like `node` or `s`
+        id: suggestion.id.replace(
+          `${VARIABLE_NODES_KEY}.${nodeId}.`,
+          `${VARIABLE_NODES_KEY}.${NODE_ID_FOR_COMMON_NODE_DATA}.`,
+        ),
+      })),
+    ]),
+  ) as T;
+}
+
+export function setVariablesSuggestionsNodeData(params: Params): VariablesSuggestionsStore {
+  // Pass the store if you want to call this function multiple times
+  let storeToMutate =
+    params.shouldOnlyPassedStore === true ? params.cachedStore : useVariablesSuggestionsStore.getState();
+
+  if (params.type === SUGGESTION_NODE_TYPE.COMMON) {
+    storeToMutate = {
+      ...storeToMutate,
+      lastUpdateIndex: storeToMutate.lastUpdateIndex + 1,
+      commonByType: {
+        ...storeToMutate.commonByType,
+        [params.nodeType]: {
+          bySourceHandle: withCommonPlaceholders(params.bySourceHandle, params.nodeId),
+          bySourceHandleType: withCommonPlaceholders(params.bySourceHandleType, params.nodeId),
+        },
+      },
+      byNodeId: {
+        ...storeToMutate.byNodeId,
+        [params.nodeId]: {
+          type: SUGGESTION_NODE_TYPE.COMMON,
+          nodeType: params.nodeType,
+          nodeLabel: params.nodeLabel,
+        },
+      },
+    };
+  } else if (params.type === SUGGESTION_NODE_TYPE.CUSTOM) {
+    storeToMutate = {
+      ...storeToMutate,
+      lastUpdateIndex: storeToMutate.lastUpdateIndex + 1,
+      byNodeId: {
+        ...storeToMutate.byNodeId,
+        [params.nodeId]: {
+          type: SUGGESTION_NODE_TYPE.CUSTOM,
+          bySourceHandle: params.bySourceHandle,
+          bySourceHandleType: params.bySourceHandleType,
+        },
+      },
+    };
+  }
+
+  if (params.shouldOnlyPassedStore === false) {
+    useVariablesSuggestionsStore.setState(storeToMutate);
+  }
+
+  return storeToMutate;
+}

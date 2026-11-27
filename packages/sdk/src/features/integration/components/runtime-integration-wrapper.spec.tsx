@@ -131,7 +131,18 @@ describe('RuntimeIntegrationWrapper', () => {
       const lastCall = integrationWrapperCalls().at(-1)!;
       expect(lastCall.isLoaded).toBe(true);
       expect(lastCall.loadFailed).toBe(false);
+      expect(lastCall.restored).toBe(false);
       expect(lastCall.name).toBe('initial');
+    });
+
+    it('marks a diagram read from localStorage as restored', async () => {
+      localStorage.setItem(localStorageKey, JSON.stringify({ name: 'from-storage', nodes: [], edges: [] }));
+
+      await act(async () => {
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="localStorage" />);
+      });
+
+      expect(integrationWrapperCalls().at(-1)!.restored).toBe(true);
     });
 
     it('saves data to localStorage', async () => {
@@ -184,6 +195,19 @@ describe('RuntimeIntegrationWrapper', () => {
       const lastCall = vi.mocked(IntegrationWrapper).mock.calls.at(-1)![0];
       expect(lastCall.name).toBe('from-api');
       expect(lastCall.loadFailed).toBe(false);
+      expect(lastCall.restored).toBe(true);
+    });
+
+    it('without a load endpoint keeps the initial props, not marked as restored', async () => {
+      await act(async () => {
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" name="initial" />);
+      });
+
+      const lastCall = integrationWrapperCalls().at(-1)!;
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(lastCall.isLoaded).toBe(true);
+      expect(lastCall.restored).toBe(false);
+      expect(lastCall.name).toBe('initial');
     });
 
     it('does not update state when load response is not ok', async () => {
@@ -268,6 +292,7 @@ describe('RuntimeIntegrationWrapper', () => {
       const lastCall = integrationWrapperCalls().at(-1)!;
       expect(lastCall.isLoaded).toBe(true);
       expect(lastCall.loadFailed).toBe(false);
+      expect(lastCall.restored).toBe(false);
       expect(lastCall.name).toBe('initial');
     });
 

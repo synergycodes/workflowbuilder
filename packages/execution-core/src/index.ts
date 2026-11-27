@@ -40,6 +40,9 @@ export { resolveExecutor } from './registry/node-executor-registry';
 
 export { resolveTemplate } from './templates/resolve-template';
 
+export { compareDateTime } from './compare-date-time';
+export type { DateTimeComparisonOperator } from './compare-date-time';
+
 export { redactSensitive, withRedactedPayloads, REDACTED, SENSITIVE_KEY_RULES } from './redact';
 
 export { reconstructNodeInputs } from './reconstruct-node-inputs';

@@ -105,23 +105,15 @@ export const schema = {
         starts: {
           type: 'object',
           properties: {
-            time: {
-              type: 'string',
-            },
-            date: {
-              type: 'string',
-            },
+            time: { type: 'time' },
+            date: { type: 'date' },
           },
         },
         ends: {
           type: 'object',
           properties: {
-            time: {
-              type: 'string',
-            },
-            date: {
-              type: 'string',
-            },
+            time: { type: 'time' },
+            date: { type: 'date' },
           },
         },
         allDayFrequency: {

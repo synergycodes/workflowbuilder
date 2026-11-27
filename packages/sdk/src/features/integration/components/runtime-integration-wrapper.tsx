@@ -48,6 +48,7 @@ export function RuntimeIntegrationWrapper({
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [restored, setRestored] = useState(false);
 
   useEffect(() => {
     if (strategy === 'api' && endpoints?.load) {
@@ -55,7 +56,10 @@ export function RuntimeIntegrationWrapper({
       fetchDiagram(endpoints.load).then((result) => {
         if (isObsolete) return;
         if (!result.ok) setLoadFailed(true);
-        else if (result.data) setData(result.data);
+        else if (result.data) {
+          setData(result.data);
+          setRestored(true);
+        }
         setIsLoaded(true);
       });
       return () => {
@@ -65,7 +69,10 @@ export function RuntimeIntegrationWrapper({
 
     if (strategy === 'localStorage') {
       const stored = readStoredDiagram();
-      if (stored) setData(stored);
+      if (stored) {
+        setData(stored);
+        setRestored(true);
+      }
     }
     setIsLoaded(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -127,6 +134,7 @@ export function RuntimeIntegrationWrapper({
       edges={edges}
       isLoaded={isLoaded}
       loadFailed={loadFailed}
+      restored={restored}
       onLoad={onLoad}
       onSave={handleSave}
       autoSave={autoSave}

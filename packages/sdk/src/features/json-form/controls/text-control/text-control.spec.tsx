@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { workflowBuilderValidator } from '../../../../utils/validation/workflow-builder-validator';
+import { workflowBuilderValidator } from '../../../../utils/validation/workflow-builder-validator/workflow-builder-validator';
 import { textControlRenderer } from './text-control';
 
 type Middleware = NonNullable<ComponentProps<typeof JsonForms>['middleware']>;

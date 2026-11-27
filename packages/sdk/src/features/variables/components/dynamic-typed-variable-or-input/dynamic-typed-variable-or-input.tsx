@@ -1,71 +1,100 @@
 import bracketsCurlyIcon from '@iconify-icons/ph/brackets-curly';
 import pencilSimpleIcon from '@iconify-icons/ph/pencil-simple';
 import { NavButton } from '@workflowbuilder/ui';
-import { useCallback, useMemo, useState } from 'react';
+import clsx from 'clsx';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+
+import styles from './dynamic-typed-variable-or-input.module.css';
+
+import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
 import { Icon } from '../../../../icon/icon';
-import type { VariableTypePrimitive } from '../../../../node/node-output-schema';
-import { getIsSingleVariable } from '../../actions/get-is-single-variable';
-import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
+import { getIsStringVariableReference } from '../../utils/keys/get-is-string-variable-reference';
 import { DynamicTypedInput } from '../dynamic-typed-input/dynamic-typed-input';
 import { VariableSelect } from '../variable-select/variable-select';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
 
-type DynamicTypedVariableOrInput = {
+type Props = {
   className?: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   value?: string;
   type?: VariableTypePrimitive;
+  placeholder?: string;
   isError?: boolean;
   isDisabled?: boolean;
-  suggestionGroups: VariableSuggestionGroup[];
+  /** Already narrowed to the types `type` accepts; the caller decides what the picker offers. */
+  suggestionGroupsForType: VariableSuggestionGroup[];
 };
+
+type DynamicControlType = 'manual' | 'variable';
 
 export function DynamicTypedVariableOrInput({
   className,
   value = '',
   onChange,
+  onBlur,
+  placeholder,
   isError,
   type,
   isDisabled,
-  suggestionGroups = [],
-}: DynamicTypedVariableOrInput) {
+  suggestionGroupsForType = [],
+}: Props) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<'manual' | 'variable'>(getIsSingleVariable(value) ? 'variable' : 'manual');
+  const translateIfPossible = useTranslateIfPossible();
+  const [mode, setMode] = useState<DynamicControlType>(getIsStringVariableReference(value) ? 'variable' : 'manual');
+  // Typed value kept while the user looks at the variables, restored when they come back to typing.
+  const lastManualValueRef = useRef('');
+
+  const commit = useCallback(
+    (newValue: string) => {
+      onChange(newValue);
+
+      if (onBlur) {
+        onBlur(newValue);
+      }
+    },
+    [onBlur, onChange],
+  );
 
   const handleToggleMode = useCallback(() => {
-    onChange('');
-    setMode((previous) => {
-      return previous === 'variable' ? 'manual' : 'variable';
-    });
-  }, [onChange]);
+    if (mode === 'manual') {
+      lastManualValueRef.current = value;
+      setMode('variable');
+      commit('');
 
-  const suggestionGroupsForType = useMemo(() => {
-    if (!type) {
-      return [];
+      return;
     }
 
-    return filterSuggestionGroupsByType(suggestionGroups, [type]);
-  }, [suggestionGroups, type]);
+    setMode('manual');
+    commit(lastManualValueRef.current);
+  }, [commit, mode, value]);
 
-  if (mode === 'variable' && suggestionGroupsForType.length > 0) {
+  // A stored reference stays in the picker with no variable left, which labels it "Missing variable".
+  const hasPickerContent = suggestionGroupsForType.length > 0 || getIsStringVariableReference(value);
+
+  if (mode === 'variable' && hasPickerContent) {
     return (
       <VariableSelect
         className={className}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         variant="text"
+        isDisabled={isDisabled}
         suggestionGroups={suggestionGroupsForType}
         hasError={isError}
         endAdornment={
           <NavButton
+            className={clsx(styles['button-toggle'], 'right-adornment')}
             tooltip={t('variables.typeValue')}
             onClick={handleToggleMode}
-            prefixIcon={<Icon icon={pencilSimpleIcon} />}
-            size="xs"
-            variant="plain"
-          />
+            disabled={isDisabled}
+          >
+            <Icon icon={pencilSimpleIcon} />
+          </NavButton>
         }
       />
     );
@@ -73,22 +102,26 @@ export function DynamicTypedVariableOrInput({
 
   return (
     <DynamicTypedInput
-      className={className}
+      className={clsx(styles['container'], className)}
       onChange={onChange}
+      onBlur={onBlur}
       value={value}
+      placeholder={translateIfPossible(placeholder) || placeholder}
       isError={isError}
       type={type}
       disabled={isDisabled}
-      suggestionGroups={suggestionGroupsForType}
+      suggestionGroupsForType={suggestionGroupsForType}
       endAdornment={
         suggestionGroupsForType.length > 0 ? (
           <NavButton
+            className={clsx(styles['button-toggle'], 'right-adornment')}
             tooltip={t('variables.pickVariable')}
+            aria-label={t('variables.pickVariable')}
             onClick={handleToggleMode}
-            prefixIcon={<Icon icon={bracketsCurlyIcon} />}
-            size="xs"
-            variant="plain"
-          />
+            disabled={isDisabled}
+          >
+            <Icon icon={bracketsCurlyIcon} />
+          </NavButton>
         ) : undefined
       }
     />

@@ -5,20 +5,24 @@ import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+
 import styles from './conditions-form-field.module.css';
 
-import { type ConditionErrors, getConditionErrors } from '../../../../../features/variables/actions/conditions';
-import { getStringType } from '../../../../../features/variables/actions/get-string-type';
 import { DynamicTypedVariableOrInput } from '../../../../../features/variables/components/dynamic-typed-variable-or-input/dynamic-typed-variable-or-input';
 import { VariableText } from '../../../../../features/variables/components/variable-text/variable-text';
 import type { VariableSuggestionGroup } from '../../../../../features/variables/components/variable-text/variable-text.types';
 import {
   type ComparisonOperator,
+  LOGICAL_OPERATOR,
   comparisonOperatorsByPrimitiveType,
 } from '../../../../../features/variables/constants';
 import { Icon } from '../../../../../icon/icon';
-import type { VariableTypePrimitive } from '../../../../../node/node-output-schema';
+import { useStore } from '../../../../../store/store';
 import type { DynamicCondition } from '../../../../../types/controls';
+import { getStringVariableTypeIfPossible } from '../../../../variables/actions/get-string-variable-type-if-possible';
+import { filterSuggestionGroupsByType } from '../../../../variables/utils/filter-suggestion-groups-by-type';
+import { type ConditionErrors, getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
 
 type ConditionsFormFieldProps = {
   condition: Partial<DynamicCondition>;
@@ -35,7 +39,7 @@ const getTypeOptions = (
   xType: VariableTypePrimitive;
   comparisonsOperators: ComparisonOperator[];
 } => {
-  const xType = getStringType(value);
+  const xType = getStringVariableTypeIfPossible(value);
   const comparisonsOperators: ComparisonOperator[] = comparisonOperatorsByPrimitiveType[xType] || [];
 
   return {
@@ -45,8 +49,13 @@ const getTypeOptions = (
 };
 
 export function ConditionsFormField(props: ConditionsFormFieldProps) {
+  const isReadOnly = useStore((store) => store.isReadOnly);
   const { condition, onChange, onRemove, shouldShowOperator = false, shouldShowValidation, suggestionGroups } = props;
   const [{ xType, comparisonsOperators }, setTypeOptions] = useState(getTypeOptions(condition.x));
+  const suggestionGroupsForType = useMemo(
+    () => filterSuggestionGroupsByType(suggestionGroups, [xType]),
+    [suggestionGroups, xType],
+  );
 
   const { t } = useTranslation();
 
@@ -79,11 +88,11 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
           <SegmentPicker
             className={styles['segment-picker']}
             size="xx-small"
-            value={condition.logicalOperator || 'AND'}
+            value={condition.logicalOperator || LOGICAL_OPERATOR.AND}
             onChange={(_, value) => handleChange('logicalOperator', value)}
           >
-            <SegmentPicker.Item value="AND">{t('conditions.compare.all')}</SegmentPicker.Item>
-            <SegmentPicker.Item value="OR">{t('conditions.compare.one')}</SegmentPicker.Item>
+            <SegmentPicker.Item value={LOGICAL_OPERATOR.AND}>{t('conditions.compare.all')}</SegmentPicker.Item>
+            <SegmentPicker.Item value={LOGICAL_OPERATOR.OR}>{t('conditions.compare.one')}</SegmentPicker.Item>
           </SegmentPicker>
         </div>
       )}
@@ -101,7 +110,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             variant="text"
             suggestionGroups={suggestionGroups}
             hasError={shouldShowValidation && errors.x}
-            mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable') }}
+            mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable'), disabled: isReadOnly }}
             mentionProps={{ appendSpaceOnAdd: false }}
           />
           <Select
@@ -116,6 +125,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             }))}
             onChange={(_, value) => handleChange('comparisonOperator', value)}
             error={shouldShowValidation && errors.comparisonOperator}
+            disabled={isReadOnly}
           />
           <DynamicTypedVariableOrInput
             className={styles['input']}
@@ -123,10 +133,16 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             value={condition.y}
             isError={shouldShowValidation && errors.y}
             type={xType}
-            suggestionGroups={suggestionGroups}
+            suggestionGroupsForType={suggestionGroupsForType}
+            isDisabled={isReadOnly}
           />
         </div>
-        <NavButton onClick={onRemove} tooltip={t('common.remove')} prefixIcon={<Icon icon={xIcon} />} />
+        <NavButton
+          onClick={onRemove}
+          tooltip={t('common.remove')}
+          prefixIcon={<Icon icon={xIcon} />}
+          disabled={isReadOnly}
+        />
       </div>
     </>
   );

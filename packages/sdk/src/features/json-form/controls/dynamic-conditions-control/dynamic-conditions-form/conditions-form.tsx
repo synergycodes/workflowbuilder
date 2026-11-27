@@ -8,10 +8,11 @@ import styles from './conditions-form.module.css';
 import type { DynamicCondition } from '../../../../../features/json-form/types/controls';
 import { closeModal } from '../../../../../features/modals/stores/use-modal-store';
 import { useSingleSelectedElement } from '../../../../../features/properties-bar/use-single-selected-element';
-import { getConditionErrors } from '../../../../../features/variables/actions/conditions';
-import { variablesTypesToExcludeNonPrimitive } from '../../../../../features/variables/constants';
-import { useAvailableVariables } from '../../../../../features/variables/hooks/use-available-variables';
+import { VARIABLES_TYPES_NOT_PRIMITIVE } from '../../../../../features/variables/constants';
 import { Icon } from '../../../../../icon/icon';
+import { useStore } from '../../../../../store/store';
+import { useNodeVariables } from '../../../../variables/hooks/use-node-variables';
+import { getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
 import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
 
 type ConditionsFormProps = {
@@ -39,7 +40,10 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
     );
 
     const selection = useSingleSelectedElement();
-    const suggestionGroups = useAvailableVariables(selection?.node?.id, variablesTypesToExcludeNonPrimitive);
+    const isReadOnly = useStore((store) => store.isReadOnly);
+    const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
+      excludeTypes: VARIABLES_TYPES_NOT_PRIMITIVE,
+    });
 
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -62,6 +66,12 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
     }
 
     const handleConfirm = useCallback(() => {
+      // The modal opens in read-only mode for inspection; nothing in it may reach the diagram then.
+      if (isReadOnly) {
+        closeModal();
+        return;
+      }
+
       const hasAllVariablesEmpty = conditions.every(({ x, y }) => !x && !y);
       if (hasAllVariablesEmpty) {
         // Everything is empty, so it resets the value
@@ -78,7 +88,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
 
       onChange(conditions as DynamicCondition[]);
       closeModal();
-    }, [conditions, onChange]);
+    }, [conditions, isReadOnly, onChange]);
 
     const lastIndex = conditions.length - 1;
 
@@ -88,7 +98,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
 
     return (
       <form ref={formRef} className={styles['form']} onSubmit={handleConfirm}>
-        <div key={lastIndex} className={styles['controls-container']}>
+        <div key={`${lastIndex}-${variablesKey}`} className={styles['controls-container']}>
           {conditions.map((condition, index) => (
             <ConditionsFormField
               key={index}
@@ -109,6 +119,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
           prefixIcon={<Icon icon={plusCircleIcon} />}
           aria-label={t('conditions.add')}
           onClick={addCondition}
+          disabled={isReadOnly}
         />
       </form>
     );

@@ -151,6 +151,7 @@ export type {
   LayoutDirection,
   NodeIconAccent,
   PaletteItem,
+  PaletteGroup,
   PaletteItemOrGroup,
   TemplateModel,
 } from './node/common';
@@ -255,6 +256,7 @@ export {
 } from './features/diagram/listeners/node-drag-start-listeners';
 
 export { getHandleId } from './features/diagram/handles/get-handle-id';
+export { getNodeAncestors } from './features/variables/utils/diagram/get-node-ancestors';
 
 // =============================================================================
 // JsonForms helpers (plugin schema authoring)
@@ -283,7 +285,6 @@ export {
   EDGE_OFFSET,
   SELF_CONNECTING_EDGE_LABEL_OFFSET,
 } from './features/diagram/edges/edge.consts';
-export { VARIABLE_NODES_KEY } from './features/variables/constants';
 
 // =============================================================================
 // i18n
@@ -306,3 +307,28 @@ export {
   type WBIcon,
 } from './icon/icon-registry';
 export type { IconData } from '@workflowbuilder/ui';
+
+// =============================================================================
+// Elements
+// =============================================================================
+// Single element types, for consumers assembling a `UISchema` piecemeal.
+
+export type { UISchemaElement } from './types/uischema';
+
+// =============================================================================
+// Variables
+// =============================================================================
+
+// Prefix of a node-output reference (`{{nodes.<nodeId>.<property>}}`).
+export { VARIABLE_NODES_KEY } from './features/variables/constants';
+
+// Documented in the docs guide "Use Variable Picker"; the type's JSDoc carries the API reference.
+export type {
+  VariableType,
+  VariableTypePrimitive,
+  VariableReference,
+} from '@workflow-builder/types/variables/variables';
+export type { NodeSchemaOutput, SourceHandleType } from '@workflow-builder/types/variables/node-output-schema';
+export { useNodeVariables } from './features/variables/hooks/use-node-variables';
+// Non-React counterpart of `useNodeVariables`; `undefined` until the node is indexed.
+export { getNodeVariablesSuggestions } from './features/variables/stores/core/get-node-variables-suggestions';

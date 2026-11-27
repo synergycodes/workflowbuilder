@@ -63,6 +63,106 @@ describe('executeDecision', () => {
     expect(result.nextPort).toBe('yes');
   });
 
+  it('orders bare HH:mm times within the day for isBefore and isAfter', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'after',
+        conditions: [{ x: '09:07', y: '10:00', comparisonOperator: 'isAfter' }],
+      },
+      {
+        sourceHandle: 'before',
+        conditions: [{ x: '09:07', y: '10:00:30', comparisonOperator: 'isBefore' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('before');
+  });
+
+  it('reads the same clock as equal whether or not it carries seconds and a zone', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'different',
+        conditions: [{ x: '09:07', y: '09:07:00Z', comparisonOperator: 'isNotEqual' }],
+      },
+      {
+        sourceHandle: 'same',
+        conditions: [{ x: '09:07', y: '09:07:00Z', comparisonOperator: 'isEqual' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('same');
+  });
+
+  it('reads a set datetime in the workflow zone, so it equals the matching upstream instant', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'different',
+        conditions: [{ x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isNotEqual' }],
+      },
+      {
+        sourceHandle: 'same',
+        conditions: [
+          { x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isEqual' },
+          { x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isBefore', logicalOperator: 'AND' },
+          { x: '2024-01-15T09:00', y: '2024-01-15T09:00:00Z', comparisonOperator: 'isAfter', logicalOperator: 'AND' },
+        ],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('same');
+  });
+
+  it('compares a set date against a datetime by day', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'earlier',
+        conditions: [{ x: '2024-01-15T00:30', y: '2024-01-15', comparisonOperator: 'isBefore' }],
+      },
+    ]);
+    const other = decisionNode([
+      {
+        sourceHandle: 'sameDay',
+        conditions: [{ x: '2024-01-15', y: '2024-01-15T23:59:00Z', comparisonOperator: 'isEqual' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('earlier');
+    expect(executeDecision(other, context()).nextPort).toBe('sameDay');
+  });
+
+  it('compares text that only starts like a clock as plain text', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'equal',
+        conditions: [{ x: '10:30 standup', y: '10:30 standup', comparisonOperator: 'isEqual' }],
+      },
+    ]);
+    const other = decisionNode([
+      {
+        sourceHandle: 'different',
+        conditions: [{ x: '10:30 standup', y: '10:30 retro', comparisonOperator: 'isNotEqual' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('equal');
+    expect(executeDecision(other, context()).nextPort).toBe('different');
+  });
+
+  it('orders a bare time against the clock of a datetime, never against a bare date', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'date',
+        conditions: [{ x: '09:07', y: '2024-01-15', comparisonOperator: 'isBefore' }],
+      },
+      {
+        sourceHandle: 'clock',
+        conditions: [{ x: '09:07', y: '2024-01-15T10:00:00Z', comparisonOperator: 'isBefore' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('clock');
+  });
+
   it('throws a permanent NodeExecutionError with code "no_branch_matched" when nothing matches', () => {
     const node = decisionNode([
       {

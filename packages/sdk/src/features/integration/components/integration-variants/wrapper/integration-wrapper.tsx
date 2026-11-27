@@ -8,6 +8,7 @@ import { IntegrationContext, IntegrationContextWrapper } from '../context/integr
 type InitialLoadProps = IntegrationDataFormatOptional & {
   isLoaded: boolean;
   loadFailed: boolean;
+  restored?: boolean;
   onLoad: (context: WorkflowBuilderLoadContext) => void;
 };
 
@@ -25,6 +26,7 @@ export function IntegrationWrapper({ children, onSave, autoSave, ...initialLoadP
 function InitialLoad({
   isLoaded,
   loadFailed,
+  restored = false,
   onLoad,
   name,
   globalVariables,
@@ -40,9 +42,9 @@ function InitialLoad({
     if (!isLoaded || hasLoadedRef.current) return;
     hasLoadedRef.current = true;
 
-    const { isEmpty } = loadData({ name, layoutDirection, globalVariables, nodes, edges }, { loadFailed });
+    const { isEmpty } = loadData({ name, layoutDirection, globalVariables, nodes, edges }, { loadFailed, restored });
     onLoad({ isEmpty, loadFailed, actions });
-  }, [isLoaded, loadFailed, onLoad, actions, edges, globalVariables, layoutDirection, name, nodes]);
+  }, [isLoaded, loadFailed, restored, onLoad, actions, edges, globalVariables, layoutDirection, name, nodes]);
 
   return null;
 }

@@ -47,17 +47,18 @@ The top level is always an object schema with a `properties` map. Each entry und
 
 ## Field types
 
-Five primitive shapes plus two composites cover everything the editor renders:
+Three primitive shapes, three date and time shapes and two composites cover everything the editor renders:
 
-| `type`      | TypeScript | Typical control                   | Notes                                                         |
-| ----------- | ---------- | --------------------------------- | ------------------------------------------------------------- |
-| `'string'`  | `string`   | `Text`, `Select`, `DatePicker`    | Default for free-text input. Adds `format` for validation.    |
-| `'number'`  | `number`   | (custom)                          | Use `minimum` / `maximum` for bounds.                         |
-| `'boolean'` | `boolean`  | `Switch`                          | Two-state on/off.                                             |
-| `'array'`   | `T[]`      | `DynamicConditions`, `AiTools`, … | `items` describes one element shape (always an object).       |
-| `'object'`  | `{ ... }`  | (nested layout)                   | Group of nested fields; renders flat in the panel by default. |
+| `type`                           | TypeScript | Typical control                   | Notes                                                                                 |
+| -------------------------------- | ---------- | --------------------------------- | ------------------------------------------------------------------------------------- |
+| `'string'`                       | `string`   | `Text`, `Select`                  | Default for free-text input. Adds `format` for validation.                            |
+| `'number'`                       | `number`   | (custom)                          | Use `minimum` / `maximum` for bounds.                                                 |
+| `'boolean'`                      | `boolean`  | `Switch`                          | Two-state on/off.                                                                     |
+| `'date'`, `'datetime'`, `'time'` | `string`   | `VariableDynamic`                 | Zone-less wall time: `YYYY-MM-DD`, `YYYY-MM-DDTHH:mm`, `HH:mm`. Validated by the SDK. |
+| `'array'`                        | `T[]`      | `DynamicConditions`, `AiTools`, … | `items` describes one element shape (always an object).                               |
+| `'object'`                       | `{ ... }`  | (nested layout)                   | Group of nested fields; renders flat in the panel by default.                         |
 
-Date/time fields are `type: 'string'` paired with a `DatePicker` control — the editor stores the value as an ISO string and the control parses it.
+`'date'`, `'datetime'` and `'time'` are not JSON Schema types: the SDK takes them out of the schema before the standard validator runs and checks the stored shape (or a single variable reference) itself, inside nested objects too. Do not declare picker-bound properties as `type: 'string'` with `format: 'date'` or `format: 'time'`; those are standard formats and reject the shapes the pickers write. The value means the day and clock as written, for every viewer; see the [`VariableDynamic`](/node-schemas/form-controls/#variabledynamic) control for what each type saves.
 
 ## Adding options to string fields
 

@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import type { MentionComponentProps, MentionsInputProps } from 'react-mentions-ts';
+import type { MentionComponentProps, MentionDataItem, MentionsInputProps } from 'react-mentions-ts';
+
+import type { VariableType } from '@workflow-builder/types/variables/variables';
 
 import type { IconType } from '../../../../node/common';
-import type { VariableType } from '../../../../node/node-output-schema';
 
 export type VariableSuggestion = {
   id: string;
@@ -21,6 +22,7 @@ export type VariableSuggestionGroup = {
 export type VariableTextProps = {
   value: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   variant?: 'text' | 'text-area';
   suggestionGroups: VariableSuggestionGroup[];
 
@@ -37,4 +39,11 @@ export type VariableTextProps = {
   >;
   mentionProps?: Omit<MentionComponentProps, 'data' | 'displayTransform' | 'renderSuggestion'>;
   hasError?: boolean;
+};
+
+export type VariableMentionData = MentionDataItem & {
+  groupLabel?: string;
+  label: string;
+  description?: string;
+  type: VariableType;
 };
