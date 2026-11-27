@@ -13,6 +13,8 @@ Workflow Builder ships the full stack: a white-label React workflow builder for 
 [![npm downloads](https://img.shields.io/npm/dm/@workflowbuilder/sdk.svg?label=sdk%20downloads)](https://www.npmjs.com/package/@workflowbuilder/sdk)
 [![Discord](https://img.shields.io/badge/chat-Discord-5865F2.svg)](https://discord.com/invite/FDMjRuarFb)
 
+![A Refund Review run in AI Studio, waiting at the Review Refund step with the decision form open, next to the same Workflow Execution in Temporal Web UI, where each executeNode Activity carries its node's name](docs/assets/workflow-builder-run.png)
+
 **[▶ Run a workflow in your browser](https://aistudio.workflowbuilder.io/)** · no install, no sign-up
 
 [Embed the editor](#path-a-embed-the-sdk) · [Orchestrate on your Temporal](#path-d-add-workflow-orchestration-on-your-temporal) · [Run the full stack](#path-c-run-the-full-stack-demo) · [Documentation](https://www.workflowbuilder.io/docs/overview/)
@@ -78,7 +80,7 @@ flowchart LR
 
 **…use Temporal alone?** Temporal runs workflows your developers write in code, and its Web UI is made for debugging. Workflow Builder adds visual workflow orchestration on top: your users draw the workflow, one generic workflow runs every drawing on your Temporal, and AI Studio shows the run on the same canvas, in open code you can carry into your own frontend. It is the DSL-interpreter pattern from Temporal's own samples, with an editor, versions, human steps and run history around it.
 
-**…use an agent framework?** The open-source LangGraph, Mastra and CrewAI frameworks are for developers writing agents in code. Workflow Builder is for products whose users assemble the flow on a canvas: AI steps, rules and human approvals. An executor can call any agent framework from inside a node.
+**…use an agent framework?** LangGraph, Mastra and CrewAI are for developers writing agents in code, and that is where they fit here too: an executor can run a LangGraph.js or Mastra agent inside the Worker, or call a CrewAI or Python LangGraph agent over its API. Workflow Builder adds what sits around the agent: a canvas where your users compose the steps, rules and approvals; durable execution on Temporal across those steps; a person deciding before anything irreversible happens; and a run view on the canvas. The two combine rather than compete.
 
 ## Built for teams shipping
 
@@ -134,7 +136,7 @@ It mounts the default layout (editor header, palette, canvas, properties panel) 
 
 ### Path D. Add workflow orchestration on your Temporal
 
-Run diagrams on the Temporal you already operate, self-hosted or Temporal Cloud. No clone. Install the plugin with the `@temporalio/*` peers, all at the version your worker uses:
+Run diagrams on the Temporal you already operate, self-hosted or Temporal Cloud. No clone. To see a diagram run first, the [Temporal sample](examples/workflow-builder-temporal/) brings up a Worker, a small API and the editor on your machine with the Temporal CLI alone. To add the plugin to your own Worker, install it with the `@temporalio/*` peers, all at the version your worker uses:
 
 ```bash
 npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow @temporalio/plugin
